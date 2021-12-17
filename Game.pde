@@ -53,6 +53,7 @@ class Game {
       this.board.drawBoard();
       this.drawPanel();
       updates += gameName + "drawBoard";
+      updates += gameName + "drawPanel";
     }
     return updates;
   }
@@ -183,6 +184,9 @@ class Game {
         break;
       case "drawBoard":
         this.board.drawBoard();
+        break;
+      case "drawPanel":
+        this.drawPanel();
         break;
       case "movePieces":
         if (messageSplit.length > 1) {
