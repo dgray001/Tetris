@@ -9,6 +9,7 @@ class Game {
   private float xf = 0;
   private float yf = 0;
   private boolean gameOver = false;
+  private HashMap<String, Integer> statistics = new HashMap<String, Integer>();
   
   Game(float[] borders) {
     float xStart = borders[0] + (float(constants.defaultBoardColumns + 2) / (constants.defaultBoardRows + 2)) * (borders[2] - borders[0]);
@@ -20,6 +21,29 @@ class Game {
     this.lastTick = millis();
     this.board.drawBoard();
     this.drawPanel();
+    this.initializeStatistics();
+  }
+  
+  void initializeStatistics() {
+    this.statistics.put("Points", 0);
+    this.statistics.put("Ticks", 0);
+    this.statistics.put("Pieces", 0);
+    this.statistics.put("Rows Cleared", 0);
+    this.statistics.put("Double Combos", 0);
+    this.statistics.put("Triple Combos", 0);
+    this.statistics.put("Quadruple Combos", 0);
+  }
+  
+  void incrementStatistic(String statistic) {
+    this.increaseStatistic(statistic, 1);
+  }
+  void increaseStatistic(String statistic, int amount) {
+    Integer stat = this.statistics.get(statistic);
+    if (stat == null) {
+      println("ERROR: statistic " + statistic + " is not defined.");
+      return;
+    }
+    this.statistics.put(statistic, stat + amount);
   }
   
   boolean isOver() {
@@ -33,6 +57,8 @@ class Game {
   String update(String gameName) {
     String updates = "";
     if (millis() - this.lastTick > tickLenth) {
+      this.incrementStatistic("Ticks");
+      this.increaseStatistic("Points", constants.scoreTick);
       if (this.board.aPieceFalling()) {
         this.movePieces(Direction.DIRECTION_DOWN, true);
         updates += gameName + "movePieces=DOWN, true";
@@ -43,8 +69,26 @@ class Game {
           updates += gameName + "gameOver";
           return updates;
         }
-        this.board.checkFilledRows();
+        int rows = this.board.checkFilledRows();
+        this.increaseStatistic("Rows Cleared", rows);
+        this.increaseStatistic("Points", rows * constants.scoreRow);
+        switch(rows) {
+          case 2:
+            this.incrementStatistic("Double Combos");
+            this.increaseStatistic("Points", constants.scoreDouble);
+            break;
+          case 3:
+            this.incrementStatistic("Triple Combos");
+            this.increaseStatistic("Points", constants.scoreTriple);
+            break;
+          case 4:
+            this.incrementStatistic("Quadruple Combos");
+            this.increaseStatistic("Points", constants.scoreQuadruple);
+            break;
+        }
         updates += gameName + "checkFilledRows";
+        this.incrementStatistic("Pieces");
+        this.increaseStatistic("Points", constants.scorePiece);
         Piece newPiece = new Piece(0);
         this.addPiece(newPiece);
         updates += gameName + "addPiece=" + newPiece.getShapeName();
