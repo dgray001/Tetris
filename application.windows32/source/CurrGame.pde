@@ -354,9 +354,9 @@ class CurrGame {
             removeClient = true;
           }
           if (removeClient) {
-            //j.client.stop();
-            //this.lobbyClients.remove(i);
-            //i--;
+            j.client.stop();
+            this.lobbyClients.remove(i);
+            i--;
           }
           else if (displayMessage) {
             int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
@@ -381,10 +381,25 @@ class CurrGame {
         break;
       case SINGLEPLAYER:
         if (this.myGame.isOver()) {
-          //
-        } else {
-          this.myGame.update();
+          this.myGame = null;
+          this.state = GameState.MAIN_MENU;
+          break;
         }
+        this.myGame.update();
+        break;
+      case MULTIPLAYER_LOBBY_HOSTING:
+        String[] lbStrings = new String[0];
+        if (this.otherPlayer != null) {
+          if (this.otherPlayer.client.active()) {
+            lbStrings = append(lbStrings, this.otherPlayer.name + "  (" + this.otherPlayer.ping + " ms)");
+          }
+          else {
+            this.otherPlayer = null;
+          }
+        }
+        this.buttons.cSB.setSTR(lbStrings);
+        break;
+      case MULTIPLAYER_LOBBY_JOINED:
         break;
       case MULTIPLAYER_HOSTING:
         String myGameChanges = this.myGame.update("| HOST_GAME: ");
@@ -430,6 +445,9 @@ class CurrGame {
                   break;
                 case "Join Lobby":
                   this.otherPlayer = this.lobbyClients.get(index);
+                  for (int i = 0; i < this.lobbyClients.size(); i++) {
+                    this.lobbyClients.get(i).client.stop();
+                  }
                   this.lobbyClients.clear();
                   this.messageQ.clear();
                   this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
@@ -586,7 +604,6 @@ class CurrGame {
               break;
             default:
               println("ERROR: message header not recognized -> " + trim(splitMessage[0]));
-              println(this.state + message);
               break;
           }
           break;

@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.1.2b
+// v0.1.2c
 // 20211217
 
 
@@ -755,8 +755,19 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.update(mouseX, mouseY);
+        if (this.cSB.getHIGH() != -1) {
+          this.kpB.changeColor(color(220), color(0), color(170), color(120));
+        } else {
+          this.kpB.changeColor(color(235), color(80), color(170), color(120));
+        }
         this.kpB.update(mouseX, mouseY);
+        if (this.cSB.getSTRS().length == 1) {
+          this.sgB.changeColor(color(220), color(0), color(170), color(120));
+        } else {
+          this.sgB.changeColor(color(235), color(80), color(170), color(120));
+        }
         this.sgB.update(mouseX, mouseY);
+        this.cSB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
@@ -794,9 +805,20 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mousePress();
-        this.kpB.mousePress();
-        this.sgB.mousePress();
+        if (this.cSB.getSTRS().length == 1) {
+          this.sgB.mousePress();
+        }
         this.siB.mousePress();
+        if (this.cSB.getHIGH() != -1) {
+          if (this.kpB.getMON()) {
+            this.kpB.mousePress();
+          } else {
+            this.cSB.mousePress();
+          }
+        }
+        else {
+          this.cSB.mousePress();
+        }
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
@@ -827,9 +849,14 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mouseRelease();
-        this.kpB.mouseRelease();
-        this.sgB.mouseRelease();
+        if (this.cSB.getHIGH() != -1) {
+          this.kpB.mouseRelease();
+        }
+        if (this.cSB.getSTRS().length == 1) {
+          this.sgB.mouseRelease();
+        }
         this.siB.mouseRelease();
+        this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
@@ -849,6 +876,9 @@ class AllButtons {
     stroke(constants.defaultBackgroundColor);
     rectMode(CORNERS);
     switch(id) {
+      case 0:
+        rect(10, 740, 260, 800);
+        break;
       case 1:
         rect(10, 690, 60, 715);
         break;
@@ -1393,9 +1423,9 @@ class CurrGame {
             removeClient = true;
           }
           if (removeClient) {
-            //j.client.stop();
-            //this.lobbyClients.remove(i);
-            //i--;
+            j.client.stop();
+            this.lobbyClients.remove(i);
+            i--;
           }
           else if (displayMessage) {
             int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
@@ -1420,10 +1450,25 @@ class CurrGame {
         break;
       case SINGLEPLAYER:
         if (this.myGame.isOver()) {
-          //
-        } else {
-          this.myGame.update();
+          this.myGame = null;
+          this.state = GameState.MAIN_MENU;
+          break;
         }
+        this.myGame.update();
+        break;
+      case MULTIPLAYER_LOBBY_HOSTING:
+        String[] lbStrings = new String[0];
+        if (this.otherPlayer != null) {
+          if (this.otherPlayer.client.active()) {
+            lbStrings = append(lbStrings, this.otherPlayer.name + "  (" + this.otherPlayer.ping + " ms)");
+          }
+          else {
+            this.otherPlayer = null;
+          }
+        }
+        this.buttons.cSB.setSTR(lbStrings);
+        break;
+      case MULTIPLAYER_LOBBY_JOINED:
         break;
       case MULTIPLAYER_HOSTING:
         String myGameChanges = this.myGame.update("| HOST_GAME: ");
@@ -1469,6 +1514,9 @@ class CurrGame {
                   break;
                 case "Join Lobby":
                   this.otherPlayer = this.lobbyClients.get(index);
+                  for (int i = 0; i < this.lobbyClients.size(); i++) {
+                    this.lobbyClients.get(i).client.stop();
+                  }
                   this.lobbyClients.clear();
                   this.messageQ.clear();
                   this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
@@ -1625,7 +1673,6 @@ class CurrGame {
               break;
             default:
               println("ERROR: message header not recognized -> " + trim(splitMessage[0]));
-              println(this.state + message);
               break;
           }
           break;

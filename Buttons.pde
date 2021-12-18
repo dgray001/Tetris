@@ -48,8 +48,19 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.update(mouseX, mouseY);
+        if (this.cSB.getHIGH() != -1) {
+          this.kpB.changeColor(color(220), color(0), color(170), color(120));
+        } else {
+          this.kpB.changeColor(color(235), color(80), color(170), color(120));
+        }
         this.kpB.update(mouseX, mouseY);
+        if (this.cSB.getSTRS().length == 1) {
+          this.sgB.changeColor(color(220), color(0), color(170), color(120));
+        } else {
+          this.sgB.changeColor(color(235), color(80), color(170), color(120));
+        }
         this.sgB.update(mouseX, mouseY);
+        this.cSB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
@@ -87,9 +98,20 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mousePress();
-        this.kpB.mousePress();
-        this.sgB.mousePress();
+        if (this.cSB.getSTRS().length == 1) {
+          this.sgB.mousePress();
+        }
         this.siB.mousePress();
+        if (this.cSB.getHIGH() != -1) {
+          if (this.kpB.getMON()) {
+            this.kpB.mousePress();
+          } else {
+            this.cSB.mousePress();
+          }
+        }
+        else {
+          this.cSB.mousePress();
+        }
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
@@ -120,9 +142,14 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mouseRelease();
-        this.kpB.mouseRelease();
-        this.sgB.mouseRelease();
+        if (this.cSB.getHIGH() != -1) {
+          this.kpB.mouseRelease();
+        }
+        if (this.cSB.getSTRS().length == 1) {
+          this.sgB.mouseRelease();
+        }
         this.siB.mouseRelease();
+        this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
@@ -142,6 +169,9 @@ class AllButtons {
     stroke(constants.defaultBackgroundColor);
     rectMode(CORNERS);
     switch(id) {
+      case 0:
+        rect(10, 740, 260, 800);
+        break;
       case 1:
         rect(10, 690, 60, 715);
         break;
