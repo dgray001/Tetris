@@ -55,6 +55,9 @@ class Game {
     return this.update("");
   }
   String update(String gameName) {
+    if (this.gameOver) {
+      return "";
+    }
     String updates = "";
     if (millis() - this.lastTick > tickLenth) {
       this.incrementStatistic("Ticks");
@@ -66,6 +69,7 @@ class Game {
       else {
         this.gameOver = this.board.getPieceOverflow();
         if (this.gameOver) {
+          this.gameOverMessage();
           this.showStats();
           updates += gameName + "gameOver";
           return updates;
@@ -167,6 +171,18 @@ class Game {
     text(this.statistics.get("Double Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 13);
     text(this.statistics.get("Triple Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 16);
     text(this.statistics.get("Quadruple Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 19);
+  }
+  
+  void gameOverMessage() {
+    fill(color(0), 150);
+    rectMode(CORNERS);
+    rect(this.board.xi, this.board.yi, this.board.xf, this.board.yf);
+    fill(255);
+    textSize(60);
+    textAlign(CENTER, BOTTOM);
+    text("GAME", this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
+    textAlign(CENTER, TOP);
+    text("OVER", this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
   }
   
   void addPiece(Piece p) {
