@@ -69,8 +69,12 @@ class AllButtons {
         this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_HOSTING:
+        this.siB.update(mouseX, mouseY);
+        this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_JOINED:
+        this.siB.update(mouseX, mouseY);
+        this.cSB.update(mouseX, mouseY);
         break;
     }
   }
@@ -121,8 +125,12 @@ class AllButtons {
         this.cSB.mousePress();
         break;
       case MULTIPLAYER_HOSTING:
+        this.siB.mousePress();
+        this.cSB.mousePress();
         break;
       case MULTIPLAYER_JOINED:
+        this.siB.mousePress();
+        this.cSB.mousePress();
         break;
     }
   }
@@ -161,8 +169,12 @@ class AllButtons {
         this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_HOSTING:
+        this.siB.mouseRelease();
+        this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_JOINED:
+        this.siB.mouseRelease();
+        this.cSB.mouseRelease();
         break;
     }
   }
@@ -206,7 +218,7 @@ class AllButtons {
 // Button 1
 class quitButton extends recButton {
   quitButton() {
-    super("Quit", 14, 10, 690, 60, 715);
+    super("Exit", 14, 10, 690, 60, 715);
     this.setREB(true);
   }
   void click() {

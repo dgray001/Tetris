@@ -491,8 +491,84 @@ class CurrGame {
         if (!otherGameChanges.equals("")) {
           this.server.write(otherGameChanges);
         }
+        rectMode(CORNERS);
+        fill(constants.defaultBackgroundColor);
+        stroke(constants.defaultBackgroundColor);
+        rect(10, 720, 265, 738);
+        textSize(13);
+        textAlign(LEFT, TOP);
+        fill(0);
+        text("Connection to Players", 10, 725);
+        lbStrings = new String[0];
+        boolean kickOpponent = false;
+        if (this.otherPlayer != null) {
+          if (this.otherPlayer.client.active()) {
+            lbStrings = append(lbStrings, "Other Player (" + this.otherPlayer.ping + " ms)");
+            if (this.otherPlayer.waitingForResponse) {
+              if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
+                this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
+                if (this.otherPlayer.ping > constants.defaultPingTimeout * 5) {
+                  kickOpponent = true;
+                }
+              }
+            }
+            else if (millis() - this.otherPlayer.lastPingRequest > constants.pingRequestFrequency) {
+              this.otherPlayer.pingRequest();
+            }
+          }
+          else {
+            kickOpponent = true;
+          }
+          if (kickOpponent) {
+            this.otherPlayer.client.stop();
+            this.otherPlayer = null;
+            showMessageDialog(null, "You lost connection to your opponent", "", PLAIN_MESSAGE);
+            this.state = GameState.MAIN_MENU;
+          }
+        }
+        this.buttons.cSB.setSTR(lbStrings);
         break;
       case MULTIPLAYER_JOINED:
+        rectMode(CORNERS);
+        fill(constants.defaultBackgroundColor);
+        stroke(constants.defaultBackgroundColor);
+        rect(10, 720, 265, 738);
+        textSize(13);
+        textAlign(LEFT, TOP);
+        fill(0);
+        text("Connection to Host", 10, 725);
+        lbStrings = new String[0];
+        boolean leaveGame = false;
+        if (this.otherPlayer != null) {
+          if (this.otherPlayer.client.active()) {
+            lbStrings = append(lbStrings, this.otherPlayer.name + " (" + this.otherPlayer.ping + " ms)");
+            if (this.otherPlayer.waitingForResponse) {
+              if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
+                this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
+                if (this.otherPlayer.ping > constants.defaultPingTimeout * 5) {
+                  leaveGame = true;
+                }
+              }
+            }
+            else if (millis() - this.otherPlayer.lastPingRequest > constants.pingRequestFrequency) {
+              this.otherPlayer.pingRequest();
+            }
+          }
+          else {
+            leaveGame = true;
+          }
+          if (leaveGame) {
+            this.otherPlayer.client.stop();
+            this.otherPlayer = null;
+            showMessageDialog(null, "You lost connection to the game", "", PLAIN_MESSAGE);
+            this.state = GameState.MAIN_MENU;
+          }
+        }
+        else {
+          showMessageDialog(null, "There was an error connecting to the game", "", PLAIN_MESSAGE);
+          this.state = GameState.MAIN_MENU;
+        }
+        this.buttons.cSB.setSTR(lbStrings);
         break;
       default:
         break;
@@ -735,6 +811,34 @@ class CurrGame {
           break;
         case MULTIPLAYER_HOSTING:
           switch(trim(splitMessage[0])) {
+            case "LOBBY":
+              switch(trim(splitMessage[1])) {
+                case "Quit Lobby":
+                  println("Your opponent quit the game");
+                  if (this.otherPlayer != null) {
+                    if (this.otherPlayer.client != null) {
+                      this.otherPlayer.client.stop();
+                    }
+                    this.otherPlayer = null;
+                  }
+                  break;
+                case "Ping Request":
+                  if (splitMessage.length < 3) {
+                    println("ERROR: No IP address for ping request");
+                    break;
+                  }
+                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                  break;
+                case "Ping Resolve":
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    this.otherPlayer.resolvePingRequest();
+                  }
+                  break;
+                default:
+                  println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
+                  break;
+              }
+              break;
             case "HOST_GAME":
               if (this.myGame.executeMessage(trim(splitMessage[1]))) {
                 this.server.write(message);
@@ -758,6 +862,35 @@ class CurrGame {
           break;
         case MULTIPLAYER_JOINED:
           switch(trim(splitMessage[0])) {
+            case "LOBBY":
+              switch(trim(splitMessage[1])) {
+                case "Quit Lobby":
+                  println("Your host quit the game");
+                  if (this.otherPlayer != null) {
+                    if (this.otherPlayer.client != null) {
+                      this.otherPlayer.client.stop();
+                    }
+                    this.otherPlayer = null;
+                  }
+                  this.state = GameState.MAIN_MENU;
+                  break;
+                case "Ping Request":
+                  if (splitMessage.length < 3) {
+                    println("ERROR: No IP address for ping request");
+                    break;
+                  }
+                  this.otherPlayer.write("LOBBY: Ping Resolve");
+                  break;
+                case "Ping Resolve":
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    this.otherPlayer.resolvePingRequest();
+                  }
+                  break;
+                default:
+                  println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
+                  break;
+              }
+              break;
             case "HOST_GAME":
               if (!this.otherGame.executeMessage(trim(splitMessage[1]))) {
                 println("ERROR: HOST_GAME message not recognized -> " + trim(splitMessage[1]));

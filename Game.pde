@@ -75,23 +75,7 @@ class Game {
           updates += gameName + "gameOver";
           return updates;
         }
-        int rows = this.board.checkFilledRows();
-        this.increaseStatistic("Rows Cleared", rows);
-        this.increaseStatistic("Points", rows * constants.scoreRow);
-        switch(rows) {
-          case 2:
-            this.incrementStatistic("Double Combos");
-            this.increaseStatistic("Points", constants.scoreDouble);
-            break;
-          case 3:
-            this.incrementStatistic("Triple Combos");
-            this.increaseStatistic("Points", constants.scoreTriple);
-            break;
-          case 4:
-            this.incrementStatistic("Quadruple Combos");
-            this.increaseStatistic("Points", constants.scoreQuadruple);
-            break;
-        }
+        this.checkFilledRows();
         updates += gameName + "checkFilledRows";
         Piece newPiece = new Piece(0);
         this.addPiece(newPiece);
@@ -212,6 +196,26 @@ class Game {
     this.drawPanel();
   }
   
+  void checkFilledRows() {
+    int rows = this.board.checkFilledRows();
+    this.increaseStatistic("Rows Cleared", rows);
+    this.increaseStatistic("Points", rows * constants.scoreRow);
+    switch(rows) {
+      case 2:
+        this.incrementStatistic("Double Combos");
+        this.increaseStatistic("Points", constants.scoreDouble);
+        break;
+      case 3:
+        this.incrementStatistic("Triple Combos");
+        this.increaseStatistic("Points", constants.scoreTriple);
+        break;
+      case 4:
+        this.incrementStatistic("Quadruple Combos");
+        this.increaseStatistic("Points", constants.scoreQuadruple);
+        break;
+    }
+  }
+  
   String pressedKey() {
     return this.pressedKey("", true);
   }
@@ -219,6 +223,9 @@ class Game {
     return this.pressedKey(gameName, true);
   }
   String pressedKey(String gameName, boolean executeActions) {
+    if (this.gameOver) {
+      return "";
+    }
     String updates = "";
     if (key == CODED) {
       switch(keyCode) {
@@ -273,13 +280,16 @@ class Game {
   
   // Returns whether message was executed
   boolean executeMessage(String message) {
+    if (this.gameOver) {
+      return false;
+    }
     if (message.equals("")) {
       return false;
     }
     String[] messageSplit = split(message, '=');
     switch(trim(messageSplit[0])) {
       case "checkFilledRows":
-        this.board.checkFilledRows();
+        this.checkFilledRows();
         break;
       case "addPiece":
         if (messageSplit.length < 2) {
@@ -349,7 +359,7 @@ class Game {
         this.gameOverMessage();
         this.showStats();
         break;
-      case "Tick":
+      case "tick":
         this.incrementStatistic("Ticks");
         this.increaseStatistic("Points", constants.scoreTick);
         break;
