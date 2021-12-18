@@ -381,7 +381,6 @@ class CurrGame {
         break;
       case SINGLEPLAYER:
         if (this.myGame.isOver()) {
-          println(this.myGame.statistics);
           this.myGame = null;
           this.state = GameState.MAIN_MENU;
           break;
