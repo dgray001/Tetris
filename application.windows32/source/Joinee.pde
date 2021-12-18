@@ -65,7 +65,8 @@ class Joinee {
   
   void write(String message) {
     if ((this.client != null) && (this.client.active())) {
-      this.client.write(this.writeHeader + message + ": " + this.id);
+      println(this.writeHeader + message + ": " + this.id);
+      this.client.write(this.writeHeader + message + ": " + this.id + "|");
     }
   }
 }

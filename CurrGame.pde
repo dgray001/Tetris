@@ -76,15 +76,35 @@ class CurrGame {
       showMessageDialog(null, "Invalid port number", "", PLAIN_MESSAGE);
       return;
     }
-    Client testClient = new Client(this.thisInstance, possibleIP, port);
-    if (!testClient.active()) {
-      testClient.stop();
-      testClient = null;
-      showMessageDialog(null, "Couldn't connect to that IP / port", "", PLAIN_MESSAGE);
-      return;
+    final ArrayList<Joinee> possibleLobby = new ArrayList<Joinee>();
+    final Tetris inst = this.thisInstance;
+    final String ipTesting = possibleIP;
+    final int portTesting = port;
+    Thread thread = new Thread(new Runnable() {
+      public void run() {
+        Client testClient = new Client(inst, ipTesting, portTesting);
+        if (!testClient.active()) {
+          testClient.stop();
+          testClient = null;
+          showMessageDialog(null, "Couldn't connect to that IP / port", "", PLAIN_MESSAGE);
+          return;
+        }
+        possibleLobby.add(new Joinee(testClient, portTesting, "LOBBY: "));
+      }
+    });
+    thread.start();
+    delay(constants.defaultPingTimeout);
+    try {
+      thread.interrupt();
+    } catch(Exception e) {
+      //e.printStackTrace();
     }
-    this.otherPlayer = new Joinee(testClient, port, "LOBBY: ");
-    this.state = GameState.CONNECTING_TO_LOBBY;
+    if (possibleLobby.size() > 0) {
+      if (possibleLobby.get(0).client.active()) {
+        this.otherPlayer = possibleLobby.get(0);
+        this.state = GameState.CONNECTING_TO_LOBBY;
+      }
+    }
   }
   
   void findMultiPlayerGame() {
@@ -232,7 +252,7 @@ class CurrGame {
       this.otherPlayer.client.stop();
     }
     if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
-      this.server.write("LOBBY: Quit Lobby");
+      this.server.write("LOBBY: Quit Lobby|");
       this.server.stop();
     }
     this.state = GameState.MAIN_MENU;
@@ -244,7 +264,7 @@ class CurrGame {
     }
     else {
       println("Kicked client with ID: " + this.otherPlayer.id);
-      this.server.write("LOBBY: Kick Player");
+      this.server.write("LOBBY: Kick Player|");
       this.server.disconnect(this.otherPlayer.client);
       this.otherPlayer = null;
     }
@@ -254,7 +274,7 @@ class CurrGame {
     this.myGame = new Game(constants.game1Borders);
     this.otherGame = new Game(constants.game2Borders);
     this.state = GameState.MULTIPLAYER_HOSTING;
-    this.server.write("LOBBY: Start Game");
+    this.server.write("LOBBY: Start Game|");
   }
   
   void clientEvent(Client someClient) {
@@ -413,6 +433,9 @@ class CurrGame {
                   this.messageQ.clear();
                   this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
                   break;
+                case "Lobby Full":
+                  showMessageDialog(null, "Lobby already has a player", "", PLAIN_MESSAGE);
+                  break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
                   break;
@@ -428,14 +451,14 @@ class CurrGame {
             case "LOBBY":
               switch(trim(splitMessage[1])) {
                 case "Ping Resolve":
-                  this.lobbyClients.get(index).resolvePingRequest();
+                  this.otherPlayer.resolvePingRequest();
                   break;
                 case "Initial Resolve":
                   if (splitMessage.length < 5) {
                     println("ERROR: initial resolve message invalid");
                     break;
                   }
-                  this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  this.otherPlayer.resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
                   break;
                 case "Join Lobby":
                   this.lobbyClients.clear();
@@ -470,14 +493,14 @@ class CurrGame {
                     println("ERROR: No IP address for ping request");
                     break;
                   }
-                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]));
+                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
                   break;
                 case "Initial Request":
                   if (splitMessage.length < 3) {
                     println("ERROR: No IP address for initial request");
                     break;
                   }
-                  this.server.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :");
+                  this.server.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :|");
                   break;
                 case "Join Lobby":
                   if (splitMessage.length < 3) {
@@ -489,11 +512,11 @@ class CurrGame {
                       println("ERROR: client ID not found.");
                       break;
                     }
-                    this.server.write("LOBBY: Join Lobby: " + trim(splitMessage[2]));
+                    this.server.write("LOBBY: Join Lobby: " + trim(splitMessage[2]) + "|");
                     this.otherPlayer = this.lobbyClients.get(index);
                   }
                   else {
-                    this.server.write("LOBBY: Lobby Full: " + trim(splitMessage[2]));
+                    this.server.write("LOBBY: Lobby Full: " + trim(splitMessage[2]) + "|");
                   }
                   break;
                 default:
