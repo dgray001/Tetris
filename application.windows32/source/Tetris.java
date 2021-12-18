@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.1.4b
+// v0.1.5a
 // 20211218
 
 
@@ -1932,6 +1932,7 @@ class Game {
     }
     String updates = "";
     if (millis() - this.lastTick > tickLenth) {
+      updates += gameName + "tick";
       this.incrementStatistic("Ticks");
       this.increaseStatistic("Points", constants.scoreTick);
       if (this.board.aPieceFalling()) {
@@ -2214,6 +2215,15 @@ class Game {
         break;
       case "savePiece":
         this.savePiece();
+        break;
+      case "gameOver":
+        this.gameOver = true;
+        this.gameOverMessage();
+        this.showStats();
+        break;
+      case "Tick":
+        this.incrementStatistic("Ticks");
+        this.increaseStatistic("Points", constants.scoreTick);
         break;
       default:
         return false;
