@@ -54,6 +54,9 @@ class CurrGame {
     if (this.server.active()) {
       showMessageDialog(null, "IP address: " + Server.ip() + "\nPort: " + this.portHosting, "", PLAIN_MESSAGE);
     }
+    else {
+      showMessageDialog(null, "IP address: " + this.otherPlayer.id + "\nPort: " + this.otherPlayer.port, "", PLAIN_MESSAGE);
+    }
   }
   
   void directConnect() {
@@ -232,7 +235,7 @@ class CurrGame {
   void clientConnects(Client someClient) {
     println("Client connected with IP address: " + someClient.ip());
     if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
-      this.lobbyClients.add(new Joinee(someClient, portHosting, "LOBBY: "));
+      this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: "));
     }
   }
   void clientDisconnects(Client someClient) {
@@ -396,11 +399,20 @@ class CurrGame {
         this.myGame.update();
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
+        rectMode(CORNERS);
+        fill(constants.defaultBackgroundColor);
+        stroke(constants.defaultBackgroundColor);
+        rect(10, 720, 265, 738);
+        textSize(13);
+        textAlign(LEFT, TOP);
+        fill(0);
+        text("Players in lobby", 10, 725);
         lbStrings = new String[0];
+        lbStrings = append(lbStrings, "You (0 ms)");
         boolean removeClient = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, this.otherPlayer.name + "  (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, "Other player (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
@@ -426,6 +438,14 @@ class CurrGame {
         this.buttons.cSB.setSTR(lbStrings);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
+        rectMode(CORNERS);
+        fill(constants.defaultBackgroundColor);
+        stroke(constants.defaultBackgroundColor);
+        rect(10, 720, 265, 738);
+        textSize(13);
+        textAlign(LEFT, TOP);
+        fill(0);
+        text("Connection to Lobby", 10, 725);
         lbStrings = new String[0];
         boolean leaveLobby = false;
         if (this.otherPlayer != null) {
@@ -479,6 +499,7 @@ class CurrGame {
     }
     while(this.messageQ.peek() != null) {
       String message = this.messageQ.remove();
+      println(message);
       String[] splitMessage = split(message, ':');
       if (splitMessage.length < 2) {
         println("ERROR: invalid message: " + splitMessage);
@@ -557,7 +578,7 @@ class CurrGame {
                       println("ERROR: No IP address for initial request");
                       break;
                     }
-                    this.otherPlayer.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :|");
+                    this.otherPlayer.write("Initial Resolve");
                   }
                   break;
                 case "Join Lobby":
@@ -613,16 +634,20 @@ class CurrGame {
                   this.server.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :|");
                   break;
                 case "Initial Resolve":
-                  if (splitMessage.length < 5) {
+                  if (splitMessage.length < 3) {
                     println("ERROR: initial resolve message invalid");
                     break;
                   }
                   try {
-                    this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                    if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
+                      this.lobbyClients.get(index).resolveInitialRequest();
+                    }
                   } catch(Exception e) {}
-                  if (this.otherPlayer.messageForMe(splitMessage)) {
-                    this.otherPlayer.resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
-                  }
+                  try {
+                    if (this.otherPlayer.messageForMe(splitMessage)) {
+                      this.otherPlayer.resolveInitialRequest();
+                    }
+                  } catch(Exception e) {}
                   break;
                 case "Join Lobby":
                   if (splitMessage.length < 3) {
@@ -637,7 +662,6 @@ class CurrGame {
                     this.server.write("LOBBY: Join Lobby: " + trim(splitMessage[2]) + "|");
                     this.otherPlayer = this.lobbyClients.get(index);
                     this.lobbyClients.remove(index);
-                    println(this.otherPlayer.receivedInitialResponse);
                   }
                   else {
                     this.server.write("LOBBY: Lobby Full: " + trim(splitMessage[2]) + "|");
@@ -676,13 +700,22 @@ class CurrGame {
                   this.messageQ.clear();
                   this.state = GameState.MAIN_MENU;
                   break;
+                case "Initial Request":
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    if (splitMessage.length < 3) {
+                      println("ERROR: No IP address for initial request");
+                      break;
+                    }
+                    this.otherPlayer.write("Initial Resolve");
+                  }
+                  break;
                 case "Ping Request":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
                     if (splitMessage.length < 3) {
                       println("ERROR: No IP address for ping request");
                       break;
                     }
-                    this.otherPlayer.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                    this.otherPlayer.write("Ping Resolve");
                   }
                   break;
                 case "Ping Resolve":

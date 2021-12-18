@@ -50,6 +50,9 @@ class Joinee {
       this.waitingForResponse = true;
     }
   }
+  void resolveInitialRequest() {
+    this.resolveInitialRequest("", "");
+  }
   void resolveInitialRequest(String newName, String s1) {
     if ((this.client != null) && (this.client.active())) {
       this.ping = millis() - this.lastPingRequest;

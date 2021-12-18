@@ -54,7 +54,7 @@ class AllButtons {
           this.kpB.changeColor(color(235), color(80), color(170), color(120));
         }
         this.kpB.update(mouseX, mouseY);
-        if (this.cSB.getSTRS().length == 1) {
+        if (this.cSB.getSTRS().length == 2) {
           this.sgB.changeColor(color(220), color(0), color(170), color(120));
         } else {
           this.sgB.changeColor(color(235), color(80), color(170), color(120));
@@ -100,7 +100,7 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mousePress();
-        if (this.cSB.getSTRS().length == 1) {
+        if (this.cSB.getSTRS().length == 2) {
           this.sgB.mousePress();
         }
         this.siB.mousePress();
@@ -149,7 +149,7 @@ class AllButtons {
         if (this.cSB.getHIGH() != -1) {
           this.kpB.mouseRelease();
         }
-        if (this.cSB.getSTRS().length == 1) {
+        if (this.cSB.getSTRS().length == 2) {
           this.sgB.mouseRelease();
         }
         this.siB.mouseRelease();
