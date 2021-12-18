@@ -35,7 +35,7 @@ class CurrGame {
             this.server = null;
             return;
           }
-          println("Server active on port " + port + " with ip: " + this.server.ip() + ".");
+          println("Server active on port " + port + " with ip: " + Server.ip() + ".");
           this.portHosting = port;
           this.state = GameState.MULTIPLAYER_LOBBY_HOSTING;
           break;
@@ -46,11 +46,23 @@ class CurrGame {
       this.state = GameState.MAIN_MENU;
       println("ERROR: Server not created.");
     }
+    this.buttons.clearButton(5);
+    this.buttons.clearButton(6);
   }
   
   void findMultiPlayerGame() {
+    rectMode(CORNERS);
+    fill(constants.defaultBackgroundColor);
+    stroke(constants.defaultBackgroundColor);
+    rect(10, 720, 265, 738);
     ArrayList<String> IPs = this.findAddressesOnLAN();
     this.lobbyClients = this.findHosts(IPs);
+    if (this.lobbyClients.size() == 0) {
+      textSize(13);
+      textAlign(LEFT, TOP);
+      fill(0);
+      text("No games found. Maybe try \"Find IP\"", 10, 723);
+    }
   }
   ArrayList<String> findAddressesOnLAN() {
     final ArrayList<String> IPs = new ArrayList<String>();
@@ -235,16 +247,13 @@ class CurrGame {
     this.buttons.update(this.state);
     switch(this.state) {
       case MAIN_MENU:
+        if (this.lobbyClients.size() == 0) {
+          break;
+        }
         rectMode(CORNERS);
         fill(constants.defaultBackgroundColor);
         stroke(constants.defaultBackgroundColor);
-        if (this.lobbyClients.size() == 0) {
-          rect(10, 720, 265, 800);
-          break;
-        }
-        else {
-          rect(10, 720, 265, 738);
-        }
+        rect(10, 720, 265, 738);
         textSize(13);
         textAlign(LEFT, TOP);
         fill(0);

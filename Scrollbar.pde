@@ -187,9 +187,9 @@ abstract class scrollBar {
       this.highlighted = -1;
     }
     if ((x > this.xInitial)&&(x < this.xFinal)&&(y > this.yInitial)&&(y < this.yFinal)) { // see if in box
-      setIN(true);
+      this.setIN(true);
     } else {
-      setIN(false);
+      this.setIN(false);
     }
     rectMode(CORNERS);
     stroke(0);
