@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.1.1a
+// v0.1.1d
 // 20211217
 
 
@@ -62,7 +62,7 @@ public void draw() {
     rectMode(CORNERS);
     rect(5, 5, 50, 25);
     fill(0);
-    text(PApplet.parseInt(lastFPS) + " FPS", 5, 5);
+    //text(int(lastFPS) + " FPS", 5, 5);
     frameCounter = frameCount + 1;
     frameTimer = millis();
   }
@@ -718,7 +718,11 @@ class AllButtons {
   private startGameButton sgB = new startGameButton();
   
   private listBar cSB = new listBar(10, 740, 260, 798);
+  
   private joinLobbyButton jlB = new joinLobbyButton();
+  private showInfoButton siB = new showInfoButton();
+  
+  private findIpButton fiB = new findIpButton();
   
   AllButtons() {
   }
@@ -742,6 +746,9 @@ class AllButtons {
           this.jlB.changeColor(color(235), color(80), color(170), color(120));
         }
         this.jlB.update(mouseX, mouseY);
+        this.fiB.update(mouseX, mouseY);
+        break;
+      case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
         this.ngB.update(mouseX, mouseY);
@@ -750,6 +757,7 @@ class AllButtons {
         this.llB.update(mouseX, mouseY);
         this.kpB.update(mouseX, mouseY);
         this.sgB.update(mouseX, mouseY);
+        this.siB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         llB.update(mouseX, mouseY);
@@ -777,6 +785,9 @@ class AllButtons {
         else {
           this.cSB.mousePress();
         }
+        this.fiB.mousePress();
+        break;
+      case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
         this.ngB.mousePress();
@@ -785,6 +796,7 @@ class AllButtons {
         this.llB.mousePress();
         this.kpB.mousePress();
         this.sgB.mousePress();
+        this.siB.mousePress();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
@@ -806,6 +818,9 @@ class AllButtons {
         if (this.cSB.getHIGH() != -1) {
           this.jlB.mouseRelease();
         }
+        this.fiB.mouseRelease();
+        break;
+      case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
         this.ngB.mouseRelease();
@@ -814,6 +829,7 @@ class AllButtons {
         this.llB.mouseRelease();
         this.kpB.mouseRelease();
         this.sgB.mouseRelease();
+        this.siB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
@@ -826,6 +842,35 @@ class AllButtons {
   }
   public void scroll(int count) {
     this.cSB.scroll(count);
+  }
+  
+  public void clearButton(int id) {
+    fill(constants.defaultBackgroundColor);
+    stroke(constants.defaultBackgroundColor);
+    rectMode(CORNERS);
+    switch(id) {
+      case 1:
+        rect(10, 690, 60, 715);
+        break;
+      case 2:
+        rect(70, 690, 160, 715);
+        break;
+      case 3:
+        rect(170, 690, 260, 715);
+        break;
+      case 4:
+        rect(270, 690, 360, 715);
+        break;
+      case 5:
+        rect(270, 740, 360, 765);
+        break;
+      case 6:
+        rect(270, 773, 360, 798);
+        break;
+      default:
+        println("ERROR: button id " + id + " not found to clear.");
+        break;
+    }
   }
 }
 
@@ -915,13 +960,37 @@ class startGameButton extends recButton {
 // Button 5
 class joinLobbyButton extends recButton {
   joinLobbyButton() {
-    super("Join Lobby", 14, 270, 750, 360, 775);
+    super("Join Lobby", 14, 270, 740, 360, 765);
     this.setREB(true);
   }
   public void click() {
     this.setMON(false);
     this.setCLK(false);
     currGame.joinSelectedLobby();
+  }
+}
+class showInfoButton extends recButton {
+  showInfoButton() {
+    super("Lobby Info", 14, 270, 740, 360, 765);
+    this.setREB(true);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.showLobbyInfo();
+  }
+}
+
+// Button 6
+class findIpButton extends recButton {
+  findIpButton() {
+    super("Find IP", 14, 270, 773, 360, 798);
+    this.setREB(true);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.directConnect();
   }
 }
 class Constants {
@@ -969,7 +1038,7 @@ class Constants {
   }
 }
 public enum GameState {
-  MAIN_MENU, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
+  MAIN_MENU, CONNECTING_TO_LOBBY, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
 }
 
 class CurrGame {
@@ -1005,7 +1074,7 @@ class CurrGame {
             this.server = null;
             return;
           }
-          println("Server active on port " + port + " with ip: " + this.server.ip() + ".");
+          println("Server active on port " + port + " with ip: " + Server.ip() + ".");
           this.portHosting = port;
           this.state = GameState.MULTIPLAYER_LOBBY_HOSTING;
           break;
@@ -1016,11 +1085,60 @@ class CurrGame {
       this.state = GameState.MAIN_MENU;
       println("ERROR: Server not created.");
     }
+    this.buttons.clearButton(5);
+    this.buttons.clearButton(6);
+  }
+  
+  public void showLobbyInfo() {
+    if (this.server.active()) {
+      showMessageDialog(null, "IP address: " + Server.ip() + "\nPort: " + this.portHosting, "", PLAIN_MESSAGE);
+    }
+  }
+  
+  public void directConnect() {
+    String possibleIP = showInputDialog("Choose IP address");
+    if (possibleIP == null) {
+      return;
+    }
+    String portString = showInputDialog("Enter the port number");
+    if (portString == null) {
+      return;
+    }
+    int port = 0;
+    try {
+      port = Integer.valueOf(portString);
+    } catch(NumberFormatException e) {
+      showMessageDialog(null, "Not a number", "", PLAIN_MESSAGE);
+      return;
+    }
+    if ((port < constants.portRangeFirst) || (port > constants.portRangeLast)) {
+      showMessageDialog(null, "Invalid port number", "", PLAIN_MESSAGE);
+      return;
+    }
+    Client testClient = new Client(this.thisInstance, possibleIP, port);
+    if (!testClient.active()) {
+      testClient.stop();
+      testClient = null;
+      showMessageDialog(null, "Couldn't connect to that IP / port", "", PLAIN_MESSAGE);
+      return;
+    }
+    this.otherPlayer = new Joinee(testClient, port, "LOBBY: ");
+    this.state = GameState.CONNECTING_TO_LOBBY;
   }
   
   public void findMultiPlayerGame() {
+    rectMode(CORNERS);
+    fill(constants.defaultBackgroundColor);
+    stroke(constants.defaultBackgroundColor);
+    rect(10, 720, 265, 738);
     ArrayList<String> IPs = this.findAddressesOnLAN();
     this.lobbyClients = this.findHosts(IPs);
+    if (this.lobbyClients.size() == 0) {
+      textSize(13);
+      textAlign(LEFT, TOP);
+      fill(0);
+      text("No games found. Maybe try \"Find IP\"", 10, 723);
+    }
   }
   public ArrayList<String> findAddressesOnLAN() {
     final ArrayList<String> IPs = new ArrayList<String>();
@@ -1205,16 +1323,13 @@ class CurrGame {
     this.buttons.update(this.state);
     switch(this.state) {
       case MAIN_MENU:
+        if (this.lobbyClients.size() == 0) {
+          break;
+        }
         rectMode(CORNERS);
         fill(constants.defaultBackgroundColor);
         stroke(constants.defaultBackgroundColor);
-        if (this.lobbyClients.size() == 0) {
-          rect(10, 720, 265, 800);
-          break;
-        }
-        else {
-          rect(10, 720, 265, 738);
-        }
+        rect(10, 720, 265, 738);
         textSize(13);
         textAlign(LEFT, TOP);
         fill(0);
@@ -1270,6 +1385,18 @@ class CurrGame {
         }
         this.buttons.cSB.setSTR(listBarStrings);
         break;
+      case CONNECTING_TO_LOBBY:
+        if (!this.otherPlayer.client.active()) {
+          this.otherPlayer.client.stop();
+          this.otherPlayer = null;
+          this.state = GameState.MAIN_MENU;
+          break;
+        }
+        if (this.otherPlayer.receivedInitialResponse) {
+          this.otherPlayer.write("Join Lobby");
+          break;
+        }
+        break;
       case SINGLEPLAYER:
         if (this.myGame.isOver()) {
           //
@@ -1321,6 +1448,35 @@ class CurrGame {
                   break;
                 case "Join Lobby":
                   this.otherPlayer = this.lobbyClients.get(index);
+                  this.lobbyClients.clear();
+                  this.messageQ.clear();
+                  this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
+                  break;
+                default:
+                  println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
+                  break;
+              }
+              break;
+            default:
+              println("ERROR: message header not recognized -> " + trim(splitMessage[0]));
+              break;
+          }
+          break;
+        case CONNECTING_TO_LOBBY:
+          switch(trim(splitMessage[0])) {
+            case "LOBBY":
+              switch(trim(splitMessage[1])) {
+                case "Ping Resolve":
+                  this.lobbyClients.get(index).resolvePingRequest();
+                  break;
+                case "Initial Resolve":
+                  if (splitMessage.length < 5) {
+                    println("ERROR: initial resolve message invalid");
+                    break;
+                  }
+                  this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  break;
+                case "Join Lobby":
                   this.lobbyClients.clear();
                   this.messageQ.clear();
                   this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
@@ -2319,9 +2475,9 @@ abstract class scrollBar {
       this.highlighted = -1;
     }
     if ((x > this.xInitial)&&(x < this.xFinal)&&(y > this.yInitial)&&(y < this.yFinal)) { // see if in box
-      setIN(true);
+      this.setIN(true);
     } else {
-      setIN(false);
+      this.setIN(false);
     }
     rectMode(CORNERS);
     stroke(0);

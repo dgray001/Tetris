@@ -11,7 +11,11 @@ class AllButtons {
   private startGameButton sgB = new startGameButton();
   
   private listBar cSB = new listBar(10, 740, 260, 798);
+  
   private joinLobbyButton jlB = new joinLobbyButton();
+  private showInfoButton siB = new showInfoButton();
+  
+  private findIpButton fiB = new findIpButton();
   
   AllButtons() {
   }
@@ -35,6 +39,9 @@ class AllButtons {
           this.jlB.changeColor(color(235), color(80), color(170), color(120));
         }
         this.jlB.update(mouseX, mouseY);
+        this.fiB.update(mouseX, mouseY);
+        break;
+      case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
         this.ngB.update(mouseX, mouseY);
@@ -43,6 +50,7 @@ class AllButtons {
         this.llB.update(mouseX, mouseY);
         this.kpB.update(mouseX, mouseY);
         this.sgB.update(mouseX, mouseY);
+        this.siB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         llB.update(mouseX, mouseY);
@@ -70,6 +78,9 @@ class AllButtons {
         else {
           this.cSB.mousePress();
         }
+        this.fiB.mousePress();
+        break;
+      case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
         this.ngB.mousePress();
@@ -78,6 +89,7 @@ class AllButtons {
         this.llB.mousePress();
         this.kpB.mousePress();
         this.sgB.mousePress();
+        this.siB.mousePress();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
@@ -99,6 +111,9 @@ class AllButtons {
         if (this.cSB.getHIGH() != -1) {
           this.jlB.mouseRelease();
         }
+        this.fiB.mouseRelease();
+        break;
+      case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
         this.ngB.mouseRelease();
@@ -107,6 +122,7 @@ class AllButtons {
         this.llB.mouseRelease();
         this.kpB.mouseRelease();
         this.sgB.mouseRelease();
+        this.siB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
@@ -119,6 +135,35 @@ class AllButtons {
   }
   void scroll(int count) {
     this.cSB.scroll(count);
+  }
+  
+  void clearButton(int id) {
+    fill(constants.defaultBackgroundColor);
+    stroke(constants.defaultBackgroundColor);
+    rectMode(CORNERS);
+    switch(id) {
+      case 1:
+        rect(10, 690, 60, 715);
+        break;
+      case 2:
+        rect(70, 690, 160, 715);
+        break;
+      case 3:
+        rect(170, 690, 260, 715);
+        break;
+      case 4:
+        rect(270, 690, 360, 715);
+        break;
+      case 5:
+        rect(270, 740, 360, 765);
+        break;
+      case 6:
+        rect(270, 773, 360, 798);
+        break;
+      default:
+        println("ERROR: button id " + id + " not found to clear.");
+        break;
+    }
   }
 }
 
@@ -208,12 +253,36 @@ class startGameButton extends recButton {
 // Button 5
 class joinLobbyButton extends recButton {
   joinLobbyButton() {
-    super("Join Lobby", 14, 270, 750, 360, 775);
+    super("Join Lobby", 14, 270, 740, 360, 765);
     this.setREB(true);
   }
   void click() {
     this.setMON(false);
     this.setCLK(false);
     currGame.joinSelectedLobby();
+  }
+}
+class showInfoButton extends recButton {
+  showInfoButton() {
+    super("Lobby Info", 14, 270, 740, 360, 765);
+    this.setREB(true);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.showLobbyInfo();
+  }
+}
+
+// Button 6
+class findIpButton extends recButton {
+  findIpButton() {
+    super("Find IP", 14, 270, 773, 360, 798);
+    this.setREB(true);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.directConnect();
   }
 }

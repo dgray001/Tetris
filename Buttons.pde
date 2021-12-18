@@ -11,7 +11,10 @@ class AllButtons {
   private startGameButton sgB = new startGameButton();
   
   private listBar cSB = new listBar(10, 740, 260, 798);
+  
   private joinLobbyButton jlB = new joinLobbyButton();
+  private showInfoButton siB = new showInfoButton();
+  
   private findIpButton fiB = new findIpButton();
   
   AllButtons() {
@@ -38,6 +41,8 @@ class AllButtons {
         this.jlB.update(mouseX, mouseY);
         this.fiB.update(mouseX, mouseY);
         break;
+      case CONNECTING_TO_LOBBY:
+        break;
       case SINGLEPLAYER:
         this.ngB.update(mouseX, mouseY);
         break;
@@ -45,6 +50,7 @@ class AllButtons {
         this.llB.update(mouseX, mouseY);
         this.kpB.update(mouseX, mouseY);
         this.sgB.update(mouseX, mouseY);
+        this.siB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         llB.update(mouseX, mouseY);
@@ -74,6 +80,8 @@ class AllButtons {
         }
         this.fiB.mousePress();
         break;
+      case CONNECTING_TO_LOBBY:
+        break;
       case SINGLEPLAYER:
         this.ngB.mousePress();
         break;
@@ -81,6 +89,7 @@ class AllButtons {
         this.llB.mousePress();
         this.kpB.mousePress();
         this.sgB.mousePress();
+        this.siB.mousePress();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
@@ -104,6 +113,8 @@ class AllButtons {
         }
         this.fiB.mouseRelease();
         break;
+      case CONNECTING_TO_LOBBY:
+        break;
       case SINGLEPLAYER:
         this.ngB.mouseRelease();
         break;
@@ -111,6 +122,7 @@ class AllButtons {
         this.llB.mouseRelease();
         this.kpB.mouseRelease();
         this.sgB.mouseRelease();
+        this.siB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
@@ -250,6 +262,17 @@ class joinLobbyButton extends recButton {
     currGame.joinSelectedLobby();
   }
 }
+class showInfoButton extends recButton {
+  showInfoButton() {
+    super("Lobby Info", 14, 270, 740, 360, 765);
+    this.setREB(true);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.showLobbyInfo();
+  }
+}
 
 // Button 6
 class findIpButton extends recButton {
@@ -260,5 +283,6 @@ class findIpButton extends recButton {
   void click() {
     this.setMON(false);
     this.setCLK(false);
+    currGame.directConnect();
   }
 }

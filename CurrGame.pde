@@ -1,5 +1,5 @@
 public enum GameState {
-  MAIN_MENU, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
+  MAIN_MENU, CONNECTING_TO_LOBBY, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
 }
 
 class CurrGame {
@@ -48,6 +48,43 @@ class CurrGame {
     }
     this.buttons.clearButton(5);
     this.buttons.clearButton(6);
+  }
+  
+  void showLobbyInfo() {
+    if (this.server.active()) {
+      showMessageDialog(null, "IP address: " + Server.ip() + "\nPort: " + this.portHosting, "", PLAIN_MESSAGE);
+    }
+  }
+  
+  void directConnect() {
+    String possibleIP = showInputDialog("Choose IP address");
+    if (possibleIP == null) {
+      return;
+    }
+    String portString = showInputDialog("Enter the port number");
+    if (portString == null) {
+      return;
+    }
+    int port = 0;
+    try {
+      port = Integer.valueOf(portString);
+    } catch(NumberFormatException e) {
+      showMessageDialog(null, "Not a number", "", PLAIN_MESSAGE);
+      return;
+    }
+    if ((port < constants.portRangeFirst) || (port > constants.portRangeLast)) {
+      showMessageDialog(null, "Invalid port number", "", PLAIN_MESSAGE);
+      return;
+    }
+    Client testClient = new Client(this.thisInstance, possibleIP, port);
+    if (!testClient.active()) {
+      testClient.stop();
+      testClient = null;
+      showMessageDialog(null, "Couldn't connect to that IP / port", "", PLAIN_MESSAGE);
+      return;
+    }
+    this.otherPlayer = new Joinee(testClient, port, "LOBBY: ");
+    this.state = GameState.CONNECTING_TO_LOBBY;
   }
   
   void findMultiPlayerGame() {
@@ -309,6 +346,18 @@ class CurrGame {
         }
         this.buttons.cSB.setSTR(listBarStrings);
         break;
+      case CONNECTING_TO_LOBBY:
+        if (!this.otherPlayer.client.active()) {
+          this.otherPlayer.client.stop();
+          this.otherPlayer = null;
+          this.state = GameState.MAIN_MENU;
+          break;
+        }
+        if (this.otherPlayer.receivedInitialResponse) {
+          this.otherPlayer.write("Join Lobby");
+          break;
+        }
+        break;
       case SINGLEPLAYER:
         if (this.myGame.isOver()) {
           //
@@ -360,6 +409,35 @@ class CurrGame {
                   break;
                 case "Join Lobby":
                   this.otherPlayer = this.lobbyClients.get(index);
+                  this.lobbyClients.clear();
+                  this.messageQ.clear();
+                  this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
+                  break;
+                default:
+                  println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
+                  break;
+              }
+              break;
+            default:
+              println("ERROR: message header not recognized -> " + trim(splitMessage[0]));
+              break;
+          }
+          break;
+        case CONNECTING_TO_LOBBY:
+          switch(trim(splitMessage[0])) {
+            case "LOBBY":
+              switch(trim(splitMessage[1])) {
+                case "Ping Resolve":
+                  this.lobbyClients.get(index).resolvePingRequest();
+                  break;
+                case "Initial Resolve":
+                  if (splitMessage.length < 5) {
+                    println("ERROR: initial resolve message invalid");
+                    break;
+                  }
+                  this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  break;
+                case "Join Lobby":
                   this.lobbyClients.clear();
                   this.messageQ.clear();
                   this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
