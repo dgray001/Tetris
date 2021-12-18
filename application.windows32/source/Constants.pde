@@ -39,6 +39,14 @@ class Constants {
   public final color ZFill = color(0, 255, 0);
   public final int minPieceDisplayGridSize = 3;
   
+  // Game
+  public final int scoreTick = 1;
+  public final int scorePiece= 10;
+  public final int scoreRow = 30;
+  public final int scoreDouble = 30;
+  public final int scoreTriple = 90;
+  public final int scoreQuadruple = 180;
+  
   Constants() {
   }
 }

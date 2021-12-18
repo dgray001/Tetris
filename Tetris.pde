@@ -1,6 +1,6 @@
 // Tetris
-// v0.1.3c
-// 20211217
+// v0.1.4b
+// 20211218
 
 import java.util.*;
 import javafx.util.*;
@@ -36,7 +36,7 @@ void draw() {
     rectMode(CORNERS);
     rect(5, 5, 50, 25);
     fill(0);
-    //text(int(lastFPS) + " FPS", 5, 5);
+    text(int(lastFPS) + " FPS", 5, 5);
     frameCounter = frameCount + 1;
     frameTimer = millis();
   }

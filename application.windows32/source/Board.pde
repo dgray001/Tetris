@@ -188,23 +188,6 @@ class Board {
       this.movePiece(Direction.DIRECTION_DOWN, true);
     }
   }
-  /*void movePieces() {
-    this.movePieces(Direction.DIRECTION_DOWN);
-  }
-  void movePieces(Direction dir) {
-    this.movePieces(dir, true);
-  }
-  void movePieces(Direction dir, boolean stopFalling) {
-    for (int i = 0; i < this.pieces.size(); i++) {
-      if (this.piece != null) {
-        if ((!this.movePiece(dir)) && (dir == Direction.DIRECTION_DOWN)) {
-          if (stopFalling) {
-            this.piece = null;
-          }
-        }
-      }
-    }
-  } */
   boolean movePiece() {
     return this.movePiece(Direction.DIRECTION_DOWN, true);
   }
@@ -232,16 +215,6 @@ class Board {
     pieceCopy.movePiece(dir);
     return this.canBe(pieceCopy);
   }
-  /*void rotatePieces() {
-    this.rotatePieces(true);
-  }
-  void rotatePieces(boolean clockwise) {
-    for (int i = 0; i < this.pieces.size(); i++) {
-      if (this.pieces.get(i).getFalling()) {
-        this.rotatePiece(i, clockwise);
-      }
-    }
-  }*/
   boolean rotatePiece() {
     return this.rotatePiece(true);
   }
@@ -307,7 +280,8 @@ class Board {
     return p;
   }
   
-  void checkFilledRows() {
+  int checkFilledRows() {
+    int rowsFilled = 0;
     // start checking rows from bottom
     for (int j = this.spaces[0].length - 1; j >= 0; j--) {
       boolean rowFilled = true;
@@ -318,6 +292,7 @@ class Board {
         }
       }
       if (rowFilled) {
+        rowsFilled++;
         // remove current row
         for (int i = 0; i < this.spaces.length; i++) {
           this.spaces[i][j].setOccupied(false);
@@ -336,5 +311,6 @@ class Board {
         j++; // have to adjust row
       }
     }
+    return rowsFilled;
   }
 }

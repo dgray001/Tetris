@@ -25,8 +25,8 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.1.2c
-// 20211217
+// v0.1.4c
+// 20211218
 
 
 
@@ -62,7 +62,7 @@ public void draw() {
     rectMode(CORNERS);
     rect(5, 5, 50, 25);
     fill(0);
-    //text(int(lastFPS) + " FPS", 5, 5);
+    text(PApplet.parseInt(lastFPS) + " FPS", 5, 5);
     frameCounter = frameCount + 1;
     frameTimer = millis();
   }
@@ -288,23 +288,6 @@ class Board {
       this.movePiece(Direction.DIRECTION_DOWN, true);
     }
   }
-  /*void movePieces() {
-    this.movePieces(Direction.DIRECTION_DOWN);
-  }
-  void movePieces(Direction dir) {
-    this.movePieces(dir, true);
-  }
-  void movePieces(Direction dir, boolean stopFalling) {
-    for (int i = 0; i < this.pieces.size(); i++) {
-      if (this.piece != null) {
-        if ((!this.movePiece(dir)) && (dir == Direction.DIRECTION_DOWN)) {
-          if (stopFalling) {
-            this.piece = null;
-          }
-        }
-      }
-    }
-  } */
   public boolean movePiece() {
     return this.movePiece(Direction.DIRECTION_DOWN, true);
   }
@@ -332,16 +315,6 @@ class Board {
     pieceCopy.movePiece(dir);
     return this.canBe(pieceCopy);
   }
-  /*void rotatePieces() {
-    this.rotatePieces(true);
-  }
-  void rotatePieces(boolean clockwise) {
-    for (int i = 0; i < this.pieces.size(); i++) {
-      if (this.pieces.get(i).getFalling()) {
-        this.rotatePiece(i, clockwise);
-      }
-    }
-  }*/
   public boolean rotatePiece() {
     return this.rotatePiece(true);
   }
@@ -407,7 +380,8 @@ class Board {
     return p;
   }
   
-  public void checkFilledRows() {
+  public int checkFilledRows() {
+    int rowsFilled = 0;
     // start checking rows from bottom
     for (int j = this.spaces[0].length - 1; j >= 0; j--) {
       boolean rowFilled = true;
@@ -418,6 +392,7 @@ class Board {
         }
       }
       if (rowFilled) {
+        rowsFilled++;
         // remove current row
         for (int i = 0; i < this.spaces.length; i++) {
           this.spaces[i][j].setOccupied(false);
@@ -436,6 +411,7 @@ class Board {
         j++; // have to adjust row
       }
     }
+    return rowsFilled;
   }
 }
 abstract class button {
@@ -771,7 +747,9 @@ class AllButtons {
         this.siB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
-        llB.update(mouseX, mouseY);
+        this.llB.update(mouseX, mouseY);
+        this.siB.update(mouseX, mouseY);
+        this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_HOSTING:
         break;
@@ -822,6 +800,8 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
+        this.siB.mousePress();
+        this.cSB.mousePress();
         break;
       case MULTIPLAYER_HOSTING:
         break;
@@ -860,6 +840,8 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
+        this.siB.mouseRelease();
+        this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_HOSTING:
         break;
@@ -1063,6 +1045,14 @@ class Constants {
   public final int TFill = color(128, 0, 128);
   public final int ZFill = color(0, 255, 0);
   public final int minPieceDisplayGridSize = 3;
+  
+  // Game
+  public final int scoreTick = 1;
+  public final int scorePiece= 10;
+  public final int scoreRow = 30;
+  public final int scoreDouble = 30;
+  public final int scoreTriple = 90;
+  public final int scoreQuadruple = 180;
   
   Constants() {
   }
@@ -1343,6 +1333,13 @@ class CurrGame {
     this.myGame = new Game(constants.game1Borders);
     this.otherGame = new Game(constants.game2Borders);
     this.state = GameState.MULTIPLAYER_HOSTING;
+    for (Joinee j : this.lobbyClients) {
+      if (j != null) {
+        if (j.client != null) {
+          j.client.stop();
+        }
+      }
+    }
     this.server.write("LOBBY: Start Game|");
   }
   
@@ -1371,6 +1368,7 @@ class CurrGame {
   
   public void update() {
     this.buttons.update(this.state);
+    String[] lbStrings;
     switch(this.state) {
       case MAIN_MENU:
         if (this.lobbyClients.size() == 0) {
@@ -1390,7 +1388,7 @@ class CurrGame {
         float width2 = textWidth(s1 + s2);
         text(s1 + s2 + "Ping", 10, currY);
         textSize(12);
-        String[] listBarStrings = new String[0];
+        lbStrings = new String[0];
         for(int i = 0; i < this.lobbyClients.size(); i++) {
           Joinee j = this.lobbyClients.get(i);
           if ((j == null) || (j.client == null)) {
@@ -1430,10 +1428,10 @@ class CurrGame {
           else if (displayMessage) {
             int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
             int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.id + ": ")) / textWidth(" "));
-            listBarStrings = append(listBarStrings, j.name + " " + multiplyString(" ", firstGap) + j.id + " " + multiplyString(" ", secondGap) + j.ping + " ms");
+            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.id + " " + multiplyString(" ", secondGap) + j.ping + " ms");
           }
         }
-        this.buttons.cSB.setSTR(listBarStrings);
+        this.buttons.cSB.setSTR(lbStrings);
         break;
       case CONNECTING_TO_LOBBY:
         if (!this.otherPlayer.client.active()) {
@@ -1457,18 +1455,71 @@ class CurrGame {
         this.myGame.update();
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
-        String[] lbStrings = new String[0];
+        lbStrings = new String[0];
+        boolean removeClient = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
             lbStrings = append(lbStrings, this.otherPlayer.name + "  (" + this.otherPlayer.ping + " ms)");
+            if (this.otherPlayer.waitingForResponse) {
+              if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
+                this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
+                if (this.otherPlayer.receivedInitialResponse) {
+                  if (this.otherPlayer.ping > constants.defaultPingTimeout * 2) {
+                    removeClient = true;
+                  }
+                }
+              }
+            }
+            else if (millis() - this.otherPlayer.lastPingRequest > constants.pingRequestFrequency) {
+              this.otherPlayer.pingRequest();
+            }
           }
           else {
-            this.otherPlayer = null;
+            removeClient = true;
           }
+        }
+        if (removeClient) {
+          this.otherPlayer.client.stop();
+          this.otherPlayer = null;
         }
         this.buttons.cSB.setSTR(lbStrings);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
+        lbStrings = new String[0];
+        boolean leaveLobby = false;
+        if (this.otherPlayer != null) {
+          if (this.otherPlayer.client.active()) {
+            lbStrings = append(lbStrings, this.otherPlayer.name + "  (" + this.otherPlayer.ping + " ms)");
+            if (this.otherPlayer.waitingForResponse) {
+              if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
+                if (!this.otherPlayer.receivedInitialResponse) {
+                  leaveLobby = true;
+                }
+                this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
+                if (this.otherPlayer.ping > constants.defaultPingTimeout * 2) {
+                  leaveLobby = true;
+                }
+              }
+            }
+            else if (millis() - this.otherPlayer.lastPingRequest > constants.pingRequestFrequency) {
+              this.otherPlayer.pingRequest();
+            }
+          }
+          else {
+            leaveLobby = true;
+          }
+          if (leaveLobby) {
+            this.otherPlayer.client.stop();
+            this.otherPlayer = null;
+            showMessageDialog(null, "You lost connection to the lobby", "", PLAIN_MESSAGE);
+            this.state = GameState.MAIN_MENU;
+          }
+        }
+        else {
+          showMessageDialog(null, "There was an error connecting to the lobby", "", PLAIN_MESSAGE);
+          this.state = GameState.MAIN_MENU;
+        }
+        this.buttons.cSB.setSTR(lbStrings);
         break;
       case MULTIPLAYER_HOSTING:
         String myGameChanges = this.myGame.update("| HOST_GAME: ");
@@ -1503,23 +1554,30 @@ class CurrGame {
               }
               switch(trim(splitMessage[1])) {
                 case "Ping Resolve":
-                  this.lobbyClients.get(index).resolvePingRequest();
+                  if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
+                    this.lobbyClients.get(index).resolvePingRequest();
+                  }
                   break;
                 case "Initial Resolve":
                   if (splitMessage.length < 5) {
                     println("ERROR: initial resolve message invalid");
                     break;
                   }
-                  this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
+                    this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  }
                   break;
                 case "Join Lobby":
-                  this.otherPlayer = this.lobbyClients.get(index);
-                  for (int i = 0; i < this.lobbyClients.size(); i++) {
-                    this.lobbyClients.get(i).client.stop();
+                  if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
+                    this.otherPlayer = this.lobbyClients.get(index);
+                    this.lobbyClients.remove(index);
+                    for (int i = 0; i < this.lobbyClients.size(); i++) {
+                      this.lobbyClients.get(i).client.stop();
+                    }
+                    this.lobbyClients.clear();
+                    this.messageQ.clear();
+                    this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
                   }
-                  this.lobbyClients.clear();
-                  this.messageQ.clear();
-                  this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
                   break;
                 case "Lobby Full":
                   showMessageDialog(null, "Lobby already has a player", "", PLAIN_MESSAGE);
@@ -1539,22 +1597,37 @@ class CurrGame {
             case "LOBBY":
               switch(trim(splitMessage[1])) {
                 case "Ping Resolve":
-                  this.otherPlayer.resolvePingRequest();
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    this.otherPlayer.resolvePingRequest();
+                  }
                   break;
                 case "Initial Resolve":
                   if (splitMessage.length < 5) {
                     println("ERROR: initial resolve message invalid");
                     break;
                   }
-                  this.otherPlayer.resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    this.otherPlayer.resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  }
+                  break;
+                case "Initial Request":
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    if (splitMessage.length < 3) {
+                      println("ERROR: No IP address for initial request");
+                      break;
+                    }
+                    this.otherPlayer.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :|");
+                  }
                   break;
                 case "Join Lobby":
-                  this.lobbyClients.clear();
-                  this.messageQ.clear();
-                  this.otherPlayer.waitingForResponse = false;
-                  this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
-                  this.buttons.clearButton(5);
-                  this.buttons.clearButton(6);
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    this.lobbyClients.clear();
+                    this.messageQ.clear();
+                    this.otherPlayer.waitingForResponse = false;
+                    this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
+                    this.buttons.clearButton(5);
+                    this.buttons.clearButton(6);
+                  }
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -1586,12 +1659,29 @@ class CurrGame {
                   }
                   this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
                   break;
+                case "Ping Resolve":
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    this.otherPlayer.resolvePingRequest();
+                  }
+                  break;
                 case "Initial Request":
                   if (splitMessage.length < 3) {
                     println("ERROR: No IP address for initial request");
                     break;
                   }
                   this.server.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :|");
+                  break;
+                case "Initial Resolve":
+                  if (splitMessage.length < 5) {
+                    println("ERROR: initial resolve message invalid");
+                    break;
+                  }
+                  try {
+                    this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  } catch(Exception e) {}
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    this.otherPlayer.resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                  }
                   break;
                 case "Join Lobby":
                   if (splitMessage.length < 3) {
@@ -1605,6 +1695,8 @@ class CurrGame {
                     }
                     this.server.write("LOBBY: Join Lobby: " + trim(splitMessage[2]) + "|");
                     this.otherPlayer = this.lobbyClients.get(index);
+                    this.lobbyClients.remove(index);
+                    println(this.otherPlayer.receivedInitialResponse);
                   }
                   else {
                     this.server.write("LOBBY: Lobby Full: " + trim(splitMessage[2]) + "|");
@@ -1642,6 +1734,20 @@ class CurrGame {
                   this.otherPlayer = null;
                   this.messageQ.clear();
                   this.state = GameState.MAIN_MENU;
+                  break;
+                case "Ping Request":
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    if (splitMessage.length < 3) {
+                      println("ERROR: No IP address for ping request");
+                      break;
+                    }
+                    this.otherPlayer.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                  }
+                  break;
+                case "Ping Resolve":
+                  if (this.otherPlayer.messageForMe(splitMessage)) {
+                    this.otherPlayer.resolvePingRequest();
+                  }
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -1742,6 +1848,7 @@ class Game {
   private float xf = 0;
   private float yf = 0;
   private boolean gameOver = false;
+  private HashMap<String, Integer> statistics = new HashMap<String, Integer>();
   
   Game(float[] borders) {
     float xStart = borders[0] + (PApplet.parseFloat(constants.defaultBoardColumns + 2) / (constants.defaultBoardRows + 2)) * (borders[2] - borders[0]);
@@ -1751,8 +1858,31 @@ class Game {
     this.xf = borders[2];
     this.yf = borders[3];
     this.lastTick = millis();
+    this.initializeStatistics();
     this.board.drawBoard();
     this.drawPanel();
+  }
+  
+  public void initializeStatistics() {
+    this.statistics.put("Points", 0);
+    this.statistics.put("Ticks", 0);
+    this.statistics.put("Pieces", 0);
+    this.statistics.put("Rows Cleared", 0);
+    this.statistics.put("Double Combos", 0);
+    this.statistics.put("Triple Combos", 0);
+    this.statistics.put("Quadruple Combos", 0);
+  }
+  
+  public void incrementStatistic(String statistic) {
+    this.increaseStatistic(statistic, 1);
+  }
+  public void increaseStatistic(String statistic, int amount) {
+    Integer stat = this.statistics.get(statistic);
+    if (stat == null) {
+      println("ERROR: statistic " + statistic + " is not defined.");
+      return;
+    }
+    this.statistics.put(statistic, stat + amount);
   }
   
   public boolean isOver() {
@@ -1764,8 +1894,13 @@ class Game {
     return this.update("");
   }
   public String update(String gameName) {
+    if (this.gameOver) {
+      return "";
+    }
     String updates = "";
     if (millis() - this.lastTick > tickLenth) {
+      this.incrementStatistic("Ticks");
+      this.increaseStatistic("Points", constants.scoreTick);
       if (this.board.aPieceFalling()) {
         this.movePieces(Direction.DIRECTION_DOWN, true);
         updates += gameName + "movePieces=DOWN, true";
@@ -1773,10 +1908,28 @@ class Game {
       else {
         this.gameOver = this.board.getPieceOverflow();
         if (this.gameOver) {
+          this.gameOverMessage();
+          this.showStats();
           updates += gameName + "gameOver";
           return updates;
         }
-        this.board.checkFilledRows();
+        int rows = this.board.checkFilledRows();
+        this.increaseStatistic("Rows Cleared", rows);
+        this.increaseStatistic("Points", rows * constants.scoreRow);
+        switch(rows) {
+          case 2:
+            this.incrementStatistic("Double Combos");
+            this.increaseStatistic("Points", constants.scoreDouble);
+            break;
+          case 3:
+            this.incrementStatistic("Triple Combos");
+            this.increaseStatistic("Points", constants.scoreTriple);
+            break;
+          case 4:
+            this.incrementStatistic("Quadruple Combos");
+            this.increaseStatistic("Points", constants.scoreQuadruple);
+            break;
+        }
         updates += gameName + "checkFilledRows";
         Piece newPiece = new Piece(0);
         this.addPiece(newPiece);
@@ -1797,6 +1950,15 @@ class Game {
     stroke(0);
     rectMode(CORNERS);
     rect(this.xi, this.yi, this.xf, this.yf);
+    // Points
+    fill(255);
+    textSize(26);
+    textAlign(CENTER, TOP);
+    text("Points", this.xi + 0.5f * (this.xf - this.xi), this.yi);
+    textSize(20);
+    text(this.statistics.get("Points"), this.xi + 0.5f * (this.xf - this.xi), this.yi + 30);
+    textSize(26);
+    textAlign(CENTER, BOTTOM);
     // next pieces
     float gapSize = 0.3f * (this.xf - this.xi);
     /*
@@ -1805,18 +1967,68 @@ class Game {
       this.nextPieces.get(i).drawPiece(xi + gapSize + 0.9 * i * pieceLength, yi + gapSize, xi + gapSize + 0.9 * (i + 1) * pieceLength, yi + 0.25 * (yf - yi));
     }
     */
+    text("Next Piece", this.xi + 0.5f * (this.xf - this.xi), this.yi + 0.34f * (this.yf - this.yi));
     if (this.nextPieces.size() > 0) {
-      this.nextPieces.get(0).drawPiece(this.xi + gapSize, this.yi + 0.2f * gapSize, this.xf - gapSize, this.yi + 0.25f * (this.yf - this.yi));
+      this.nextPieces.get(0).drawPiece(this.xi + gapSize, this.yi + 0.35f * (this.yf - this.yi) + 0.2f * gapSize, this.xf - gapSize, this.yi + 0.6f * (this.yf - this.yi));
     }
     // saved piece
+    fill(255);
+    text("Saved Piece", this.xi + 0.5f * (this.xf - this.xi), this.yi + 0.74f * (this.yf - this.yi));
     if (this.savedPiece != null) {
-      this.savedPiece.drawPiece(this.xi + 1.2f * gapSize, this.yi + 0.4f * (this.yf - this.yi) + 0.2f * gapSize, this.xf - 1.2f * gapSize, this.yi + 0.6f * (this.yf - this.yi));
+      this.savedPiece.drawPiece(this.xi + 1.2f * gapSize, this.yi + 0.75f * (this.yf - this.yi) + 0.2f * gapSize, this.xf - 1.2f * gapSize, this.yi + 0.95f * (this.yf - this.yi));
     }
+  }
+  
+  public void showStats() {
+    // background
+    fill(0);
+    stroke(0);
+    rectMode(CORNERS);
+    rect(this.xi, this.yi, this.xf, this.yf);
+    int textHeight = 30;
+    // Points
+    fill(255);
+    textSize(26);
+    textAlign(CENTER, TOP);
+    text("Points", this.xi + 0.5f * (this.xf - this.xi), this.yi);
+    textSize(20);
+    text(this.statistics.get("Points"), this.xi + 0.5f * (this.xf - this.xi), this.yi + textHeight);
+    // Other stat headers
+    textSize(24);
+    textAlign(LEFT, TOP);
+    text("Time Survived", this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 3);
+    text("Pieces Used", this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 6);
+    text("Rows Cleared", this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 9);
+    text("Doubles", this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 12);
+    text("Triples", this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 15);
+    text("Quadrupels", this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 18);
+    // Other stats
+    textSize(18);
+    text(this.statistics.get("Ticks") + " ticks", this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 4);
+    text(this.statistics.get("Pieces"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 7);
+    text(this.statistics.get("Rows Cleared"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 10);
+    text(this.statistics.get("Double Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 13);
+    text(this.statistics.get("Triple Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 16);
+    text(this.statistics.get("Quadruple Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 19);
+  }
+  
+  public void gameOverMessage() {
+    fill(color(0), 150);
+    rectMode(CORNERS);
+    rect(this.board.xi, this.board.yi, this.board.xf, this.board.yf);
+    fill(255);
+    textSize(60);
+    textAlign(CENTER, BOTTOM);
+    text("GAME", this.board.xi + 0.5f * (this.board.xf - this.board.xi), this.board.yi + 0.5f * (this.board.yf - this.board.yi));
+    textAlign(CENTER, TOP);
+    text("OVER", this.board.xi + 0.5f * (this.board.xf - this.board.xi), this.board.yi + 0.5f * (this.board.yf - this.board.yi));
   }
   
   public void addPiece(Piece p) {
     if (this.nextPieces.size() == constants.nextPieceQueueLength) {
       this.board.addPiece(this.nextPieces.get(0));
+      this.incrementStatistic("Pieces");
+      this.increaseStatistic("Points", constants.scorePiece);
       this.nextPieces.remove(0);
     }
     this.nextPieces.add(p);
@@ -1995,6 +2207,18 @@ class Joinee {
       this.id = newClient.ip();
       this.initialRequest();
     }
+  }
+  
+  public boolean messageForMe(String message) {
+    return this.messageForMe(split(message, ":"));
+  }
+  public boolean messageForMe(String[] splitMessage) {
+    if (splitMessage.length >= 3) {
+      if (this.id.equals(trim(splitMessage[2]))) {
+        return true;
+      }
+    }
+    return false;
   }
   
   public void setNewName(String newName, String s1) {

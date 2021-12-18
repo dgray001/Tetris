@@ -9,6 +9,7 @@ class Game {
   private float xf = 0;
   private float yf = 0;
   private boolean gameOver = false;
+  private HashMap<String, Integer> statistics = new HashMap<String, Integer>();
   
   Game(float[] borders) {
     float xStart = borders[0] + (float(constants.defaultBoardColumns + 2) / (constants.defaultBoardRows + 2)) * (borders[2] - borders[0]);
@@ -18,8 +19,31 @@ class Game {
     this.xf = borders[2];
     this.yf = borders[3];
     this.lastTick = millis();
+    this.initializeStatistics();
     this.board.drawBoard();
     this.drawPanel();
+  }
+  
+  void initializeStatistics() {
+    this.statistics.put("Points", 0);
+    this.statistics.put("Ticks", 0);
+    this.statistics.put("Pieces", 0);
+    this.statistics.put("Rows Cleared", 0);
+    this.statistics.put("Double Combos", 0);
+    this.statistics.put("Triple Combos", 0);
+    this.statistics.put("Quadruple Combos", 0);
+  }
+  
+  void incrementStatistic(String statistic) {
+    this.increaseStatistic(statistic, 1);
+  }
+  void increaseStatistic(String statistic, int amount) {
+    Integer stat = this.statistics.get(statistic);
+    if (stat == null) {
+      println("ERROR: statistic " + statistic + " is not defined.");
+      return;
+    }
+    this.statistics.put(statistic, stat + amount);
   }
   
   boolean isOver() {
@@ -31,8 +55,13 @@ class Game {
     return this.update("");
   }
   String update(String gameName) {
+    if (this.gameOver) {
+      return "";
+    }
     String updates = "";
     if (millis() - this.lastTick > tickLenth) {
+      this.incrementStatistic("Ticks");
+      this.increaseStatistic("Points", constants.scoreTick);
       if (this.board.aPieceFalling()) {
         this.movePieces(Direction.DIRECTION_DOWN, true);
         updates += gameName + "movePieces=DOWN, true";
@@ -40,10 +69,28 @@ class Game {
       else {
         this.gameOver = this.board.getPieceOverflow();
         if (this.gameOver) {
+          this.gameOverMessage();
+          this.showStats();
           updates += gameName + "gameOver";
           return updates;
         }
-        this.board.checkFilledRows();
+        int rows = this.board.checkFilledRows();
+        this.increaseStatistic("Rows Cleared", rows);
+        this.increaseStatistic("Points", rows * constants.scoreRow);
+        switch(rows) {
+          case 2:
+            this.incrementStatistic("Double Combos");
+            this.increaseStatistic("Points", constants.scoreDouble);
+            break;
+          case 3:
+            this.incrementStatistic("Triple Combos");
+            this.increaseStatistic("Points", constants.scoreTriple);
+            break;
+          case 4:
+            this.incrementStatistic("Quadruple Combos");
+            this.increaseStatistic("Points", constants.scoreQuadruple);
+            break;
+        }
         updates += gameName + "checkFilledRows";
         Piece newPiece = new Piece(0);
         this.addPiece(newPiece);
@@ -64,6 +111,15 @@ class Game {
     stroke(0);
     rectMode(CORNERS);
     rect(this.xi, this.yi, this.xf, this.yf);
+    // Points
+    fill(255);
+    textSize(26);
+    textAlign(CENTER, TOP);
+    text("Points", this.xi + 0.5 * (this.xf - this.xi), this.yi);
+    textSize(20);
+    text(this.statistics.get("Points"), this.xi + 0.5 * (this.xf - this.xi), this.yi + 30);
+    textSize(26);
+    textAlign(CENTER, BOTTOM);
     // next pieces
     float gapSize = 0.3 * (this.xf - this.xi);
     /*
@@ -72,18 +128,68 @@ class Game {
       this.nextPieces.get(i).drawPiece(xi + gapSize + 0.9 * i * pieceLength, yi + gapSize, xi + gapSize + 0.9 * (i + 1) * pieceLength, yi + 0.25 * (yf - yi));
     }
     */
+    text("Next Piece", this.xi + 0.5 * (this.xf - this.xi), this.yi + 0.34 * (this.yf - this.yi));
     if (this.nextPieces.size() > 0) {
-      this.nextPieces.get(0).drawPiece(this.xi + gapSize, this.yi + 0.2 * gapSize, this.xf - gapSize, this.yi + 0.25 * (this.yf - this.yi));
+      this.nextPieces.get(0).drawPiece(this.xi + gapSize, this.yi + 0.35 * (this.yf - this.yi) + 0.2 * gapSize, this.xf - gapSize, this.yi + 0.6 * (this.yf - this.yi));
     }
     // saved piece
+    fill(255);
+    text("Saved Piece", this.xi + 0.5 * (this.xf - this.xi), this.yi + 0.74 * (this.yf - this.yi));
     if (this.savedPiece != null) {
-      this.savedPiece.drawPiece(this.xi + 1.2 * gapSize, this.yi + 0.4 * (this.yf - this.yi) + 0.2 * gapSize, this.xf - 1.2 * gapSize, this.yi + 0.6 * (this.yf - this.yi));
+      this.savedPiece.drawPiece(this.xi + 1.2 * gapSize, this.yi + 0.75 * (this.yf - this.yi) + 0.2 * gapSize, this.xf - 1.2 * gapSize, this.yi + 0.95 * (this.yf - this.yi));
     }
+  }
+  
+  void showStats() {
+    // background
+    fill(0);
+    stroke(0);
+    rectMode(CORNERS);
+    rect(this.xi, this.yi, this.xf, this.yf);
+    int textHeight = 30;
+    // Points
+    fill(255);
+    textSize(26);
+    textAlign(CENTER, TOP);
+    text("Points", this.xi + 0.5 * (this.xf - this.xi), this.yi);
+    textSize(20);
+    text(this.statistics.get("Points"), this.xi + 0.5 * (this.xf - this.xi), this.yi + textHeight);
+    // Other stat headers
+    textSize(24);
+    textAlign(LEFT, TOP);
+    text("Time Survived", this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 3);
+    text("Pieces Used", this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 6);
+    text("Rows Cleared", this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 9);
+    text("Doubles", this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 12);
+    text("Triples", this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 15);
+    text("Quadrupels", this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 18);
+    // Other stats
+    textSize(18);
+    text(this.statistics.get("Ticks") + " ticks", this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 4);
+    text(this.statistics.get("Pieces"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 7);
+    text(this.statistics.get("Rows Cleared"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 10);
+    text(this.statistics.get("Double Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 13);
+    text(this.statistics.get("Triple Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 16);
+    text(this.statistics.get("Quadruple Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 19);
+  }
+  
+  void gameOverMessage() {
+    fill(color(0), 150);
+    rectMode(CORNERS);
+    rect(this.board.xi, this.board.yi, this.board.xf, this.board.yf);
+    fill(255);
+    textSize(60);
+    textAlign(CENTER, BOTTOM);
+    text("GAME", this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
+    textAlign(CENTER, TOP);
+    text("OVER", this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
   }
   
   void addPiece(Piece p) {
     if (this.nextPieces.size() == constants.nextPieceQueueLength) {
       this.board.addPiece(this.nextPieces.get(0));
+      this.incrementStatistic("Pieces");
+      this.increaseStatistic("Points", constants.scorePiece);
       this.nextPieces.remove(0);
     }
     this.nextPieces.add(p);

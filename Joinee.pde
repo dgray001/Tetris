@@ -19,6 +19,18 @@ class Joinee {
     }
   }
   
+  boolean messageForMe(String message) {
+    return this.messageForMe(split(message, ":"));
+  }
+  boolean messageForMe(String[] splitMessage) {
+    if (splitMessage.length >= 3) {
+      if (this.id.equals(trim(splitMessage[2]))) {
+        return true;
+      }
+    }
+    return false;
+  }
+  
   void setNewName(String newName, String s1) {
     this.name = "";
     for (char i : newName.toCharArray()) {

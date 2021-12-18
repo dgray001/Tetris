@@ -64,7 +64,9 @@ class AllButtons {
         this.siB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
-        llB.update(mouseX, mouseY);
+        this.llB.update(mouseX, mouseY);
+        this.siB.update(mouseX, mouseY);
+        this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_HOSTING:
         break;
@@ -115,6 +117,8 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
+        this.siB.mousePress();
+        this.cSB.mousePress();
         break;
       case MULTIPLAYER_HOSTING:
         break;
@@ -153,6 +157,8 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
+        this.siB.mouseRelease();
+        this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_HOSTING:
         break;
