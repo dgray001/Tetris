@@ -354,9 +354,9 @@ class CurrGame {
             removeClient = true;
           }
           if (removeClient) {
-            j.client.stop();
-            this.lobbyClients.remove(i);
-            i--;
+            //j.client.stop();
+            //this.lobbyClients.remove(i);
+            //i--;
           }
           else if (displayMessage) {
             int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
@@ -373,8 +373,9 @@ class CurrGame {
           this.state = GameState.MAIN_MENU;
           break;
         }
-        if (this.otherPlayer.receivedInitialResponse) {
+        if (this.otherPlayer.receivedInitialResponse && !this.otherPlayer.waitingForResponse) {
           this.otherPlayer.write("Join Lobby");
+          this.otherPlayer.waitingForResponse = true;
           break;
         }
         break;
@@ -463,7 +464,10 @@ class CurrGame {
                 case "Join Lobby":
                   this.lobbyClients.clear();
                   this.messageQ.clear();
+                  this.otherPlayer.waitingForResponse = false;
                   this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
+                  this.buttons.clearButton(5);
+                  this.buttons.clearButton(6);
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
