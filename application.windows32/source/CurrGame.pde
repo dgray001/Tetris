@@ -415,11 +415,9 @@ class CurrGame {
             lbStrings = append(lbStrings, "Other player (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
-                this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
-                if (this.otherPlayer.receivedInitialResponse) {
-                  if (this.otherPlayer.ping > constants.defaultPingTimeout * 2) {
-                    removeClient = true;
-                  }
+                this.otherPlayer.missedPingRequest();
+                if (this.otherPlayer.pingRequestsMissed > constants.maxPingRequestsMissed) {
+                  removeClient = true;
                 }
               }
             }
@@ -456,8 +454,8 @@ class CurrGame {
                 if (!this.otherPlayer.receivedInitialResponse) {
                   leaveLobby = true;
                 }
-                this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
-                if (this.otherPlayer.ping > constants.defaultPingTimeout * 2) {
+                this.otherPlayer.missedPingRequest();
+                if (this.otherPlayer.pingRequestsMissed > constants.maxPingRequestsMissed) {
                   leaveLobby = true;
                 }
               }
@@ -506,8 +504,8 @@ class CurrGame {
             lbStrings = append(lbStrings, "Other Player (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
-                this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
-                if (this.otherPlayer.ping > constants.defaultPingTimeout * 5) {
+                this.otherPlayer.missedPingRequest();
+                if (this.otherPlayer.pingRequestsMissed > constants.maxPingRequestsMissed) {
                   kickOpponent = true;
                 }
               }
@@ -544,8 +542,8 @@ class CurrGame {
             lbStrings = append(lbStrings, this.otherPlayer.name + " (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
-                this.otherPlayer.ping = millis() - this.otherPlayer.lastPingRequest;
-                if (this.otherPlayer.ping > constants.defaultPingTimeout * 5) {
+                this.otherPlayer.missedPingRequest();
+                if (this.otherPlayer.pingRequestsMissed > constants.maxPingRequestsMissed) {
                   leaveGame = true;
                 }
               }
@@ -879,7 +877,7 @@ class CurrGame {
                     println("ERROR: No IP address for ping request");
                     break;
                   }
-                  this.otherPlayer.write("LOBBY: Ping Resolve");
+                  this.otherPlayer.write("Ping Resolve");
                   break;
                 case "Ping Resolve":
                   if (this.otherPlayer.messageForMe(splitMessage)) {

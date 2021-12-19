@@ -8,6 +8,7 @@ class Joinee {
   private int lastPingRequest = 0;
   private boolean waitingForResponse = false;
   private boolean receivedInitialResponse = false;
+  private int pingRequestsMissed = 0;
   
   Joinee(Client newClient, int port, String header) {
     this.client = newClient;
@@ -75,7 +76,13 @@ class Joinee {
       this.ping = millis() - this.lastPingRequest;
       this.lastPingRequest = millis();
       this.waitingForResponse = false;
+      this.pingRequestsMissed = 0;
     }
+  }
+  void missedPingRequest() {
+    this.waitingForResponse = false;
+    this.ping = millis() - this.lastPingRequest + this.pingRequestsMissed * constants.defaultPingTimeout;
+    this.pingRequestsMissed++;
   }
   
   void write(String message) {

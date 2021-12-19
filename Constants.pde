@@ -14,6 +14,7 @@ class Constants {
   public final float[] game2Borders = { 670, 30, 1320, 680 };
   public final int defaultPingTimeout = 3000;
   public final int pingRequestFrequency = 100;
+  public final int maxPingRequestsMissed = 3;
   
   // Board
   public final int defaultBoardColumns = 10;
