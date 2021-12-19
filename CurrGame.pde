@@ -51,7 +51,7 @@ class CurrGame {
   }
   
   void showLobbyInfo() {
-    if (this.server.active()) {
+    if (this.server != null && this.server.active()) {
       showMessageDialog(null, "IP address: " + Server.ip() + "\nPort: " + this.portHosting, "", PLAIN_MESSAGE);
     }
     else {
@@ -481,8 +481,39 @@ class CurrGame {
         this.buttons.cSB.setSTR(lbStrings);
         break;
       case MULTIPLAYER_HOSTING:
-        String myGameChanges = this.myGame.update("| HOST_GAME: ");
-        String otherGameChanges = this.otherGame.update("| JOINEE_GAME: ");
+        boolean hostGameOver = this.myGame.gameOver;
+        boolean joineeGameOver = this.otherGame.gameOver;
+        String myGameChanges = this.myGame.update("| HOST_GAME: ", false);
+        String otherGameChanges = this.otherGame.update("| JOINEE_GAME: ", false);
+        // check for game over messages
+        if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
+          this.myGame.gameOverMessage("You", "Won");
+          myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
+        }
+        if ((this.myGame.gameOver) && (!this.otherGame.gameOver)) {
+          this.otherGame.gameOverMessage("You", "Won");
+          otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
+        }
+        if ((!hostGameOver) && (this.myGame.gameOver)) {
+          if (joineeGameOver) {
+            this.myGame.gameOverMessage("You", "Won");
+            myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
+          }
+          else {
+            this.myGame.gameOverMessage("You", "Lost");
+            myGameChanges += "| HOST_GAME: gameOverMessage=You, Lost";
+          }
+        }
+        if ((!joineeGameOver) && (this.otherGame.gameOver)) {
+          if (hostGameOver) {
+            this.otherGame.gameOverMessage("You", "Won");
+            otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
+          }
+          else {
+            this.otherGame.gameOverMessage("You", "Lost");
+            otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Lost";
+          }
+        }
         if (!myGameChanges.equals("")) {
           this.server.write(myGameChanges);
         }

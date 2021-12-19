@@ -52,9 +52,9 @@ class Game {
   
   // Update returns string with all game changes
   String update() {
-    return this.update("");
+    return this.update("", true);
   }
-  String update(String gameName) {
+  String update(String gameName, boolean gameOverMessage) {
     if (this.gameOver) {
       return "";
     }
@@ -70,7 +70,9 @@ class Game {
       else {
         this.gameOver = this.board.getPieceOverflow();
         if (this.gameOver) {
-          this.gameOverMessage();
+          if (gameOverMessage) {
+            this.gameOverMessage();
+          }
           this.showStats();
           updates += gameName + "gameOver";
           return updates;
@@ -159,15 +161,18 @@ class Game {
   }
   
   void gameOverMessage() {
+    this.gameOverMessage("Game", "Over");
+  }
+  void gameOverMessage(String s1, String s2) {
     fill(color(0), 150);
     rectMode(CORNERS);
     rect(this.board.xi, this.board.yi, this.board.xf, this.board.yf);
     fill(255);
     textSize(60);
     textAlign(CENTER, BOTTOM);
-    text("GAME", this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
+    text(s1, this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
     textAlign(CENTER, TOP);
-    text("OVER", this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
+    text(s2, this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
   }
   
   void addPiece(Piece p) {
@@ -358,6 +363,18 @@ class Game {
         this.gameOver = true;
         this.gameOverMessage();
         this.showStats();
+        break;
+      case "gameOverMessage":
+        if (messageSplit.length > 1) {
+          String[] parameters = split(trim(messageSplit[1]), ',');
+          if (parameters.length != 2) {
+            return false;
+          }
+          this.gameOverMessage(parameters[0], parameters[1]);
+        }
+        else {
+          this.gameOverMessage();
+        }
         break;
       case "tick":
         this.incrementStatistic("Ticks");
