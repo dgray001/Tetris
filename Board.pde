@@ -6,6 +6,7 @@ class Board {
   float xf = 0;
   float yf = 0;
   boolean pieceOverflow = false;
+  ArrayList<VisualEffect> visualEffects = new ArrayList<VisualEffect>();
   
   Board(float xi, float yi, float xf, float yf) {
     this.spaces = new Space[constants.defaultBoardColumns][constants.defaultBoardRows];
@@ -68,6 +69,16 @@ class Board {
         this.spaces[i][j].drawSpace(xCurr + squareSize * i, yCurr + squareSize * j, squareSize);
       }
     }
+  }
+  
+  void drawVisualEffects(int tickProgress, int tickLength) {
+    this.drawBoard();
+    for (VisualEffect ve : this.visualEffects) {
+      ve.drawVisualEffect(this, tickProgress, tickLength);
+    }
+  }
+  void clearVisualEffects() {
+    this.visualEffects.clear();
   }
   
   void addPiece() {
@@ -292,7 +303,6 @@ class Board {
         }
       }
       if (rowFilled) {
-        rowsFilled++;
         // remove current row
         for (int i = 0; i < this.spaces.length; i++) {
           this.spaces[i][j].setOccupied(false);
@@ -308,6 +318,8 @@ class Board {
         for (int i = 0; i < this.spaces.length; i++) {
           this.spaces[i][0] = new Space();
         }
+        this.visualEffects.add(new VisualEffect(VisualEffectType.ROW_CLEARED, j - rowsFilled));
+        rowsFilled++;
         j++; // have to adjust row
       }
     }
