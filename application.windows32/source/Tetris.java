@@ -1571,21 +1571,13 @@ class CurrGame {
           }
         }
         if ((!hostGameOver) && (this.myGame.gameOver)) {
-          if (joineeGameOver) {
-            this.myGame.gameOverMessage("You", "Won");
-            myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
-          }
-          else {
+          if (!joineeGameOver) {
             this.myGame.gameOverMessage("You", "Lost");
             myGameChanges += "| HOST_GAME: gameOverMessage=You, Lost";
           }
         }
         if ((!joineeGameOver) && (this.otherGame.gameOver)) {
-          if (hostGameOver) {
-            this.otherGame.gameOverMessage("You", "Won");
-            otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
-          }
-          else {
+          if (!hostGameOver) {
             this.otherGame.gameOverMessage("You", "Lost");
             otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Lost";
           }

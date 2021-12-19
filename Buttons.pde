@@ -69,10 +69,12 @@ class AllButtons {
         this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
         break;
@@ -125,10 +127,12 @@ class AllButtons {
         this.cSB.mousePress();
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
         break;
@@ -169,10 +173,12 @@ class AllButtons {
         this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
         break;

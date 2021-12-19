@@ -250,13 +250,32 @@ class CurrGame {
     }
   }
   void leaveLobby() {
-    if (this.state == GameState.MULTIPLAYER_LOBBY_JOINED) {
-      this.otherPlayer.write("Quit Lobby");
-      this.otherPlayer.client.stop();
-    }
-    if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
-      this.server.write("LOBBY: Quit Lobby|");
-      this.server.stop();
+    switch(this.state) {
+      case MULTIPLAYER_LOBBY_HOSTING:
+      case MULTIPLAYER_HOSTING:
+        if (this.server != null) {
+          this.server.write("LOBBY: Quit Lobby");
+          this.server.stop();
+          this.server = null;
+        }
+      case MULTIPLAYER_LOBBY_JOINED:
+      case MULTIPLAYER_JOINED:
+        if (this.otherPlayer != null) {
+          this.otherPlayer.write("Quit Lobby");
+          this.otherPlayer.client.stop();
+          this.otherPlayer = null;
+        }
+        for (int i = 0; i < this.lobbyClients.size(); i++) {
+          if (this.lobbyClients.get(i) != null) {
+            this.lobbyClients.get(i).client.stop();
+            this.lobbyClients.get(i).client = null;
+          }
+        }
+        this.lobbyClients.clear();
+        break;
+      default:
+        println("ERROR: Leave lobby button pressed but state not recognized");
+        break;
     }
     this.state = GameState.MAIN_MENU;
   }
@@ -499,21 +518,13 @@ class CurrGame {
           }
         }
         if ((!hostGameOver) && (this.myGame.gameOver)) {
-          if (joineeGameOver) {
-            this.myGame.gameOverMessage("You", "Won");
-            myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
-          }
-          else {
+          if (!joineeGameOver) {
             this.myGame.gameOverMessage("You", "Lost");
             myGameChanges += "| HOST_GAME: gameOverMessage=You, Lost";
           }
         }
         if ((!joineeGameOver) && (this.otherGame.gameOver)) {
-          if (hostGameOver) {
-            this.otherGame.gameOverMessage("You", "Won");
-            otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
-          }
-          else {
+          if (!hostGameOver) {
             this.otherGame.gameOverMessage("You", "Lost");
             otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Lost";
           }
