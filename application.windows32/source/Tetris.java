@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.1.6a
+// v0.1.6b
 // 20211218
 
 
@@ -1559,12 +1559,16 @@ class CurrGame {
         String otherGameChanges = this.otherGame.update("| JOINEE_GAME: ", false);
         // check for game over messages
         if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
-          this.myGame.gameOverMessage("You", "Won");
-          myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
+          if (myGameChanges.contains("HOST_GAME: tick")) {
+            this.myGame.gameOverMessage("You", "Won");
+            myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
+          }
         }
         if ((this.myGame.gameOver) && (!this.otherGame.gameOver)) {
-          this.otherGame.gameOverMessage("You", "Won");
-          otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
+          if (otherGameChanges.contains("JOINEE_GAME: tick")) {
+            this.otherGame.gameOverMessage("You", "Won");
+            otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
+          }
         }
         if ((!hostGameOver) && (this.myGame.gameOver)) {
           if (joineeGameOver) {
@@ -2021,12 +2025,21 @@ class CurrGame {
       case MULTIPLAYER_HOSTING:
         String myGameChanges = this.myGame.pressedKey("| HOST_GAME: ");
         if (!myGameChanges.equals("")) {
+          // check for game over messages
+          if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
+            this.myGame.gameOverMessage("You", "Won");
+            myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
+          }
           this.server.write(myGameChanges);
         }
         break;
       case MULTIPLAYER_JOINED:
         String gameChanges = this.myGame.pressedKey("| JOINEE_GAME: ", false);
         if (!gameChanges.equals("")) {
+          if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
+            this.myGame.gameOverMessage("You", "Won");
+            gameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
+          }
           this.otherPlayer.write(gameChanges);
         }
         break;
@@ -2212,6 +2225,7 @@ class Game {
   }
   public void gameOverMessage(String s1, String s2) {
     fill(color(0), 150);
+    stroke(color(0), 150);
     rectMode(CORNERS);
     rect(this.board.xi, this.board.yi, this.board.xf, this.board.yf);
     fill(255);
@@ -2332,13 +2346,15 @@ class Game {
   
   // Returns whether message was executed
   public boolean executeMessage(String message) {
-    if (this.gameOver) {
-      return false;
-    }
     if (message.equals("")) {
       return false;
     }
     String[] messageSplit = split(message, '=');
+    if (this.gameOver) {
+      if (!trim(messageSplit[0]).equals("gameOverMessage")) {
+        return false;
+      }
+    }
     switch(trim(messageSplit[0])) {
       case "checkFilledRows":
         this.checkFilledRows();
@@ -2408,7 +2424,6 @@ class Game {
         break;
       case "gameOver":
         this.gameOver = true;
-        this.gameOverMessage();
         this.showStats();
         break;
       case "gameOverMessage":
@@ -2417,7 +2432,7 @@ class Game {
           if (parameters.length != 2) {
             return false;
           }
-          this.gameOverMessage(parameters[0], parameters[1]);
+          this.gameOverMessage(trim(parameters[0]), trim(parameters[1]));
         }
         else {
           this.gameOverMessage();

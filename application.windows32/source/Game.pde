@@ -165,6 +165,7 @@ class Game {
   }
   void gameOverMessage(String s1, String s2) {
     fill(color(0), 150);
+    stroke(color(0), 150);
     rectMode(CORNERS);
     rect(this.board.xi, this.board.yi, this.board.xf, this.board.yf);
     fill(255);
@@ -285,13 +286,15 @@ class Game {
   
   // Returns whether message was executed
   boolean executeMessage(String message) {
-    if (this.gameOver) {
-      return false;
-    }
     if (message.equals("")) {
       return false;
     }
     String[] messageSplit = split(message, '=');
+    if (this.gameOver) {
+      if (!trim(messageSplit[0]).equals("gameOverMessage")) {
+        return false;
+      }
+    }
     switch(trim(messageSplit[0])) {
       case "checkFilledRows":
         this.checkFilledRows();
@@ -361,7 +364,6 @@ class Game {
         break;
       case "gameOver":
         this.gameOver = true;
-        this.gameOverMessage();
         this.showStats();
         break;
       case "gameOverMessage":
@@ -370,7 +372,7 @@ class Game {
           if (parameters.length != 2) {
             return false;
           }
-          this.gameOverMessage(parameters[0], parameters[1]);
+          this.gameOverMessage(trim(parameters[0]), trim(parameters[1]));
         }
         else {
           this.gameOverMessage();
