@@ -238,7 +238,7 @@ class CurrGame {
     if (this.wantRematch[0]) {
       this.buttons.paB.setMES("Offer Sent!");
       this.buttons.paB.changeColor(color(0, 255, 0), color(0), color(200, 100, 100), color(255, 40, 20));
-      this.buttons.paB.setMOMES("Rovoke Offer");
+      this.buttons.paB.setMOMES("Cancel");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
         this.server.write("LOBBY: Host Rematch Sent");
         this.checkRematches();
@@ -248,8 +248,8 @@ class CurrGame {
       }
     }
     else {
-      this.buttons.paB.setMES("Offer Revoked!");
-      this.buttons.paB.changeColor(color(255, 0, 0), color(0), color(200, 100, 100), color(40, 255, 20));
+      this.buttons.paB.setMES("Canceled");
+      this.buttons.paB.changeColor(color(200, 0, 0), color(0), color(100, 200, 100), color(40, 255, 20));
       this.buttons.paB.setMOMES("Resend Offer");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
         this.server.write("LOBBY: Host Rematch Revoked");

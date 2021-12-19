@@ -289,10 +289,11 @@ class kickPlayerButton extends recButton {
 class playAgainButton extends recButton {
   playAgainButton() {
     super("Rematch", 14, 170, 690, 260, 715);
-    this.setREB(true);
-    this.setDIS(true);
-    this.changeColor(color(235), color(80), color(170), color(120));
-    this.setMOT(true);
+    super.setREB(true);
+    super.setDIS(true);
+    super.changeColor(color(235), color(80), color(170), color(120));
+    super.setMOT(true);
+    super.setMOMES("Rematch");
   }
   void click() {
     this.setMON(false);

@@ -989,10 +989,11 @@ class kickPlayerButton extends recButton {
 class playAgainButton extends recButton {
   playAgainButton() {
     super("Rematch", 14, 170, 690, 260, 715);
-    this.setREB(true);
-    this.setDIS(true);
-    this.changeColor(color(235), color(80), color(170), color(120));
-    this.setMOT(true);
+    super.setREB(true);
+    super.setDIS(true);
+    super.changeColor(color(235), color(80), color(170), color(120));
+    super.setMOT(true);
+    super.setMOMES("Rematch");
   }
   public void click() {
     this.setMON(false);
@@ -1365,7 +1366,7 @@ class CurrGame {
     }
     else {
       this.buttons.paB.setMES("Offer Revoked!");
-      this.buttons.paB.changeColor(color(255, 0, 0), color(0), color(200, 100, 100), color(40, 255, 20));
+      this.buttons.paB.changeColor(color(255, 0, 0), color(0), color(100, 200, 100), color(40, 255, 20));
       this.buttons.paB.setMOMES("Resend Offer");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
         this.server.write("LOBBY: Host Rematch Revoked");
