@@ -15,9 +15,13 @@ class Joinee {
     this.port = port;
     this.writeHeader = header;
     if (newClient != null) {
-      this.id = Server.ip() + " -> " + newClient.ip() + ", " + port;
+      this.id = Server.ip() + ", " + port + ", " + millis();
       this.initialRequest();
     }
+  }
+  Joinee(Client newClient, int port, String header, String id) {
+    this(newClient, port, header);
+    this.id = id;
   }
   
   boolean messageForMe(String message) {

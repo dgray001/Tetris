@@ -263,6 +263,8 @@ class CurrGame {
     if ((this.wantRematch[0]) && (this.wantRematch[1])) {
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
         this.buttons.paB = new playAgainButton();
+        this.wantRematch[0] = false;
+        this.wantRematch[1] = false;
         this.myGame = new Game(constants.game1Borders);
         this.otherGame = new Game(constants.game2Borders);
         for (Joinee j : this.lobbyClients) {
@@ -279,9 +281,6 @@ class CurrGame {
   
   void clientConnects(Client someClient) {
     println("Client connected with IP address: " + someClient.ip());
-    if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
-      this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: "));
-    }
   }
   void clientDisconnects(Client someClient) {
     println("Client with IP address " + someClient.ip() + " has disconnected.");
@@ -357,6 +356,13 @@ class CurrGame {
       message = trim(message);
       if (message.equals("")) {
         continue;
+      }
+      if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
+        if (message.contains("LOBBY: Initial Request: ")) {
+          if (split(message, ":").length > 2) {
+            this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: ", trim(split(message, ":")[2])));
+          }
+        }
       }
       this.messageQ.add(message);
     }
@@ -435,8 +441,8 @@ class CurrGame {
           }
           else if (displayMessage) {
             int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
-            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.id + ": ")) / textWidth(" "));
-            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.id + " " + multiplyString(" ", secondGap) + j.ping + " ms");
+            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + ": ")) / textWidth(" "));
+            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + " " + multiplyString(" ", secondGap) + j.ping + " ms");
           }
         }
         this.buttons.cSB.setSTR(lbStrings);
@@ -975,6 +981,8 @@ class CurrGame {
                 case "Start Game":
                   println("Game is starting");
                   this.buttons.paB = new playAgainButton();
+                  this.wantRematch[0] = false;
+                  this.wantRematch[1] = false;
                   this.myGame = new Game(constants.game1Borders);
                   this.otherGame = new Game(constants.game2Borders);
                   this.messageQ.clear();

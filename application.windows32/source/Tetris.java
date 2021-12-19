@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.2.1a
+// v0.2.1b
 // 20211218
 
 
@@ -1380,6 +1380,8 @@ class CurrGame {
     if ((this.wantRematch[0]) && (this.wantRematch[1])) {
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
         this.buttons.paB = new playAgainButton();
+        this.wantRematch[0] = false;
+        this.wantRematch[1] = false;
         this.myGame = new Game(constants.game1Borders);
         this.otherGame = new Game(constants.game2Borders);
         for (Joinee j : this.lobbyClients) {
@@ -1396,9 +1398,6 @@ class CurrGame {
   
   public void clientConnects(Client someClient) {
     println("Client connected with IP address: " + someClient.ip());
-    if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
-      this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: "));
-    }
   }
   public void clientDisconnects(Client someClient) {
     println("Client with IP address " + someClient.ip() + " has disconnected.");
@@ -1474,6 +1473,13 @@ class CurrGame {
       message = trim(message);
       if (message.equals("")) {
         continue;
+      }
+      if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
+        if (message.contains("LOBBY: Initial Request: ")) {
+          if (split(message, ":").length > 2) {
+            this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: ", trim(split(message, ":")[2])));
+          }
+        }
       }
       this.messageQ.add(message);
     }
@@ -1552,8 +1558,8 @@ class CurrGame {
           }
           else if (displayMessage) {
             int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
-            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.id + ": ")) / textWidth(" "));
-            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.id + " " + multiplyString(" ", secondGap) + j.ping + " ms");
+            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + ": ")) / textWidth(" "));
+            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + " " + multiplyString(" ", secondGap) + j.ping + " ms");
           }
         }
         this.buttons.cSB.setSTR(lbStrings);
@@ -2092,6 +2098,8 @@ class CurrGame {
                 case "Start Game":
                   println("Game is starting");
                   this.buttons.paB = new playAgainButton();
+                  this.wantRematch[0] = false;
+                  this.wantRematch[1] = false;
                   this.myGame = new Game(constants.game1Borders);
                   this.otherGame = new Game(constants.game2Borders);
                   this.messageQ.clear();
@@ -2592,9 +2600,13 @@ class Joinee {
     this.port = port;
     this.writeHeader = header;
     if (newClient != null) {
-      this.id = Server.ip() + " -> " + newClient.ip() + ", " + port;
+      this.id = Server.ip() + ", " + port + ", " + millis();
       this.initialRequest();
     }
+  }
+  Joinee(Client newClient, int port, String header, String id) {
+    this(newClient, port, header);
+    this.id = id;
   }
   
   public boolean messageForMe(String message) {
