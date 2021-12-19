@@ -244,18 +244,18 @@ class CurrGame {
         this.checkRematches();
       }
       if (this.state == GameState.MULTIPLAYER_JOINED) {
-        this.otherPlayer.write("LOBBY: Joinee Rematch Sent");
+        this.otherPlayer.write("Joinee Rematch Sent");
       }
     }
     else {
       this.buttons.paB.setMES("Canceled");
-      this.buttons.paB.changeColor(color(200, 0, 0), color(0), color(100, 200, 100), color(40, 255, 20));
+      this.buttons.paB.changeColor(color(255, 10, 10), color(0), color(100, 200, 100), color(40, 255, 20));
       this.buttons.paB.setMOMES("Resend Offer");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
         this.server.write("LOBBY: Host Rematch Revoked");
       }
       if (this.state == GameState.MULTIPLAYER_JOINED) {
-        this.otherPlayer.write("LOBBY: Joinee Rematch Sent");
+        this.otherPlayer.write("Joinee Rematch Revoked");
       }
     }
   }
