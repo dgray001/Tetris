@@ -65,8 +65,6 @@ class Game {
       updates += gameName + "tick";
       this.incrementStatistic("Ticks");
       this.increaseStatistic("Points", constants.scoreTick);
-      this.clearVisualEffects();
-      updates += gameName + "clearEffects";
       if (this.board.aPieceFalling()) {
         this.movePieces(Direction.DIRECTION_DOWN, true);
         updates += gameName + "movePieces=DOWN, true";
@@ -165,7 +163,7 @@ class Game {
   }
   
   void drawVisualEffects() {
-    this.board.drawVisualEffects(millis() - this.lastTick, this.tickLength);
+    this.board.drawVisualEffects();
   }
   void clearVisualEffects() {
     this.board.clearVisualEffects();

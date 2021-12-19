@@ -71,10 +71,13 @@ class Board {
     }
   }
   
-  void drawVisualEffects(int tickProgress, int tickLength) {
+  void drawVisualEffects() {
     this.drawBoard();
-    for (VisualEffect ve : this.visualEffects) {
-      ve.drawVisualEffect(this, tickProgress, tickLength);
+    for (int i = 0; i < this.visualEffects.size(); i++) {
+      if (this.visualEffects.get(i).drawVisualEffect(this)) {
+        this.visualEffects.remove(i);
+        i--;
+      }
     }
   }
   void clearVisualEffects() {
@@ -195,8 +198,13 @@ class Board {
     return true;
   }
   void dropPiece() {
-    while(this.aPieceFalling()) {
-      this.movePiece(Direction.DIRECTION_DOWN, true);
+    if (this.aPieceFalling()) {
+      VisualEffect ve = new VisualEffect(VisualEffectType.PIECE_DROP, new Piece(this.piece));
+      while(this.aPieceFalling()) {
+        this.movePiece(Direction.DIRECTION_DOWN, true);
+        ve.setInteger1(ve.integer1++);
+      }
+      this.visualEffects.add(ve);
     }
   }
   boolean movePiece() {
