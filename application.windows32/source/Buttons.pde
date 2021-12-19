@@ -6,6 +6,7 @@ class AllButtons {
   
   private hostGameButton hgB = new hostGameButton();
   private kickPlayerButton kpB = new kickPlayerButton();
+  private playAgainButton paB = new playAgainButton();
   
   private findGameButton fgB = new findGameButton();
   private startGameButton sgB = new startGameButton();
@@ -69,10 +70,14 @@ class AllButtons {
         this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.update(mouseX, mouseY);
+        this.paB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.update(mouseX, mouseY);
+        this.paB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
         break;
@@ -125,10 +130,14 @@ class AllButtons {
         this.cSB.mousePress();
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.mousePress();
+        this.paB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.mousePress();
+        this.paB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
         break;
@@ -169,10 +178,14 @@ class AllButtons {
         this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.mouseRelease();
+        this.paB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.mouseRelease();
+        this.paB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
         break;
@@ -271,6 +284,20 @@ class kickPlayerButton extends recButton {
     this.setMON(false);
     this.setCLK(false);
     currGame.kickPlayer();
+  }
+}
+class playAgainButton extends recButton {
+  playAgainButton() {
+    super("Rematch", 14, 170, 690, 260, 715);
+    this.setREB(true);
+    this.setDIS(true);
+    this.changeColor(color(235), color(80), color(170), color(120));
+    this.setMOT(true);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.toggleRematch();
   }
 }
 

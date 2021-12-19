@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.1.6b
+// v0.1.7a
 // 20211218
 
 
@@ -426,6 +426,9 @@ abstract class button {
   private boolean releaseButton = false; // true if need to release on button to click it, and false if only need to press
   private boolean activated = false; // allows repeated clicks when holding down a non-release button
   private boolean extendActivate = false; // allows for repeated clicks when mosueOn becomes false
+  private boolean disabled = false;
+  private boolean mouseOnText = false;
+  private String mouseOnMessage = "";
   private long ms = 0; // timer to allow for multiple clicks
   private long tm1 = 600; // ms to activate non-release button
   private long tm2 = 200; // frequency once button is activated
@@ -444,6 +447,8 @@ abstract class button {
   
   public void setMES(String mes) {
     this.message = mes;
+  } public void setMOMES(String mes) {
+    this.mouseOnMessage = mes;
   }
   public void setACT(boolean b) {
     this.activated = b;
@@ -459,6 +464,10 @@ abstract class button {
     this.releaseButton = b;
   } public void setEAC(boolean b) {
     this.extendActivate = b;
+  } public void setDIS(boolean b) {
+    this.disabled = b;
+  } public void setMOT(boolean b) {
+    this.mouseOnText = b;
   }
   public void setMS(long l) {
     this.ms = l;
@@ -491,7 +500,7 @@ abstract class button {
   }
   
   public void mousePress() {
-    if (this.mouseOn) {
+    if (this.mouseOn && !this.disabled) {
       this.setCLK(true);
       if (!(this.releaseButton)) {
         this.click();
@@ -502,7 +511,7 @@ abstract class button {
   
   public void mouseRelease() {
     this.setACT(false);
-    if ((this.releaseButton)&&(this.mouseOn)&&(this.clicked)) {
+    if ((this.releaseButton)&&(this.mouseOn)&&(this.clicked)&&(!this.disabled)) {
       this.click();
       this.setCLK(false);
     } else {
@@ -543,7 +552,11 @@ abstract class recButton extends button {
   
   public void drawBut() {
     stroke(0);
+    String mes = super.message;
     if (super.mouseOn) {
+      if (super.mouseOnText) {
+        mes = super.mouseOnMessage;
+      }
       if (super.clicked) {
         fill(super.cColor);
       } else {
@@ -557,7 +570,7 @@ abstract class recButton extends button {
     fill(super.tColor);
     textSize(super.tSize);
     textAlign(CENTER, CENTER);
-    text(super.message, this.xInitial + (this.xFinal-this.xInitial)/2.0f, this.yInitial + (this.yFinal-this.yInitial)/2.0f);
+    text(mes, this.xInitial + (this.xFinal-this.xInitial)/2.0f, this.yInitial + (this.yFinal-this.yInitial)/2.0f);
   }
   
   public void mouseUpdate(float mX, float mY) {
@@ -583,7 +596,11 @@ abstract class circButton extends button {
   
   public void drawBut() {
     stroke(0);
+    String mes = super.message;
     if (super.mouseOn) {
+      if (super.mouseOnText) {
+        mes = super.mouseOnMessage;
+      }
       if (super.clicked) {
         fill(super.cColor);
       } else {
@@ -597,7 +614,7 @@ abstract class circButton extends button {
     fill(super.tColor);
     textSize(super.tSize);
     textAlign(CENTER, CENTER);
-    text(super.message, this.xCenter, this.yCenter);
+    text(mes, this.xCenter, this.yCenter);
   }
   
   public void mouseUpdate(float mX, float mY) {
@@ -689,6 +706,7 @@ class AllButtons {
   
   private hostGameButton hgB = new hostGameButton();
   private kickPlayerButton kpB = new kickPlayerButton();
+  private playAgainButton paB = new playAgainButton();
   
   private findGameButton fgB = new findGameButton();
   private startGameButton sgB = new startGameButton();
@@ -752,10 +770,14 @@ class AllButtons {
         this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.update(mouseX, mouseY);
+        this.paB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.update(mouseX, mouseY);
+        this.paB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
         break;
@@ -808,10 +830,14 @@ class AllButtons {
         this.cSB.mousePress();
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.mousePress();
+        this.paB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.mousePress();
+        this.paB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
         break;
@@ -852,10 +878,14 @@ class AllButtons {
         this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_HOSTING:
+        this.llB.mouseRelease();
+        this.paB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
         break;
       case MULTIPLAYER_JOINED:
+        this.llB.mouseRelease();
+        this.paB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
         break;
@@ -954,6 +984,20 @@ class kickPlayerButton extends recButton {
     this.setMON(false);
     this.setCLK(false);
     currGame.kickPlayer();
+  }
+}
+class playAgainButton extends recButton {
+  playAgainButton() {
+    super("Rematch", 14, 170, 690, 260, 715);
+    this.setREB(true);
+    this.setDIS(true);
+    this.changeColor(color(235), color(80), color(170), color(120));
+    this.setMOT(true);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.toggleRematch();
   }
 }
 
@@ -1086,6 +1130,7 @@ class CurrGame {
   private GameState state = GameState.MAIN_MENU;
   AllButtons buttons = new AllButtons();
   private Queue<String> messageQ = new LinkedList<String>();
+  private boolean[] wantRematch = new boolean[2];
   
   CurrGame(Tetris thisInstance) {
     this.thisInstance = thisInstance;
@@ -1304,6 +1349,50 @@ class CurrGame {
     this.otherPlayer.write("Join Lobby");
   }
   
+  public void toggleRematch() {
+    this.wantRematch[0] = !this.wantRematch[0];
+    if (this.wantRematch[0]) {
+      this.buttons.paB.setMES("Offer Sent!");
+      this.buttons.paB.changeColor(color(0, 255, 0), color(0), color(200, 100, 100), color(255, 40, 20));
+      this.buttons.paB.setMOMES("Rovoke Offer");
+      if (this.state == GameState.MULTIPLAYER_HOSTING) {
+        this.server.write("LOBBY: Host Rematch Sent");
+        this.checkRematches();
+      }
+      if (this.state == GameState.MULTIPLAYER_JOINED) {
+        this.otherPlayer.write("LOBBY: Joinee Rematch Sent");
+      }
+    }
+    else {
+      this.buttons.paB.setMES("Offer Revoked!");
+      this.buttons.paB.changeColor(color(255, 0, 0), color(0), color(200, 100, 100), color(40, 255, 20));
+      this.buttons.paB.setMOMES("Resend Offer");
+      if (this.state == GameState.MULTIPLAYER_HOSTING) {
+        this.server.write("LOBBY: Host Rematch Revoked");
+      }
+      if (this.state == GameState.MULTIPLAYER_JOINED) {
+        this.otherPlayer.write("LOBBY: Joinee Rematch Sent");
+      }
+    }
+  }
+  public void checkRematches() {
+    if ((this.wantRematch[0]) && (this.wantRematch[1])) {
+      if (this.state == GameState.MULTIPLAYER_HOSTING) {
+        this.buttons.paB = new playAgainButton();
+        this.myGame = new Game(constants.game1Borders);
+        this.otherGame = new Game(constants.game2Borders);
+        for (Joinee j : this.lobbyClients) {
+          if (j != null) {
+            if (j.client != null) {
+              j.client.stop();
+            }
+          }
+        }
+        this.server.write("LOBBY: Start Game|");
+      }
+    }
+  }
+  
   public void clientConnects(Client someClient) {
     println("Client connected with IP address: " + someClient.ip());
     if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
@@ -1322,13 +1411,32 @@ class CurrGame {
     }
   }
   public void leaveLobby() {
-    if (this.state == GameState.MULTIPLAYER_LOBBY_JOINED) {
-      this.otherPlayer.write("Quit Lobby");
-      this.otherPlayer.client.stop();
-    }
-    if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
-      this.server.write("LOBBY: Quit Lobby|");
-      this.server.stop();
+    switch(this.state) {
+      case MULTIPLAYER_LOBBY_HOSTING:
+      case MULTIPLAYER_HOSTING:
+        if (this.server != null) {
+          this.server.write("LOBBY: Quit Lobby");
+          this.server.stop();
+          this.server = null;
+        }
+      case MULTIPLAYER_LOBBY_JOINED:
+      case MULTIPLAYER_JOINED:
+        if (this.otherPlayer != null) {
+          this.otherPlayer.write("Quit Lobby");
+          this.otherPlayer.client.stop();
+          this.otherPlayer = null;
+        }
+        for (int i = 0; i < this.lobbyClients.size(); i++) {
+          if (this.lobbyClients.get(i) != null) {
+            this.lobbyClients.get(i).client.stop();
+            this.lobbyClients.get(i).client = null;
+          }
+        }
+        this.lobbyClients.clear();
+        break;
+      default:
+        println("ERROR: Leave lobby button pressed but state not recognized");
+        break;
     }
     this.state = GameState.MAIN_MENU;
   }
@@ -1571,6 +1679,8 @@ class CurrGame {
           }
         }
         if ((!hostGameOver) && (this.myGame.gameOver)) {
+          this.buttons.paB.setDIS(false);
+          this.buttons.paB.changeColor(color(220), color(0), color(170), color(120));
           if (!joineeGameOver) {
             this.myGame.gameOverMessage("You", "Lost");
             myGameChanges += "| HOST_GAME: gameOverMessage=You, Lost";
@@ -1931,6 +2041,13 @@ class CurrGame {
                     this.otherPlayer.resolvePingRequest();
                   }
                   break;
+                case "Joinee Rematch Sent":
+                  this.wantRematch[1] = true;
+                  this.checkRematches();
+                  break;
+                case "Joinee Rematch Revoked":
+                  this.wantRematch[1] = false;
+                  break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
                   break;
@@ -1971,6 +2088,13 @@ class CurrGame {
                   }
                   this.state = GameState.MAIN_MENU;
                   break;
+                case "Start Game":
+                  println("Game is starting");
+                  this.buttons.paB = new playAgainButton();
+                  this.myGame = new Game(constants.game1Borders);
+                  this.otherGame = new Game(constants.game2Borders);
+                  this.messageQ.clear();
+                  break;
                 case "Ping Request":
                   if (splitMessage.length < 3) {
                     println("ERROR: No IP address for ping request");
@@ -1982,6 +2106,12 @@ class CurrGame {
                   if (this.otherPlayer.messageForMe(splitMessage)) {
                     this.otherPlayer.resolvePingRequest();
                   }
+                  break;
+                case "Host Rematch Sent":
+                  this.wantRematch[1] = true;
+                  break;
+                case "Host Rematch Revoked":
+                  this.wantRematch[1] = false;
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -1996,6 +2126,10 @@ class CurrGame {
             case "JOINEE_GAME":
               if (!this.myGame.executeMessage(trim(splitMessage[1]))) {
                 println("ERROR: JOINEE_GAME message not recognized -> " + trim(splitMessage[1]));
+              }
+              if (splitMessage[1].contains("gameOver")) {
+                this.buttons.paB.setDIS(false);
+                this.buttons.paB.changeColor(color(220), color(0), color(170), color(120));
               }
               break;
             default:

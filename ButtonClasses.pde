@@ -10,6 +10,9 @@ abstract class button {
   private boolean releaseButton = false; // true if need to release on button to click it, and false if only need to press
   private boolean activated = false; // allows repeated clicks when holding down a non-release button
   private boolean extendActivate = false; // allows for repeated clicks when mosueOn becomes false
+  private boolean disabled = false;
+  private boolean mouseOnText = false;
+  private String mouseOnMessage = "";
   private long ms = 0; // timer to allow for multiple clicks
   private long tm1 = 600; // ms to activate non-release button
   private long tm2 = 200; // frequency once button is activated
@@ -28,6 +31,8 @@ abstract class button {
   
   void setMES(String mes) {
     this.message = mes;
+  } void setMOMES(String mes) {
+    this.mouseOnMessage = mes;
   }
   void setACT(boolean b) {
     this.activated = b;
@@ -43,6 +48,10 @@ abstract class button {
     this.releaseButton = b;
   } void setEAC(boolean b) {
     this.extendActivate = b;
+  } void setDIS(boolean b) {
+    this.disabled = b;
+  } void setMOT(boolean b) {
+    this.mouseOnText = b;
   }
   void setMS(long l) {
     this.ms = l;
@@ -75,7 +84,7 @@ abstract class button {
   }
   
   void mousePress() {
-    if (this.mouseOn) {
+    if (this.mouseOn && !this.disabled) {
       this.setCLK(true);
       if (!(this.releaseButton)) {
         this.click();
@@ -86,7 +95,7 @@ abstract class button {
   
   void mouseRelease() {
     this.setACT(false);
-    if ((this.releaseButton)&&(this.mouseOn)&&(this.clicked)) {
+    if ((this.releaseButton)&&(this.mouseOn)&&(this.clicked)&&(!this.disabled)) {
       this.click();
       this.setCLK(false);
     } else {
@@ -127,7 +136,11 @@ abstract class recButton extends button {
   
   void drawBut() {
     stroke(0);
+    String mes = super.message;
     if (super.mouseOn) {
+      if (super.mouseOnText) {
+        mes = super.mouseOnMessage;
+      }
       if (super.clicked) {
         fill(super.cColor);
       } else {
@@ -141,7 +154,7 @@ abstract class recButton extends button {
     fill(super.tColor);
     textSize(super.tSize);
     textAlign(CENTER, CENTER);
-    text(super.message, this.xInitial + (this.xFinal-this.xInitial)/2.0, this.yInitial + (this.yFinal-this.yInitial)/2.0);
+    text(mes, this.xInitial + (this.xFinal-this.xInitial)/2.0, this.yInitial + (this.yFinal-this.yInitial)/2.0);
   }
   
   void mouseUpdate(float mX, float mY) {
@@ -167,7 +180,11 @@ abstract class circButton extends button {
   
   void drawBut() {
     stroke(0);
+    String mes = super.message;
     if (super.mouseOn) {
+      if (super.mouseOnText) {
+        mes = super.mouseOnMessage;
+      }
       if (super.clicked) {
         fill(super.cColor);
       } else {
@@ -181,7 +198,7 @@ abstract class circButton extends button {
     fill(super.tColor);
     textSize(super.tSize);
     textAlign(CENTER, CENTER);
-    text(super.message, this.xCenter, this.yCenter);
+    text(mes, this.xCenter, this.yCenter);
   }
   
   void mouseUpdate(float mX, float mY) {

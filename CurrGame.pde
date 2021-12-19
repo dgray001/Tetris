@@ -14,6 +14,7 @@ class CurrGame {
   private GameState state = GameState.MAIN_MENU;
   AllButtons buttons = new AllButtons();
   private Queue<String> messageQ = new LinkedList<String>();
+  private boolean[] wantRematch = new boolean[2];
   
   CurrGame(Tetris thisInstance) {
     this.thisInstance = thisInstance;
@@ -230,6 +231,50 @@ class CurrGame {
     }
     this.otherPlayer = this.lobbyClients.get(this.buttons.cSB.getHIGH());
     this.otherPlayer.write("Join Lobby");
+  }
+  
+  void toggleRematch() {
+    this.wantRematch[0] = !this.wantRematch[0];
+    if (this.wantRematch[0]) {
+      this.buttons.paB.setMES("Offer Sent!");
+      this.buttons.paB.changeColor(color(0, 255, 0), color(0), color(200, 100, 100), color(255, 40, 20));
+      this.buttons.paB.setMOMES("Rovoke Offer");
+      if (this.state == GameState.MULTIPLAYER_HOSTING) {
+        this.server.write("LOBBY: Host Rematch Sent");
+        this.checkRematches();
+      }
+      if (this.state == GameState.MULTIPLAYER_JOINED) {
+        this.otherPlayer.write("LOBBY: Joinee Rematch Sent");
+      }
+    }
+    else {
+      this.buttons.paB.setMES("Offer Revoked!");
+      this.buttons.paB.changeColor(color(255, 0, 0), color(0), color(200, 100, 100), color(40, 255, 20));
+      this.buttons.paB.setMOMES("Resend Offer");
+      if (this.state == GameState.MULTIPLAYER_HOSTING) {
+        this.server.write("LOBBY: Host Rematch Revoked");
+      }
+      if (this.state == GameState.MULTIPLAYER_JOINED) {
+        this.otherPlayer.write("LOBBY: Joinee Rematch Sent");
+      }
+    }
+  }
+  void checkRematches() {
+    if ((this.wantRematch[0]) && (this.wantRematch[1])) {
+      if (this.state == GameState.MULTIPLAYER_HOSTING) {
+        this.buttons.paB = new playAgainButton();
+        this.myGame = new Game(constants.game1Borders);
+        this.otherGame = new Game(constants.game2Borders);
+        for (Joinee j : this.lobbyClients) {
+          if (j != null) {
+            if (j.client != null) {
+              j.client.stop();
+            }
+          }
+        }
+        this.server.write("LOBBY: Start Game|");
+      }
+    }
   }
   
   void clientConnects(Client someClient) {
@@ -518,6 +563,8 @@ class CurrGame {
           }
         }
         if ((!hostGameOver) && (this.myGame.gameOver)) {
+          this.buttons.paB.setDIS(false);
+          this.buttons.paB.changeColor(color(220), color(0), color(170), color(120));
           if (!joineeGameOver) {
             this.myGame.gameOverMessage("You", "Lost");
             myGameChanges += "| HOST_GAME: gameOverMessage=You, Lost";
@@ -878,6 +925,13 @@ class CurrGame {
                     this.otherPlayer.resolvePingRequest();
                   }
                   break;
+                case "Joinee Rematch Sent":
+                  this.wantRematch[1] = true;
+                  this.checkRematches();
+                  break;
+                case "Joinee Rematch Revoked":
+                  this.wantRematch[1] = false;
+                  break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
                   break;
@@ -918,6 +972,13 @@ class CurrGame {
                   }
                   this.state = GameState.MAIN_MENU;
                   break;
+                case "Start Game":
+                  println("Game is starting");
+                  this.buttons.paB = new playAgainButton();
+                  this.myGame = new Game(constants.game1Borders);
+                  this.otherGame = new Game(constants.game2Borders);
+                  this.messageQ.clear();
+                  break;
                 case "Ping Request":
                   if (splitMessage.length < 3) {
                     println("ERROR: No IP address for ping request");
@@ -929,6 +990,12 @@ class CurrGame {
                   if (this.otherPlayer.messageForMe(splitMessage)) {
                     this.otherPlayer.resolvePingRequest();
                   }
+                  break;
+                case "Host Rematch Sent":
+                  this.wantRematch[1] = true;
+                  break;
+                case "Host Rematch Revoked":
+                  this.wantRematch[1] = false;
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -943,6 +1010,10 @@ class CurrGame {
             case "JOINEE_GAME":
               if (!this.myGame.executeMessage(trim(splitMessage[1]))) {
                 println("ERROR: JOINEE_GAME message not recognized -> " + trim(splitMessage[1]));
+              }
+              if (splitMessage[1].contains("gameOver")) {
+                this.buttons.paB.setDIS(false);
+                this.buttons.paB.changeColor(color(220), color(0), color(170), color(120));
               }
               break;
             default:
