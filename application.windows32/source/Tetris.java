@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.1.7c
+// v0.2.1a
 // 20211218
 
 
@@ -2592,7 +2592,7 @@ class Joinee {
     this.port = port;
     this.writeHeader = header;
     if (newClient != null) {
-      this.id = newClient.ip();
+      this.id = Server.ip() + " -> " + newClient.ip() + ", " + port;
       this.initialRequest();
     }
   }

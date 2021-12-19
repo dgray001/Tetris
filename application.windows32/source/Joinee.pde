@@ -15,7 +15,7 @@ class Joinee {
     this.port = port;
     this.writeHeader = header;
     if (newClient != null) {
-      this.id = newClient.ip();
+      this.id = Server.ip() + " -> " + newClient.ip() + ", " + port;
       this.initialRequest();
     }
   }
