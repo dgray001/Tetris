@@ -1,6 +1,6 @@
 // Tetris
-// v0.2.1b
-// 20211218
+// v0.2.3a
+// 20211220
 
 import java.util.*;
 import javafx.util.*;
@@ -22,6 +22,7 @@ void setup() {
   size(1330, 800);
   frameRate(constants.maxFPS);
   background(constants.defaultBackgroundColor);
+  constants.loadImages();
 }
 
 void draw() {

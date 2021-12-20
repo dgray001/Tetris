@@ -50,7 +50,7 @@ class Constants {
   
   // Visual Effects
   public final int effectMaxLength_RowCleared = 200;
-  public final int effectMaxth_PieceDrop = 600;
+  public final int effectMaxth_PieceDrop = 150;
   public PImage lightning;
   
   Constants() {

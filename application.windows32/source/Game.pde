@@ -2,7 +2,7 @@ class Game {
   private Board board;
   private ArrayList<Piece> nextPieces = new ArrayList<Piece>();
   private Piece savedPiece = null;
-  private int tickLenth = constants.defaultTickLength;
+  private int tickLength = constants.defaultTickLength;
   private int lastTick;
   private float xi = 0;
   private float yi = 0;
@@ -59,7 +59,9 @@ class Game {
       return "";
     }
     String updates = "";
-    if (millis() - this.lastTick > tickLenth) {
+    this.drawVisualEffects();
+    updates += gameName + "visualEffects";
+    if (millis() - this.lastTick > this.tickLength) {
       updates += gameName + "tick";
       this.incrementStatistic("Ticks");
       this.increaseStatistic("Points", constants.scoreTick);
@@ -158,6 +160,13 @@ class Game {
     text(this.statistics.get("Double Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 13);
     text(this.statistics.get("Triple Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 16);
     text(this.statistics.get("Quadruple Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 19);
+  }
+  
+  void drawVisualEffects() {
+    this.board.drawVisualEffects();
+  }
+  void clearVisualEffects() {
+    this.board.clearVisualEffects();
   }
   
   void gameOverMessage() {
@@ -381,6 +390,12 @@ class Game {
       case "tick":
         this.incrementStatistic("Ticks");
         this.increaseStatistic("Points", constants.scoreTick);
+        break;
+      case "visualEffects":
+        this.drawVisualEffects();
+        break;
+      case "clearEffects":
+        this.clearVisualEffects();
         break;
       default:
         return false;

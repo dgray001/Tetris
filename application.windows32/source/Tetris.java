@@ -25,8 +25,8 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.2.1b
-// 20211218
+// v0.2.3a
+// 20211220
 
 
 
@@ -48,6 +48,7 @@ public void setup() {
   
   frameRate(constants.maxFPS);
   background(constants.defaultBackgroundColor);
+  constants.loadImages();
 }
 
 public void draw() {
@@ -106,6 +107,7 @@ class Board {
   float xf = 0;
   float yf = 0;
   boolean pieceOverflow = false;
+  ArrayList<VisualEffect> visualEffects = new ArrayList<VisualEffect>();
   
   Board(float xi, float yi, float xf, float yf) {
     this.spaces = new Space[constants.defaultBoardColumns][constants.defaultBoardRows];
@@ -168,6 +170,19 @@ class Board {
         this.spaces[i][j].drawSpace(xCurr + squareSize * i, yCurr + squareSize * j, squareSize);
       }
     }
+  }
+  
+  public void drawVisualEffects() {
+    this.drawBoard();
+    for (int i = 0; i < this.visualEffects.size(); i++) {
+      if (this.visualEffects.get(i).drawVisualEffect(this)) {
+        this.visualEffects.remove(i);
+        i--;
+      }
+    }
+  }
+  public void clearVisualEffects() {
+    this.visualEffects.clear();
   }
   
   public void addPiece() {
@@ -284,8 +299,14 @@ class Board {
     return true;
   }
   public void dropPiece() {
-    while(this.aPieceFalling()) {
-      this.movePiece(Direction.DIRECTION_DOWN, true);
+    if (this.aPieceFalling()) {
+      VisualEffect ve = new VisualEffect(VisualEffectType.PIECE_DROP, new Piece(this.piece));
+      while(this.aPieceFalling()) {
+        if (this.movePiece(Direction.DIRECTION_DOWN, true)) {
+          ve.integer1++ ;
+        }
+      }
+      this.visualEffects.add(ve);
     }
   }
   public boolean movePiece() {
@@ -392,7 +413,6 @@ class Board {
         }
       }
       if (rowFilled) {
-        rowsFilled++;
         // remove current row
         for (int i = 0; i < this.spaces.length; i++) {
           this.spaces[i][j].setOccupied(false);
@@ -408,6 +428,8 @@ class Board {
         for (int i = 0; i < this.spaces.length; i++) {
           this.spaces[i][0] = new Space();
         }
+        this.visualEffects.add(new VisualEffect(VisualEffectType.ROW_CLEARED, j - rowsFilled));
+        rowsFilled++;
         j++; // have to adjust row
       }
     }
@@ -1112,7 +1134,16 @@ class Constants {
   public final int scoreTriple = 90;
   public final int scoreQuadruple = 180;
   
+  // Visual Effects
+  public final int effectMaxLength_RowCleared = 200;
+  public final int effectMaxth_PieceDrop = 150;
+  public PImage lightning;
+  
   Constants() {
+  }
+  
+  public void loadImages() {
+    this.lightning = loadImage(sketchPath("") + "data/lightning.png");
   }
 }
 public enum GameState {
@@ -2197,7 +2228,7 @@ class Game {
   private Board board;
   private ArrayList<Piece> nextPieces = new ArrayList<Piece>();
   private Piece savedPiece = null;
-  private int tickLenth = constants.defaultTickLength;
+  private int tickLength = constants.defaultTickLength;
   private int lastTick;
   private float xi = 0;
   private float yi = 0;
@@ -2254,7 +2285,9 @@ class Game {
       return "";
     }
     String updates = "";
-    if (millis() - this.lastTick > tickLenth) {
+    this.drawVisualEffects();
+    updates += gameName + "visualEffects";
+    if (millis() - this.lastTick > this.tickLength) {
       updates += gameName + "tick";
       this.incrementStatistic("Ticks");
       this.increaseStatistic("Points", constants.scoreTick);
@@ -2353,6 +2386,13 @@ class Game {
     text(this.statistics.get("Double Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 13);
     text(this.statistics.get("Triple Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 16);
     text(this.statistics.get("Quadruple Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 19);
+  }
+  
+  public void drawVisualEffects() {
+    this.board.drawVisualEffects();
+  }
+  public void clearVisualEffects() {
+    this.board.clearVisualEffects();
   }
   
   public void gameOverMessage() {
@@ -2577,6 +2617,12 @@ class Game {
         this.incrementStatistic("Ticks");
         this.increaseStatistic("Points", constants.scoreTick);
         break;
+      case "visualEffects":
+        this.drawVisualEffects();
+        break;
+      case "clearEffects":
+        this.clearVisualEffects();
+        break;
       default:
         return false;
     }
@@ -2710,6 +2756,7 @@ public class Piece {
   public int pieceFill = constants.defaultPieceFill;
   public int pieceStroke = constants.defaultPieceStroke;
   
+  Piece() {}
   Piece(int boardSizeX) {
     // get random shape
     this.shape = Shape.randomShape();
@@ -3326,6 +3373,105 @@ class Space {
       stroke(this.shadowStroke);
       square(xi, yi, sideLength);
     }
+  }
+}
+public enum VisualEffectType {
+  ROW_CLEARED, PIECE_DROP
+}
+
+class VisualEffect {
+  private VisualEffectType type;
+  private int maxLength; // in ms
+  private float startTime;
+  private int integer1;
+  private Piece piece;
+  
+  VisualEffect(VisualEffectType type, int integer1) {
+    this(type, integer1, new Piece());
+  }
+  VisualEffect(VisualEffectType type, Piece piece) {
+    this(type, 0, piece);
+  }
+  VisualEffect(VisualEffectType type, int integer1, Piece piece) {
+    this.type = type;
+    switch(this.type) {
+      case ROW_CLEARED:
+        this.maxLength = constants.effectMaxLength_RowCleared;
+        this.integer1 = integer1;
+        break;
+      case PIECE_DROP:
+        this.maxLength = constants.effectMaxth_PieceDrop;
+        this.piece = piece;
+        break;
+      default:
+        println("ERROR: visual effect not found");
+        break;
+    }
+    this.startTime = millis();
+  }
+  
+  public void setInteger1(int i) {
+    this.integer1 = i;
+  }
+  
+  public boolean drawVisualEffect(Board board) {
+    float effectProgress = (float)(millis() - startTime) / this.maxLength;
+    if (effectProgress > 1) {
+      return true;
+    }
+    float squareSize = min((board.xf - board.xi) / (board.spaces.length + 2), (board.yf - board.yi) / (board.spaces[0].length + 2));
+    switch(this.type) {
+      case ROW_CLEARED:
+        fill(color(255), effectProgress * 255);
+        stroke(color(255), effectProgress * 255);
+        ellipseMode(CENTER);
+        ellipse(board.xi + 0.5f * (board.xf - board.xi), board.yi + squareSize * (1.5f + this.integer1), board.xf - board.xi, squareSize);
+        /*
+        imageMode(CENTER);
+        tint(255, effectProgress * 255);
+        image(constants.lightning, board.xi + 0.5 * (board.xf - board.xi), board.yi + squareSize * (1.5 + this.integer1), board.xf - board.xi, squareSize);*/
+        break;
+      case PIECE_DROP:
+        ArrayList<Pair<Integer, Integer>> pieceSpaces = this.piece.getPieceSpace();
+        ArrayList<Pair<Integer, Integer>> pieceSpacesDrawn = new ArrayList<Pair<Integer, Integer>>();
+        strokeWeight(1);
+        // first loop to remove unnecessary squares
+        for (Pair<Integer, Integer> i : pieceSpaces) {
+          int x = i.getKey();
+          int y = i.getValue();
+          boolean noneOfColumn = true;
+          for (int j = 0; j < pieceSpacesDrawn.size(); j++) {
+            if (x == pieceSpacesDrawn.get(j).getKey()) {
+              noneOfColumn = false;
+              if (y < pieceSpacesDrawn.get(j).getValue()) {
+                pieceSpacesDrawn.remove(j);
+                pieceSpacesDrawn.add(i);
+              }
+              break;
+            }
+          }
+          if (noneOfColumn) {
+            pieceSpacesDrawn.add(new Pair(x, y));
+          }
+        }
+        // then loop to draw lines
+        for (Pair<Integer, Integer> i : pieceSpacesDrawn) {
+          int x = i.getKey();
+          int y = i.getValue();
+          for (int j = 0; j < squareSize * this.integer1; j++) {
+            if (squareSize * y + j < 0) {
+              continue;
+            }
+            stroke(color(this.piece.pieceFill), 255 * (j / (squareSize * this.integer1)));
+            line(board.xi + squareSize * (x + 1), board.yi + squareSize * (y + 1) + j, board.xi + squareSize * (x + 2), board.yi + squareSize * (y + 1) + j);
+          }
+        }
+        break;
+      default:
+        println("ERROR: visual effect not found");
+        break;
+    }
+    return false;
   }
 }
   public void settings() {  size(1330, 800); }

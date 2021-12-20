@@ -201,8 +201,9 @@ class Board {
     if (this.aPieceFalling()) {
       VisualEffect ve = new VisualEffect(VisualEffectType.PIECE_DROP, new Piece(this.piece));
       while(this.aPieceFalling()) {
-        this.movePiece(Direction.DIRECTION_DOWN, true);
-        ve.setInteger1(ve.integer1++);
+        if (this.movePiece(Direction.DIRECTION_DOWN, true)) {
+          ve.integer1++ ;
+        }
       }
       this.visualEffects.add(ve);
     }
