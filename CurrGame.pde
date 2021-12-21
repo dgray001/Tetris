@@ -116,6 +116,10 @@ class CurrGame {
     ArrayList<String> IPs = this.findAddressesOnLAN();
     // Then search for open ports
     this.lobbyClients = this.findHosts(IPs);
+    // Reset timers so clients not removed before initial ping request comes in
+    for (int i = 0; i < this.lobbyClients.size(); i++) {
+      this.lobbyClients.get(i).lastPingRequest = millis();
+    }
     // Message if no connections found
     rectMode(CORNERS);
     fill(constants.defaultBackgroundColor);
@@ -222,8 +226,7 @@ class CurrGame {
       println("ERROR: selected lobby " + index + " but only " + this.lobbyClients.size() + " lobbies exist.");
       return;
     }
-    this.otherPlayer = this.lobbyClients.get(this.buttons.cSB.getHIGH());
-    this.otherPlayer.write("Join Lobby");
+    this.lobbyClients.get(this.buttons.cSB.getHIGH()).write("Join Lobby");
   }
   
   void toggleRematch() {
@@ -308,6 +311,7 @@ class CurrGame {
             this.lobbyClients.get(i).client = null;
           }
         }
+        this.buttons.cSB.clearSTRS();
         this.lobbyClients.clear();
         break;
       default:
@@ -509,7 +513,7 @@ class CurrGame {
         textSize(13);
         textAlign(LEFT, TOP);
         fill(0);
-        text("Connection to Lobby", 10, 725);
+        text("Connection to lobby", 10, 725);
         lbStrings = new String[0];
         boolean leaveLobby = false;
         if (this.otherPlayer != null) {
@@ -696,9 +700,7 @@ class CurrGame {
                   }
                   if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
                     boolean duplicateConnection = false;
-                    println(splitMessage[3]);
                     for (Joinee j : this.lobbyClients) {
-                      println(j.name);
                       if ((j.receivedInitialResponse) && (j.name.equals(trim(splitMessage[3])))) {
                         duplicateConnection = true;
                         break;
@@ -722,6 +724,8 @@ class CurrGame {
                     }
                     this.lobbyClients.clear();
                     this.messageQ.clear();
+                    this.buttons.clearButton(6);
+                    this.buttons.cSB.setHIGH(-1);
                     this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
                   }
                   break;
