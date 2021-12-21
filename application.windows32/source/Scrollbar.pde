@@ -148,6 +148,8 @@ abstract class scrollBar {
     return this.strings[i];
   } public int getLENG() {
     return this.strings.length;
+  } public void clearSTRS() {
+    this.strings = new String[0];
   }
   public void setCURR(int curr) {
     this.currStart = curr;

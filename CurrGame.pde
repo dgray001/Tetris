@@ -20,6 +20,12 @@ class CurrGame {
     this.thisInstance = thisInstance;
   }
   
+  void goToMainMenu() {
+    this.buttons.cSB.clearSTRS();
+    this.buttons.clearButton(0);
+    this.state = GameState.MAIN_MENU;
+  }
+  
   void startSinglePlayerGame() {
     this.myGame = new Game(constants.game1Borders);
     this.state = GameState.SINGLEPLAYER;
@@ -36,6 +42,7 @@ class CurrGame {
             this.server = null;
             return;
           }
+          this.lobbyName += ": " + millis();
           println("Server active on port " + port + " with ip: " + Server.ip() + ".");
           this.portHosting = port;
           this.state = GameState.MULTIPLAYER_LOBBY_HOSTING;
@@ -312,13 +319,14 @@ class CurrGame {
           }
         }
         this.buttons.cSB.clearSTRS();
+        this.buttons.clearButton(0);
         this.lobbyClients.clear();
         break;
       default:
         println("ERROR: Leave lobby button pressed but state not recognized");
         break;
     }
-    this.state = GameState.MAIN_MENU;
+    this.goToMainMenu();
   }
   
   void kickPlayer() {
@@ -451,7 +459,7 @@ class CurrGame {
         if (!this.otherPlayer.client.active()) {
           this.otherPlayer.client.stop();
           this.otherPlayer = null;
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
           break;
         }
         if (this.otherPlayer.receivedInitialResponse && !this.otherPlayer.waitingForResponse) {
@@ -463,7 +471,7 @@ class CurrGame {
       case SINGLEPLAYER:
         if (this.myGame.isOver()) {
           this.myGame = null;
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
           break;
         }
         this.myGame.update();
@@ -518,7 +526,7 @@ class CurrGame {
         boolean leaveLobby = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, this.otherPlayer.name + "  (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, trim(split(this.otherPlayer.name, ":")[0]) + "  (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 if (!this.otherPlayer.receivedInitialResponse) {
@@ -541,12 +549,12 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to the lobby", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         else {
           showMessageDialog(null, "There was an error connecting to the lobby", "", PLAIN_MESSAGE);
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
         }
         this.buttons.cSB.setSTR(lbStrings);
         break;
@@ -620,7 +628,7 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to your opponent", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         this.buttons.cSB.setSTR(lbStrings);
@@ -638,7 +646,7 @@ class CurrGame {
         boolean leaveGame = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, this.otherPlayer.name + " (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, trim(split(this.otherPlayer.name, ":")[0]) + " (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 this.otherPlayer.missedPingRequest();
@@ -658,12 +666,12 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to the game", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         else {
           showMessageDialog(null, "There was an error connecting to the game", "", PLAIN_MESSAGE);
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
         }
         this.buttons.cSB.setSTR(lbStrings);
         break;
@@ -877,13 +885,13 @@ class CurrGame {
                   println("You were kicked from the lobby");
                   this.otherPlayer = null;
                   this.messageQ.clear();
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Quit Lobby":
                   println("The host quit the lobby");
                   this.otherPlayer = null;
                   this.messageQ.clear();
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Initial Request":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
@@ -988,7 +996,7 @@ class CurrGame {
                     }
                     this.otherPlayer = null;
                   }
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Start Game":
                   println("Game is starting");
