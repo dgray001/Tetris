@@ -243,7 +243,7 @@ class CurrGame {
       this.buttons.paB.changeColor(color(0, 255, 0), color(0), color(200, 100, 100), color(255, 40, 20));
       this.buttons.paB.setMOMES("Cancel");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
-        this.server.write("LOBBY: Host Rematch Sent");
+        this.server.write("| LOBBY: Host Rematch Sent");
         this.checkRematches();
       }
       if (this.state == GameState.MULTIPLAYER_JOINED) {
@@ -255,7 +255,7 @@ class CurrGame {
       this.buttons.paB.changeColor(color(255, 10, 10), color(0), color(100, 200, 100), color(40, 255, 20));
       this.buttons.paB.setMOMES("Resend Offer");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
-        this.server.write("LOBBY: Host Rematch Revoked");
+        this.server.write("| LOBBY: Host Rematch Revoked");
       }
       if (this.state == GameState.MULTIPLAYER_JOINED) {
         this.otherPlayer.write("Joinee Rematch Revoked");
@@ -277,7 +277,7 @@ class CurrGame {
             }
           }
         }
-        this.server.write("LOBBY: Start Game|");
+        this.server.write("| LOBBY: Start Game");
       }
     }
   }
@@ -301,7 +301,7 @@ class CurrGame {
       case MULTIPLAYER_LOBBY_HOSTING:
       case MULTIPLAYER_HOSTING:
         if (this.server != null) {
-          this.server.write("LOBBY: Quit Lobby");
+          this.server.write("| LOBBY: Quit Lobby");
           this.server.stop();
           this.server = null;
         }
@@ -335,7 +335,7 @@ class CurrGame {
     }
     else {
       println("Kicked client with ID: " + this.otherPlayer.id);
-      this.server.write("LOBBY: Kick Player|");
+      this.server.write("| LOBBY: Kick Player");
       this.server.disconnect(this.otherPlayer.client);
       this.otherPlayer = null;
     }
@@ -352,7 +352,7 @@ class CurrGame {
         }
       }
     }
-    this.server.write("LOBBY: Start Game|");
+    this.server.write("| LOBBY: Start Game");
   }
   
   void clientEvent(Client someClient) {
@@ -815,7 +815,7 @@ class CurrGame {
                     println("ERROR: No IP address for ping request");
                     break;
                   }
-                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                  this.server.write("| LOBBY: Ping Resolve: " + trim(splitMessage[2]));
                   break;
                 case "Ping Resolve":
                   if (this.otherPlayer != null) {
@@ -829,7 +829,7 @@ class CurrGame {
                     println("ERROR: No IP address for initial request");
                     break;
                   }
-                  this.server.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :|");
+                  this.server.write("| LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :");
                   break;
                 case "Initial Resolve":
                   if (splitMessage.length < 3) {
@@ -852,12 +852,12 @@ class CurrGame {
                       println("ERROR: client ID not found.");
                       break;
                     }
-                    this.server.write("LOBBY: Join Lobby: " + trim(splitMessage[2]) + "|");
+                    this.server.write("| LOBBY: Join Lobby: " + trim(splitMessage[2]));
                     this.otherPlayer = this.lobbyClients.get(index);
                     this.lobbyClients.remove(index);
                   }
                   else {
-                    this.server.write("LOBBY: Lobby Full: " + trim(splitMessage[2]) + "|");
+                    this.server.write("| LOBBY: Lobby Full: " + trim(splitMessage[2]));
                   }
                   break;
                 default:
@@ -944,7 +944,7 @@ class CurrGame {
                     println("ERROR: No IP address for ping request");
                     break;
                   }
-                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                  this.server.write("| LOBBY: Ping Resolve: " + trim(splitMessage[2]));
                   break;
                 case "Ping Resolve":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
