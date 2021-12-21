@@ -48,7 +48,7 @@ class VisualEffect {
         fill(color(255), effectProgress * 255);
         stroke(color(255), effectProgress * 255);
         ellipseMode(CENTER);
-        ellipse(board.xi + 0.5 * (board.xf - board.xi), board.yi + squareSize * (1.5 + this.integer1), board.xf - board.xi, squareSize);
+        ellipse(board.xi + 0.5 * (board.xf - board.xi), board.yi + squareSize * (1.5 + this.integer1), board.xf - board.xi - 2 * squareSize, squareSize);
         /*
         imageMode(CENTER);
         tint(255, effectProgress * 255);

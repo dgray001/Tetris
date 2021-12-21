@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.2.4.d
+// v0.3.0
 // 20211220
 
 
@@ -1136,7 +1136,9 @@ class Constants {
   
   // Visual Effects
   public final int effectMaxLength_RowCleared = 200;
-  public final int effectMaxth_PieceDrop = 150;
+  public final int effectMaxth_PieceDrop = 200;
+  
+  // Images
   public PImage lightning;
   
   Constants() {
@@ -1147,7 +1149,7 @@ class Constants {
   }
 }
 public enum GameState {
-  MAIN_MENU, CONNECTING_TO_LOBBY, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
+  MAIN_MENU, OPTIONS, CONNECTING_TO_LOBBY, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
 }
 
 class CurrGame {
@@ -2301,7 +2303,6 @@ class Game {
     return this.update("", true);
   }
   public String update(String gameName, boolean gameOverMessage) {
-    println(gameName);
     if (this.gameOver) {
       return "";
     }
@@ -2338,7 +2339,6 @@ class Game {
       updates += gameName + "drawBoard";
       updates += gameName + "drawPanel";
     }
-    println(updates);
     return updates;
   }
   
@@ -2538,7 +2538,6 @@ class Game {
       this.board.drawBoard();
     }
     updates += gameName + "drawBoard";
-    println(updates);
     return updates;
   }
   
@@ -3071,6 +3070,34 @@ public class Piece {
     println(this.xLocation + " "  + this.yLocation);
   }
 }
+class tableListBar {
+  private listBar listB;
+  private float headerHeight;
+  private ArrayList<Pair<String, Float>> headers = new ArrayList<Pair<String, Float>>();
+  tableListBar(float xi, float yi, float xf, float yf, float headerHeight) {
+    if (headerHeight > yf - yi) {
+      println("ERROR: headerSize for tableListBar larger than space given");
+    }
+    this.listB = new listBar(xi, yi + headerHeight, xf, yf);
+    this.headerHeight = headerHeight;
+  }
+  
+  public void update(float x, float y) {
+    // Draw outer box
+    rectMode(CORNERS);
+    stroke(0);
+    fill(200);
+    rect(this.listB.getXI(), this.listB.getYI() - this.headerHeight, this.listB.getXF(), this.listB.getYF());
+    // Update listBar
+    this.listB.update(x, y);
+    // Write header text
+    textSize(this.headerHeight - 2);
+    textAlign(LEFT, BOTTOM);
+    fill(0);
+    String headerText = "";
+  }
+}
+
 class listBar extends scrollBar {
   private int selected = -1; // item selected on list
   listBar(float xi, float yi, float xf, float yf) {
@@ -3458,7 +3485,7 @@ class VisualEffect {
         fill(color(255), effectProgress * 255);
         stroke(color(255), effectProgress * 255);
         ellipseMode(CENTER);
-        ellipse(board.xi + 0.5f * (board.xf - board.xi), board.yi + squareSize * (1.5f + this.integer1), board.xf - board.xi, squareSize);
+        ellipse(board.xi + 0.5f * (board.xf - board.xi), board.yi + squareSize * (1.5f + this.integer1), board.xf - board.xi - 2 * squareSize, squareSize);
         /*
         imageMode(CENTER);
         tint(255, effectProgress * 255);

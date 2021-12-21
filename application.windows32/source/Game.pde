@@ -55,7 +55,6 @@ class Game {
     return this.update("", true);
   }
   String update(String gameName, boolean gameOverMessage) {
-    println(gameName);
     if (this.gameOver) {
       return "";
     }
@@ -92,7 +91,6 @@ class Game {
       updates += gameName + "drawBoard";
       updates += gameName + "drawPanel";
     }
-    println(updates);
     return updates;
   }
   
@@ -292,7 +290,6 @@ class Game {
       this.board.drawBoard();
     }
     updates += gameName + "drawBoard";
-    println(updates);
     return updates;
   }
   
