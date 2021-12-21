@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.2.3a
+// v0.2.4.a
 // 20211220
 
 
@@ -1305,26 +1305,15 @@ class CurrGame {
       thread1.start();
       thread2.start();
     }
-    Thread localhostThread = new Thread(new Runnable() {
-      public void run() {
-        try {
-          if (InetAddress.getByName("localhost").isReachable(constants.defaultPingTimeout)) {
-            IPs.add("localhost");
-          }
-        } catch (Exception e) {
-          //e.printStackTrace();
-        }
-      }
-    });
-    threads.add(localhostThread);
-    localhostThread.start();
     for(Thread thread : threads) {
       try {
         thread.join();
       } catch(InterruptedException e) {
+        thread.interrupt();
         //e.printStackTrace();
       }
     }
+    println("IPs found: " + IPs);
     return IPs;
   }
   public ArrayList<Joinee> findHosts(ArrayList<String> IPs) {
@@ -1342,6 +1331,7 @@ class CurrGame {
             try {
               Client testClient = new Client(inst, ip, port);
               if (testClient.active()) {
+                println("Connected at " + ip + " with port " + port + ".");
                 possibleLobbies.add(new Joinee(testClient, port, "LOBBY: "));
               }
               else {
@@ -1360,11 +1350,11 @@ class CurrGame {
         thread.start();
       }
     }
-    delay(constants.defaultPingTimeout);
     for(Thread thread : threads) {
       try {
-        thread.interrupt();
+        thread.join();
       } catch(Exception e) {
+        thread.interrupt();
         //e.printStackTrace();
       }
     }
@@ -1554,6 +1544,7 @@ class CurrGame {
         for(int i = 0; i < this.lobbyClients.size(); i++) {
           Joinee j = this.lobbyClients.get(i);
           if ((j == null) || (j.client == null)) {
+            println("A client was null and was removed.");
             this.lobbyClients.remove(i);
             i--;
             continue;
@@ -1567,10 +1558,12 @@ class CurrGame {
               }
               if (millis() - j.lastPingRequest > constants.defaultPingTimeout) {
                 if (!j.receivedInitialResponse) {
+                  println("Client with id " + j.id + " has not received initial ping resolve so was removed");
                   removeClient = true;
                 }
-                j.ping = millis() - j.lastPingRequest;
-                if (j.ping > constants.defaultPingTimeout * 2) {
+                j.missedPingRequest();
+                if (j.pingRequestsMissed > constants.maxPingRequestsMissed) {
+                  println("Client with id " + j.id + " has missed " + j.pingRequestsMissed + " ping requests so was removed.");
                   removeClient = true;
                 }
               }
@@ -1943,8 +1936,10 @@ class CurrGame {
                   this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
                   break;
                 case "Ping Resolve":
-                  if (this.otherPlayer.messageForMe(splitMessage)) {
-                    this.otherPlayer.resolvePingRequest();
+                  if (this.otherPlayer != null) {
+                    if (this.otherPlayer.messageForMe(splitMessage)) {
+                      this.otherPlayer.resolvePingRequest();
+                    }
                   }
                   break;
                 case "Initial Request":
@@ -1959,16 +1954,11 @@ class CurrGame {
                     println("ERROR: initial resolve message invalid");
                     break;
                   }
-                  try {
-                    if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
-                      this.lobbyClients.get(index).resolveInitialRequest();
-                    }
-                  } catch(Exception e) {}
-                  try {
+                  if (this.otherPlayer != null) {
                     if (this.otherPlayer.messageForMe(splitMessage)) {
                       this.otherPlayer.resolveInitialRequest();
                     }
-                  } catch(Exception e) {}
+                  }
                   break;
                 case "Join Lobby":
                   if (splitMessage.length < 3) {
@@ -2646,13 +2636,17 @@ class Joinee {
     this.port = port;
     this.writeHeader = header;
     if (newClient != null) {
-      this.id = Server.ip() + ", " + port + ", " + millis();
+      this.id = newClient.ip() + ", " + port + ", " + millis();
       this.initialRequest();
     }
+    println("New joinee made with id: " + this.id);
   }
   Joinee(Client newClient, int port, String header, String id) {
-    this(newClient, port, header);
+    this.client = newClient;
+    this.port = port;
+    this.writeHeader = header;
     this.id = id;
+    println("New joinee made with set id to: " + this.id);
   }
   
   public boolean messageForMe(String message) {
@@ -2691,11 +2685,13 @@ class Joinee {
   }
   public void resolveInitialRequest(String newName, String s1) {
     if ((this.client != null) && (this.client.active())) {
-      this.ping = millis() - this.lastPingRequest;
-      this.lastPingRequest = millis();
-      this.waitingForResponse = false;
-      this.receivedInitialResponse = true;
-      this.setNewName(newName, s1);
+      if (waitingForResponse && !receivedInitialResponse) {
+        this.ping = millis() - this.lastPingRequest;
+        this.lastPingRequest = millis();
+        this.waitingForResponse = false;
+        this.receivedInitialResponse = true;
+        this.setNewName(newName, s1);
+      }
     }
   }
   
@@ -2708,10 +2704,12 @@ class Joinee {
   }
   public void resolvePingRequest() {
     if ((this.client != null) && (this.client.active())) {
-      this.ping = millis() - this.lastPingRequest;
-      this.lastPingRequest = millis();
-      this.waitingForResponse = false;
-      this.pingRequestsMissed = 0;
+      if (waitingForResponse) {
+        this.ping = millis() - this.lastPingRequest;
+        this.lastPingRequest = millis();
+        this.waitingForResponse = false;
+        this.pingRequestsMissed = 0;
+      }
     }
   }
   public void missedPingRequest() {
