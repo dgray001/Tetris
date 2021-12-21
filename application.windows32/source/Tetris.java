@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.2.4.a
+// v0.2.4.b
 // 20211220
 
 
@@ -1260,17 +1260,20 @@ class CurrGame {
   }
   
   public void findMultiPlayerGame() {
+    // First search for IPs
+    ArrayList<String> IPs = this.findAddressesOnLAN();
+    // Then search for open ports
+    this.lobbyClients = this.findHosts(IPs);
+    // Message if no connections found
     rectMode(CORNERS);
     fill(constants.defaultBackgroundColor);
     stroke(constants.defaultBackgroundColor);
     rect(10, 720, 265, 738);
-    ArrayList<String> IPs = this.findAddressesOnLAN();
-    this.lobbyClients = this.findHosts(IPs);
     if (this.lobbyClients.size() == 0) {
       textSize(13);
       textAlign(LEFT, TOP);
       fill(0);
-      text("No games found. Maybe try \"Find IP\"", 10, 723);
+      text("No connections found. Try \"Find IP\"", 10, 723);
     }
   }
   public ArrayList<String> findAddressesOnLAN() {
@@ -1840,7 +1843,22 @@ class CurrGame {
                     break;
                   }
                   if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
-                    this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                    boolean duplicateConnection = false;
+                    println(splitMessage[3]);
+                    for (Joinee j : this.lobbyClients) {
+                      println(j.name);
+                      if ((j.receivedInitialResponse) && (j.name.equals(trim(splitMessage[3])))) {
+                        duplicateConnection = true;
+                        break;
+                      }
+                    }
+                    if (duplicateConnection) {
+                      this.lobbyClients.get(index).client.stop();
+                      this.lobbyClients.remove(index);
+                    }
+                    else {
+                      this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                    }
                   }
                   break;
                 case "Join Lobby":
