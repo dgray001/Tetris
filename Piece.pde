@@ -34,25 +34,25 @@ public class Piece {
     // set piece color
     switch(this.shape) {
       case I_BLOCK:
-        this.pieceFill = constants.IFill;
+        this.pieceFill = options.IFill;
         break;
       case J_BLOCK:
-        this.pieceFill = constants.JFill;
+        this.pieceFill = options.JFill;
         break;
       case L_BLOCK:
-        this.pieceFill = constants.LFill;
+        this.pieceFill = options.LFill;
         break;
       case O_BLOCK:
-        this.pieceFill = constants.OFill;
+        this.pieceFill = options.OFill;
         break;
       case S_BLOCK:
-        this.pieceFill = constants.SFill;
+        this.pieceFill = options.SFill;
         break;
       case T_BLOCK:
-        this.pieceFill = constants.TFill;
+        this.pieceFill = options.TFill;
         break;
       case Z_BLOCK:
-        this.pieceFill = constants.ZFill;
+        this.pieceFill = options.ZFill;
         break;
     }
   }
@@ -68,25 +68,25 @@ public class Piece {
     // set piece color
     switch(this.shape) {
       case I_BLOCK:
-        this.pieceFill = constants.IFill;
+        this.pieceFill = options.IFill;
         break;
       case J_BLOCK:
-        this.pieceFill = constants.JFill;
+        this.pieceFill = options.JFill;
         break;
       case L_BLOCK:
-        this.pieceFill = constants.LFill;
+        this.pieceFill = options.LFill;
         break;
       case O_BLOCK:
-        this.pieceFill = constants.OFill;
+        this.pieceFill = options.OFill;
         break;
       case S_BLOCK:
-        this.pieceFill = constants.SFill;
+        this.pieceFill = options.SFill;
         break;
       case T_BLOCK:
-        this.pieceFill = constants.TFill;
+        this.pieceFill = options.TFill;
         break;
       case Z_BLOCK:
-        this.pieceFill = constants.ZFill;
+        this.pieceFill = options.ZFill;
         break;
     }
   }

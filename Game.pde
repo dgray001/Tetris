@@ -59,8 +59,6 @@ class Game {
       return "";
     }
     String updates = "";
-    this.drawVisualEffects();
-    updates += gameName + "visualEffects";
     if (millis() - this.lastTick > this.tickLength) {
       updates += gameName + "tick";
       this.incrementStatistic("Ticks");
@@ -91,6 +89,8 @@ class Game {
       updates += gameName + "drawBoard";
       updates += gameName + "drawPanel";
     }
+    this.drawVisualEffects();
+    updates += gameName + "visualEffects";
     return updates;
   }
   
@@ -288,6 +288,7 @@ class Game {
     }
     if (executeActions) {
       this.board.drawBoard();
+      this.drawVisualEffects();
     }
     updates += gameName + "drawBoard";
     return updates;

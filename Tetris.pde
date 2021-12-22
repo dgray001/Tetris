@@ -1,5 +1,5 @@
 // Tetris
-// v0.3.1c
+// v0.3.2a
 // 20211220
 
 import java.util.*;
@@ -13,6 +13,7 @@ import processing.net.*;
 import processing.sound.*;
 
 Constants constants = new Constants();
+Options options;
 CurrGame currGame = new CurrGame(this);
 int frameTimer = millis();
 int frameCounter = frameCount;
@@ -23,6 +24,7 @@ void setup() {
   frameRate(constants.maxFPS);
   background(constants.defaultBackgroundColor);
   constants.loadImages();
+  options = new Options(constants);
   fill(0);
   textSize(14);
   textAlign(LEFT, BOTTOM);

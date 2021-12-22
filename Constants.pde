@@ -17,6 +17,7 @@ class Constants {
   public final int maxPingRequestsMissed = 3;
   
   // Board
+  public final boolean defaultGridlines = true;
   public final int defaultBoardColumns = 10;
   public final int defaultBoardRows = 20;
   public final color boardBackground = color(0);
