@@ -49,7 +49,7 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.update(mouseX, mouseY);
-        if (this.cSB.getHIGH() != -1) {
+        if (this.cSB.getHIGH() > 0) {
           this.kpB.changeColor(color(220), color(0), color(170), color(120));
         } else {
           this.kpB.changeColor(color(235), color(80), color(170), color(120));
@@ -113,7 +113,7 @@ class AllButtons {
           this.sgB.mousePress();
         }
         this.siB.mousePress();
-        if (this.cSB.getHIGH() != -1) {
+        if (this.cSB.getHIGH() > 0) {
           if (this.kpB.getMON()) {
             this.kpB.mousePress();
           } else {
@@ -163,7 +163,7 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mouseRelease();
-        if (this.cSB.getHIGH() != -1) {
+        if (this.cSB.getHIGH() > 0) {
           this.kpB.mouseRelease();
         }
         if (this.cSB.getSTRS().length == 2) {
@@ -200,8 +200,8 @@ class AllButtons {
     stroke(constants.defaultBackgroundColor);
     rectMode(CORNERS);
     switch(id) {
-      case 0:
-        rect(10, 740, 260, 800);
+      case 0: // scrollbar
+        rect(10, 720, 265, 800);
         break;
       case 1:
         rect(10, 690, 60, 715);

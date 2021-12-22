@@ -48,6 +48,17 @@ class Constants {
   public final int scoreTriple = 90;
   public final int scoreQuadruple = 180;
   
+  // Visual Effects
+  public final int effectMaxLength_RowCleared = 200;
+  public final int effectMaxth_PieceDrop = 200;
+  
+  // Images
+  public PImage lightning;
+  
   Constants() {
+  }
+  
+  void loadImages() {
+    this.lightning = loadImage(sketchPath("") + "data/lightning.png");
   }
 }

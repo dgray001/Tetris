@@ -25,8 +25,8 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.1.7c
-// 20211218
+// v0.3.0
+// 20211220
 
 
 
@@ -48,6 +48,7 @@ public void setup() {
   
   frameRate(constants.maxFPS);
   background(constants.defaultBackgroundColor);
+  constants.loadImages();
 }
 
 public void draw() {
@@ -106,6 +107,7 @@ class Board {
   float xf = 0;
   float yf = 0;
   boolean pieceOverflow = false;
+  ArrayList<VisualEffect> visualEffects = new ArrayList<VisualEffect>();
   
   Board(float xi, float yi, float xf, float yf) {
     this.spaces = new Space[constants.defaultBoardColumns][constants.defaultBoardRows];
@@ -168,6 +170,19 @@ class Board {
         this.spaces[i][j].drawSpace(xCurr + squareSize * i, yCurr + squareSize * j, squareSize);
       }
     }
+  }
+  
+  public void drawVisualEffects() {
+    this.drawBoard();
+    for (int i = 0; i < this.visualEffects.size(); i++) {
+      if (this.visualEffects.get(i).drawVisualEffect(this)) {
+        this.visualEffects.remove(i);
+        i--;
+      }
+    }
+  }
+  public void clearVisualEffects() {
+    this.visualEffects.clear();
   }
   
   public void addPiece() {
@@ -284,8 +299,14 @@ class Board {
     return true;
   }
   public void dropPiece() {
-    while(this.aPieceFalling()) {
-      this.movePiece(Direction.DIRECTION_DOWN, true);
+    if (this.aPieceFalling()) {
+      VisualEffect ve = new VisualEffect(VisualEffectType.PIECE_DROP, new Piece(this.piece));
+      while(this.aPieceFalling()) {
+        if (this.movePiece(Direction.DIRECTION_DOWN, true)) {
+          ve.integer1++ ;
+        }
+      }
+      this.visualEffects.add(ve);
     }
   }
   public boolean movePiece() {
@@ -392,7 +413,6 @@ class Board {
         }
       }
       if (rowFilled) {
-        rowsFilled++;
         // remove current row
         for (int i = 0; i < this.spaces.length; i++) {
           this.spaces[i][j].setOccupied(false);
@@ -408,6 +428,8 @@ class Board {
         for (int i = 0; i < this.spaces.length; i++) {
           this.spaces[i][0] = new Space();
         }
+        this.visualEffects.add(new VisualEffect(VisualEffectType.ROW_CLEARED, j - rowsFilled));
+        rowsFilled++;
         j++; // have to adjust row
       }
     }
@@ -749,7 +771,7 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.update(mouseX, mouseY);
-        if (this.cSB.getHIGH() != -1) {
+        if (this.cSB.getHIGH() > 0) {
           this.kpB.changeColor(color(220), color(0), color(170), color(120));
         } else {
           this.kpB.changeColor(color(235), color(80), color(170), color(120));
@@ -813,7 +835,7 @@ class AllButtons {
           this.sgB.mousePress();
         }
         this.siB.mousePress();
-        if (this.cSB.getHIGH() != -1) {
+        if (this.cSB.getHIGH() > 0) {
           if (this.kpB.getMON()) {
             this.kpB.mousePress();
           } else {
@@ -863,7 +885,7 @@ class AllButtons {
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mouseRelease();
-        if (this.cSB.getHIGH() != -1) {
+        if (this.cSB.getHIGH() > 0) {
           this.kpB.mouseRelease();
         }
         if (this.cSB.getSTRS().length == 2) {
@@ -900,8 +922,8 @@ class AllButtons {
     stroke(constants.defaultBackgroundColor);
     rectMode(CORNERS);
     switch(id) {
-      case 0:
-        rect(10, 740, 260, 800);
+      case 0: // scrollbar
+        rect(10, 720, 265, 800);
         break;
       case 1:
         rect(10, 690, 60, 715);
@@ -1112,11 +1134,22 @@ class Constants {
   public final int scoreTriple = 90;
   public final int scoreQuadruple = 180;
   
+  // Visual Effects
+  public final int effectMaxLength_RowCleared = 200;
+  public final int effectMaxth_PieceDrop = 200;
+  
+  // Images
+  public PImage lightning;
+  
   Constants() {
+  }
+  
+  public void loadImages() {
+    this.lightning = loadImage(sketchPath("") + "data/lightning.png");
   }
 }
 public enum GameState {
-  MAIN_MENU, CONNECTING_TO_LOBBY, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
+  MAIN_MENU, OPTIONS, CONNECTING_TO_LOBBY, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
 }
 
 class CurrGame {
@@ -1137,6 +1170,12 @@ class CurrGame {
     this.thisInstance = thisInstance;
   }
   
+  public void goToMainMenu() {
+    this.buttons.cSB.clearSTRS();
+    this.buttons.clearButton(0);
+    this.state = GameState.MAIN_MENU;
+  }
+  
   public void startSinglePlayerGame() {
     this.myGame = new Game(constants.game1Borders);
     this.state = GameState.SINGLEPLAYER;
@@ -1153,6 +1192,7 @@ class CurrGame {
             this.server = null;
             return;
           }
+          this.lobbyName += ": " + millis();
           println("Server active on port " + port + " with ip: " + Server.ip() + ".");
           this.portHosting = port;
           this.state = GameState.MULTIPLAYER_LOBBY_HOSTING;
@@ -1229,17 +1269,24 @@ class CurrGame {
   }
   
   public void findMultiPlayerGame() {
+    // First search for IPs
+    ArrayList<String> IPs = this.findAddressesOnLAN();
+    // Then search for open ports
+    this.lobbyClients = this.findHosts(IPs);
+    // Reset timers so clients not removed before initial ping request comes in
+    for (int i = 0; i < this.lobbyClients.size(); i++) {
+      this.lobbyClients.get(i).lastPingRequest = millis();
+    }
+    // Message if no connections found
     rectMode(CORNERS);
     fill(constants.defaultBackgroundColor);
     stroke(constants.defaultBackgroundColor);
     rect(10, 720, 265, 738);
-    ArrayList<String> IPs = this.findAddressesOnLAN();
-    this.lobbyClients = this.findHosts(IPs);
     if (this.lobbyClients.size() == 0) {
       textSize(13);
       textAlign(LEFT, TOP);
       fill(0);
-      text("No games found. Maybe try \"Find IP\"", 10, 723);
+      text("No connections found. Try \"Find IP\"", 10, 723);
     }
   }
   public ArrayList<String> findAddressesOnLAN() {
@@ -1274,26 +1321,15 @@ class CurrGame {
       thread1.start();
       thread2.start();
     }
-    Thread localhostThread = new Thread(new Runnable() {
-      public void run() {
-        try {
-          if (InetAddress.getByName("localhost").isReachable(constants.defaultPingTimeout)) {
-            IPs.add("localhost");
-          }
-        } catch (Exception e) {
-          //e.printStackTrace();
-        }
-      }
-    });
-    threads.add(localhostThread);
-    localhostThread.start();
     for(Thread thread : threads) {
       try {
         thread.join();
       } catch(InterruptedException e) {
+        thread.interrupt();
         //e.printStackTrace();
       }
     }
+    println("IPs found: " + IPs);
     return IPs;
   }
   public ArrayList<Joinee> findHosts(ArrayList<String> IPs) {
@@ -1311,6 +1347,7 @@ class CurrGame {
             try {
               Client testClient = new Client(inst, ip, port);
               if (testClient.active()) {
+                println("Connected at " + ip + " with port " + port + ".");
                 possibleLobbies.add(new Joinee(testClient, port, "LOBBY: "));
               }
               else {
@@ -1329,11 +1366,11 @@ class CurrGame {
         thread.start();
       }
     }
-    delay(constants.defaultPingTimeout);
     for(Thread thread : threads) {
       try {
-        thread.interrupt();
+        thread.join();
       } catch(Exception e) {
+        thread.interrupt();
         //e.printStackTrace();
       }
     }
@@ -1346,8 +1383,7 @@ class CurrGame {
       println("ERROR: selected lobby " + index + " but only " + this.lobbyClients.size() + " lobbies exist.");
       return;
     }
-    this.otherPlayer = this.lobbyClients.get(this.buttons.cSB.getHIGH());
-    this.otherPlayer.write("Join Lobby");
+    this.lobbyClients.get(this.buttons.cSB.getHIGH()).write("Join Lobby");
   }
   
   public void toggleRematch() {
@@ -1357,7 +1393,7 @@ class CurrGame {
       this.buttons.paB.changeColor(color(0, 255, 0), color(0), color(200, 100, 100), color(255, 40, 20));
       this.buttons.paB.setMOMES("Cancel");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
-        this.server.write("LOBBY: Host Rematch Sent");
+        this.server.write("| LOBBY: Host Rematch Sent");
         this.checkRematches();
       }
       if (this.state == GameState.MULTIPLAYER_JOINED) {
@@ -1369,7 +1405,7 @@ class CurrGame {
       this.buttons.paB.changeColor(color(255, 10, 10), color(0), color(100, 200, 100), color(40, 255, 20));
       this.buttons.paB.setMOMES("Resend Offer");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
-        this.server.write("LOBBY: Host Rematch Revoked");
+        this.server.write("| LOBBY: Host Rematch Revoked");
       }
       if (this.state == GameState.MULTIPLAYER_JOINED) {
         this.otherPlayer.write("Joinee Rematch Revoked");
@@ -1380,6 +1416,8 @@ class CurrGame {
     if ((this.wantRematch[0]) && (this.wantRematch[1])) {
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
         this.buttons.paB = new playAgainButton();
+        this.wantRematch[0] = false;
+        this.wantRematch[1] = false;
         this.myGame = new Game(constants.game1Borders);
         this.otherGame = new Game(constants.game2Borders);
         for (Joinee j : this.lobbyClients) {
@@ -1389,16 +1427,13 @@ class CurrGame {
             }
           }
         }
-        this.server.write("LOBBY: Start Game|");
+        this.server.write("| LOBBY: Start Game");
       }
     }
   }
   
   public void clientConnects(Client someClient) {
     println("Client connected with IP address: " + someClient.ip());
-    if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
-      this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: "));
-    }
   }
   public void clientDisconnects(Client someClient) {
     println("Client with IP address " + someClient.ip() + " has disconnected.");
@@ -1416,7 +1451,7 @@ class CurrGame {
       case MULTIPLAYER_LOBBY_HOSTING:
       case MULTIPLAYER_HOSTING:
         if (this.server != null) {
-          this.server.write("LOBBY: Quit Lobby");
+          this.server.write("| LOBBY: Quit Lobby");
           this.server.stop();
           this.server = null;
         }
@@ -1433,13 +1468,15 @@ class CurrGame {
             this.lobbyClients.get(i).client = null;
           }
         }
+        this.buttons.cSB.clearSTRS();
+        this.buttons.clearButton(0);
         this.lobbyClients.clear();
         break;
       default:
         println("ERROR: Leave lobby button pressed but state not recognized");
         break;
     }
-    this.state = GameState.MAIN_MENU;
+    this.goToMainMenu();
   }
   
   public void kickPlayer() {
@@ -1448,7 +1485,7 @@ class CurrGame {
     }
     else {
       println("Kicked client with ID: " + this.otherPlayer.id);
-      this.server.write("LOBBY: Kick Player|");
+      this.server.write("| LOBBY: Kick Player");
       this.server.disconnect(this.otherPlayer.client);
       this.otherPlayer = null;
     }
@@ -1465,7 +1502,7 @@ class CurrGame {
         }
       }
     }
-    this.server.write("LOBBY: Start Game|");
+    this.server.write("| LOBBY: Start Game");
   }
   
   public void clientEvent(Client someClient) {
@@ -1474,6 +1511,13 @@ class CurrGame {
       message = trim(message);
       if (message.equals("")) {
         continue;
+      }
+      if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
+        if (message.contains("LOBBY: Initial Request: ")) {
+          if (split(message, ":").length > 2) {
+            this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: ", trim(split(message, ":")[2])));
+          }
+        }
       }
       this.messageQ.add(message);
     }
@@ -1517,6 +1561,7 @@ class CurrGame {
         for(int i = 0; i < this.lobbyClients.size(); i++) {
           Joinee j = this.lobbyClients.get(i);
           if ((j == null) || (j.client == null)) {
+            println("A client was null and was removed.");
             this.lobbyClients.remove(i);
             i--;
             continue;
@@ -1530,10 +1575,12 @@ class CurrGame {
               }
               if (millis() - j.lastPingRequest > constants.defaultPingTimeout) {
                 if (!j.receivedInitialResponse) {
+                  println("Client with id " + j.id + " has not received initial ping resolve so was removed");
                   removeClient = true;
                 }
-                j.ping = millis() - j.lastPingRequest;
-                if (j.ping > constants.defaultPingTimeout * 2) {
+                j.missedPingRequest();
+                if (j.pingRequestsMissed > constants.maxPingRequestsMissed) {
+                  println("Client with id " + j.id + " has missed " + j.pingRequestsMissed + " ping requests so was removed.");
                   removeClient = true;
                 }
               }
@@ -1552,8 +1599,8 @@ class CurrGame {
           }
           else if (displayMessage) {
             int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
-            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.id + ": ")) / textWidth(" "));
-            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.id + " " + multiplyString(" ", secondGap) + j.ping + " ms");
+            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + ": ")) / textWidth(" "));
+            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + " " + multiplyString(" ", secondGap) + j.ping + " ms");
           }
         }
         this.buttons.cSB.setSTR(lbStrings);
@@ -1562,7 +1609,7 @@ class CurrGame {
         if (!this.otherPlayer.client.active()) {
           this.otherPlayer.client.stop();
           this.otherPlayer = null;
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
           break;
         }
         if (this.otherPlayer.receivedInitialResponse && !this.otherPlayer.waitingForResponse) {
@@ -1574,7 +1621,7 @@ class CurrGame {
       case SINGLEPLAYER:
         if (this.myGame.isOver()) {
           this.myGame = null;
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
           break;
         }
         this.myGame.update();
@@ -1624,12 +1671,12 @@ class CurrGame {
         textSize(13);
         textAlign(LEFT, TOP);
         fill(0);
-        text("Connection to Lobby", 10, 725);
+        text("Connection to lobby", 10, 725);
         lbStrings = new String[0];
         boolean leaveLobby = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, this.otherPlayer.name + "  (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, trim(split(this.otherPlayer.name, ":")[0]) + "  (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 if (!this.otherPlayer.receivedInitialResponse) {
@@ -1652,12 +1699,12 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to the lobby", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         else {
           showMessageDialog(null, "There was an error connecting to the lobby", "", PLAIN_MESSAGE);
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
         }
         this.buttons.cSB.setSTR(lbStrings);
         break;
@@ -1731,7 +1778,7 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to your opponent", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         this.buttons.cSB.setSTR(lbStrings);
@@ -1749,7 +1796,7 @@ class CurrGame {
         boolean leaveGame = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, this.otherPlayer.name + " (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, trim(split(this.otherPlayer.name, ":")[0]) + " (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 this.otherPlayer.missedPingRequest();
@@ -1769,12 +1816,12 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to the game", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         else {
           showMessageDialog(null, "There was an error connecting to the game", "", PLAIN_MESSAGE);
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
         }
         this.buttons.cSB.setSTR(lbStrings);
         break;
@@ -1810,7 +1857,20 @@ class CurrGame {
                     break;
                   }
                   if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
-                    this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                    boolean duplicateConnection = false;
+                    for (Joinee j : this.lobbyClients) {
+                      if ((j.receivedInitialResponse) && (j.name.equals(trim(splitMessage[3])))) {
+                        duplicateConnection = true;
+                        break;
+                      }
+                    }
+                    if (duplicateConnection) {
+                      this.lobbyClients.get(index).client.stop();
+                      this.lobbyClients.remove(index);
+                    }
+                    else {
+                      this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                    }
                   }
                   break;
                 case "Join Lobby":
@@ -1822,6 +1882,8 @@ class CurrGame {
                     }
                     this.lobbyClients.clear();
                     this.messageQ.clear();
+                    this.buttons.clearButton(6);
+                    this.buttons.cSB.setHIGH(-1);
                     this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
                   }
                   break;
@@ -1903,11 +1965,13 @@ class CurrGame {
                     println("ERROR: No IP address for ping request");
                     break;
                   }
-                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                  this.server.write("| LOBBY: Ping Resolve: " + trim(splitMessage[2]));
                   break;
                 case "Ping Resolve":
-                  if (this.otherPlayer.messageForMe(splitMessage)) {
-                    this.otherPlayer.resolvePingRequest();
+                  if (this.otherPlayer != null) {
+                    if (this.otherPlayer.messageForMe(splitMessage)) {
+                      this.otherPlayer.resolvePingRequest();
+                    }
                   }
                   break;
                 case "Initial Request":
@@ -1915,23 +1979,18 @@ class CurrGame {
                     println("ERROR: No IP address for initial request");
                     break;
                   }
-                  this.server.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :|");
+                  this.server.write("| LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :");
                   break;
                 case "Initial Resolve":
                   if (splitMessage.length < 3) {
                     println("ERROR: initial resolve message invalid");
                     break;
                   }
-                  try {
-                    if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
-                      this.lobbyClients.get(index).resolveInitialRequest();
-                    }
-                  } catch(Exception e) {}
-                  try {
+                  if (this.otherPlayer != null) {
                     if (this.otherPlayer.messageForMe(splitMessage)) {
                       this.otherPlayer.resolveInitialRequest();
                     }
-                  } catch(Exception e) {}
+                  }
                   break;
                 case "Join Lobby":
                   if (splitMessage.length < 3) {
@@ -1943,12 +2002,12 @@ class CurrGame {
                       println("ERROR: client ID not found.");
                       break;
                     }
-                    this.server.write("LOBBY: Join Lobby: " + trim(splitMessage[2]) + "|");
+                    this.server.write("| LOBBY: Join Lobby: " + trim(splitMessage[2]));
                     this.otherPlayer = this.lobbyClients.get(index);
                     this.lobbyClients.remove(index);
                   }
                   else {
-                    this.server.write("LOBBY: Lobby Full: " + trim(splitMessage[2]) + "|");
+                    this.server.write("| LOBBY: Lobby Full: " + trim(splitMessage[2]));
                   }
                   break;
                 default:
@@ -1976,13 +2035,13 @@ class CurrGame {
                   println("You were kicked from the lobby");
                   this.otherPlayer = null;
                   this.messageQ.clear();
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Quit Lobby":
                   println("The host quit the lobby");
                   this.otherPlayer = null;
                   this.messageQ.clear();
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Initial Request":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
@@ -2035,7 +2094,7 @@ class CurrGame {
                     println("ERROR: No IP address for ping request");
                     break;
                   }
-                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                  this.server.write("| LOBBY: Ping Resolve: " + trim(splitMessage[2]));
                   break;
                 case "Ping Resolve":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
@@ -2087,11 +2146,13 @@ class CurrGame {
                     }
                     this.otherPlayer = null;
                   }
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Start Game":
                   println("Game is starting");
                   this.buttons.paB = new playAgainButton();
+                  this.wantRematch[0] = false;
+                  this.wantRematch[1] = false;
                   this.myGame = new Game(constants.game1Borders);
                   this.otherGame = new Game(constants.game2Borders);
                   this.messageQ.clear();
@@ -2189,7 +2250,7 @@ class Game {
   private Board board;
   private ArrayList<Piece> nextPieces = new ArrayList<Piece>();
   private Piece savedPiece = null;
-  private int tickLenth = constants.defaultTickLength;
+  private int tickLength = constants.defaultTickLength;
   private int lastTick;
   private float xi = 0;
   private float yi = 0;
@@ -2246,7 +2307,9 @@ class Game {
       return "";
     }
     String updates = "";
-    if (millis() - this.lastTick > tickLenth) {
+    this.drawVisualEffects();
+    updates += gameName + "visualEffects";
+    if (millis() - this.lastTick > this.tickLength) {
       updates += gameName + "tick";
       this.incrementStatistic("Ticks");
       this.increaseStatistic("Points", constants.scoreTick);
@@ -2345,6 +2408,13 @@ class Game {
     text(this.statistics.get("Double Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 13);
     text(this.statistics.get("Triple Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 16);
     text(this.statistics.get("Quadruple Combos"), this.xi + 0.1f * (this.xf - this.xi), this.yi + textHeight * 19);
+  }
+  
+  public void drawVisualEffects() {
+    this.board.drawVisualEffects();
+  }
+  public void clearVisualEffects() {
+    this.board.clearVisualEffects();
   }
   
   public void gameOverMessage() {
@@ -2569,6 +2639,12 @@ class Game {
         this.incrementStatistic("Ticks");
         this.increaseStatistic("Points", constants.scoreTick);
         break;
+      case "visualEffects":
+        this.drawVisualEffects();
+        break;
+      case "clearEffects":
+        this.clearVisualEffects();
+        break;
       default:
         return false;
     }
@@ -2592,9 +2668,17 @@ class Joinee {
     this.port = port;
     this.writeHeader = header;
     if (newClient != null) {
-      this.id = newClient.ip();
+      this.id = newClient.ip() + ", " + port + ", " + millis();
       this.initialRequest();
     }
+    println("New joinee made with id: " + this.id);
+  }
+  Joinee(Client newClient, int port, String header, String id) {
+    this.client = newClient;
+    this.port = port;
+    this.writeHeader = header;
+    this.id = id;
+    println("New joinee made with set id to: " + this.id);
   }
   
   public boolean messageForMe(String message) {
@@ -2633,11 +2717,13 @@ class Joinee {
   }
   public void resolveInitialRequest(String newName, String s1) {
     if ((this.client != null) && (this.client.active())) {
-      this.ping = millis() - this.lastPingRequest;
-      this.lastPingRequest = millis();
-      this.waitingForResponse = false;
-      this.receivedInitialResponse = true;
-      this.setNewName(newName, s1);
+      if (waitingForResponse && !receivedInitialResponse) {
+        this.ping = millis() - this.lastPingRequest;
+        this.lastPingRequest = millis();
+        this.waitingForResponse = false;
+        this.receivedInitialResponse = true;
+        this.setNewName(newName, s1);
+      }
     }
   }
   
@@ -2650,10 +2736,12 @@ class Joinee {
   }
   public void resolvePingRequest() {
     if ((this.client != null) && (this.client.active())) {
-      this.ping = millis() - this.lastPingRequest;
-      this.lastPingRequest = millis();
-      this.waitingForResponse = false;
-      this.pingRequestsMissed = 0;
+      if (waitingForResponse) {
+        this.ping = millis() - this.lastPingRequest;
+        this.lastPingRequest = millis();
+        this.waitingForResponse = false;
+        this.pingRequestsMissed = 0;
+      }
     }
   }
   public void missedPingRequest() {
@@ -2664,7 +2752,7 @@ class Joinee {
   
   public void write(String message) {
     if ((this.client != null) && (this.client.active())) {
-      this.client.write(this.writeHeader + message + ": " + this.id + "|");
+      this.client.write("|" + this.writeHeader + message + ": " + this.id);
     }
   }
 }
@@ -2698,6 +2786,7 @@ public class Piece {
   public int pieceFill = constants.defaultPieceFill;
   public int pieceStroke = constants.defaultPieceStroke;
   
+  Piece() {}
   Piece(int boardSizeX) {
     // get random shape
     this.shape = Shape.randomShape();
@@ -2981,6 +3070,34 @@ public class Piece {
     println(this.xLocation + " "  + this.yLocation);
   }
 }
+class tableListBar {
+  private listBar listB;
+  private float headerHeight;
+  private ArrayList<Pair<String, Float>> headers = new ArrayList<Pair<String, Float>>();
+  tableListBar(float xi, float yi, float xf, float yf, float headerHeight) {
+    if (headerHeight > yf - yi) {
+      println("ERROR: headerSize for tableListBar larger than space given");
+    }
+    this.listB = new listBar(xi, yi + headerHeight, xf, yf);
+    this.headerHeight = headerHeight;
+  }
+  
+  public void update(float x, float y) {
+    // Draw outer box
+    rectMode(CORNERS);
+    stroke(0);
+    fill(200);
+    rect(this.listB.getXI(), this.listB.getYI() - this.headerHeight, this.listB.getXF(), this.listB.getYF());
+    // Update listBar
+    this.listB.update(x, y);
+    // Write header text
+    textSize(this.headerHeight - 2);
+    textAlign(LEFT, BOTTOM);
+    fill(0);
+    String headerText = "";
+  }
+}
+
 class listBar extends scrollBar {
   private int selected = -1; // item selected on list
   listBar(float xi, float yi, float xf, float yf) {
@@ -3131,6 +3248,8 @@ abstract class scrollBar {
     return this.strings[i];
   } public int getLENG() {
     return this.strings.length;
+  } public void clearSTRS() {
+    this.strings = new String[0];
   }
   public void setCURR(int curr) {
     this.currStart = curr;
@@ -3314,6 +3433,105 @@ class Space {
       stroke(this.shadowStroke);
       square(xi, yi, sideLength);
     }
+  }
+}
+public enum VisualEffectType {
+  ROW_CLEARED, PIECE_DROP
+}
+
+class VisualEffect {
+  private VisualEffectType type;
+  private int maxLength; // in ms
+  private float startTime;
+  private int integer1;
+  private Piece piece;
+  
+  VisualEffect(VisualEffectType type, int integer1) {
+    this(type, integer1, new Piece());
+  }
+  VisualEffect(VisualEffectType type, Piece piece) {
+    this(type, 0, piece);
+  }
+  VisualEffect(VisualEffectType type, int integer1, Piece piece) {
+    this.type = type;
+    switch(this.type) {
+      case ROW_CLEARED:
+        this.maxLength = constants.effectMaxLength_RowCleared;
+        this.integer1 = integer1;
+        break;
+      case PIECE_DROP:
+        this.maxLength = constants.effectMaxth_PieceDrop;
+        this.piece = piece;
+        break;
+      default:
+        println("ERROR: visual effect not found");
+        break;
+    }
+    this.startTime = millis();
+  }
+  
+  public void setInteger1(int i) {
+    this.integer1 = i;
+  }
+  
+  public boolean drawVisualEffect(Board board) {
+    float effectProgress = (float)(millis() - startTime) / this.maxLength;
+    if (effectProgress > 1) {
+      return true;
+    }
+    float squareSize = min((board.xf - board.xi) / (board.spaces.length + 2), (board.yf - board.yi) / (board.spaces[0].length + 2));
+    switch(this.type) {
+      case ROW_CLEARED:
+        fill(color(255), effectProgress * 255);
+        stroke(color(255), effectProgress * 255);
+        ellipseMode(CENTER);
+        ellipse(board.xi + 0.5f * (board.xf - board.xi), board.yi + squareSize * (1.5f + this.integer1), board.xf - board.xi - 2 * squareSize, squareSize);
+        /*
+        imageMode(CENTER);
+        tint(255, effectProgress * 255);
+        image(constants.lightning, board.xi + 0.5 * (board.xf - board.xi), board.yi + squareSize * (1.5 + this.integer1), board.xf - board.xi, squareSize);*/
+        break;
+      case PIECE_DROP:
+        ArrayList<Pair<Integer, Integer>> pieceSpaces = this.piece.getPieceSpace();
+        ArrayList<Pair<Integer, Integer>> pieceSpacesDrawn = new ArrayList<Pair<Integer, Integer>>();
+        strokeWeight(1);
+        // first loop to remove unnecessary squares
+        for (Pair<Integer, Integer> i : pieceSpaces) {
+          int x = i.getKey();
+          int y = i.getValue();
+          boolean noneOfColumn = true;
+          for (int j = 0; j < pieceSpacesDrawn.size(); j++) {
+            if (x == pieceSpacesDrawn.get(j).getKey()) {
+              noneOfColumn = false;
+              if (y < pieceSpacesDrawn.get(j).getValue()) {
+                pieceSpacesDrawn.remove(j);
+                pieceSpacesDrawn.add(i);
+              }
+              break;
+            }
+          }
+          if (noneOfColumn) {
+            pieceSpacesDrawn.add(new Pair(x, y));
+          }
+        }
+        // then loop to draw lines
+        for (Pair<Integer, Integer> i : pieceSpacesDrawn) {
+          int x = i.getKey();
+          int y = i.getValue();
+          for (int j = 0; j < squareSize * this.integer1; j++) {
+            if (squareSize * y + j < 0) {
+              continue;
+            }
+            stroke(color(this.piece.pieceFill), 255 * (j / (squareSize * this.integer1)));
+            line(board.xi + squareSize * (x + 1), board.yi + squareSize * (y + 1) + j, board.xi + squareSize * (x + 2), board.yi + squareSize * (y + 1) + j);
+          }
+        }
+        break;
+      default:
+        println("ERROR: visual effect not found");
+        break;
+    }
+    return false;
   }
 }
   public void settings() {  size(1330, 800); }

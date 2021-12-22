@@ -21,6 +21,7 @@ public class Piece {
   public color pieceFill = constants.defaultPieceFill;
   public color pieceStroke = constants.defaultPieceStroke;
   
+  Piece() {}
   Piece(int boardSizeX) {
     // get random shape
     this.shape = Shape.randomShape();

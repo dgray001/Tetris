@@ -15,9 +15,17 @@ class Joinee {
     this.port = port;
     this.writeHeader = header;
     if (newClient != null) {
-      this.id = newClient.ip();
+      this.id = newClient.ip() + ", " + port + ", " + millis();
       this.initialRequest();
     }
+    println("New joinee made with id: " + this.id);
+  }
+  Joinee(Client newClient, int port, String header, String id) {
+    this.client = newClient;
+    this.port = port;
+    this.writeHeader = header;
+    this.id = id;
+    println("New joinee made with set id to: " + this.id);
   }
   
   boolean messageForMe(String message) {
@@ -56,11 +64,13 @@ class Joinee {
   }
   void resolveInitialRequest(String newName, String s1) {
     if ((this.client != null) && (this.client.active())) {
-      this.ping = millis() - this.lastPingRequest;
-      this.lastPingRequest = millis();
-      this.waitingForResponse = false;
-      this.receivedInitialResponse = true;
-      this.setNewName(newName, s1);
+      if (waitingForResponse && !receivedInitialResponse) {
+        this.ping = millis() - this.lastPingRequest;
+        this.lastPingRequest = millis();
+        this.waitingForResponse = false;
+        this.receivedInitialResponse = true;
+        this.setNewName(newName, s1);
+      }
     }
   }
   
@@ -73,10 +83,12 @@ class Joinee {
   }
   void resolvePingRequest() {
     if ((this.client != null) && (this.client.active())) {
-      this.ping = millis() - this.lastPingRequest;
-      this.lastPingRequest = millis();
-      this.waitingForResponse = false;
-      this.pingRequestsMissed = 0;
+      if (waitingForResponse) {
+        this.ping = millis() - this.lastPingRequest;
+        this.lastPingRequest = millis();
+        this.waitingForResponse = false;
+        this.pingRequestsMissed = 0;
+      }
     }
   }
   void missedPingRequest() {
@@ -87,7 +99,7 @@ class Joinee {
   
   void write(String message) {
     if ((this.client != null) && (this.client.active())) {
-      this.client.write(this.writeHeader + message + ": " + this.id + "|");
+      this.client.write("|" + this.writeHeader + message + ": " + this.id);
     }
   }
 }

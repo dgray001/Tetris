@@ -1,5 +1,5 @@
 public enum GameState {
-  MAIN_MENU, CONNECTING_TO_LOBBY, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
+  MAIN_MENU, OPTIONS, CONNECTING_TO_LOBBY, SINGLEPLAYER, MULTIPLAYER_LOBBY_HOSTING, MULTIPLAYER_LOBBY_JOINED, MULTIPLAYER_HOSTING, MULTIPLAYER_JOINED;
 }
 
 class CurrGame {
@@ -20,6 +20,12 @@ class CurrGame {
     this.thisInstance = thisInstance;
   }
   
+  void goToMainMenu() {
+    this.buttons.cSB.clearSTRS();
+    this.buttons.clearButton(0);
+    this.state = GameState.MAIN_MENU;
+  }
+  
   void startSinglePlayerGame() {
     this.myGame = new Game(constants.game1Borders);
     this.state = GameState.SINGLEPLAYER;
@@ -36,6 +42,7 @@ class CurrGame {
             this.server = null;
             return;
           }
+          this.lobbyName += ": " + millis();
           println("Server active on port " + port + " with ip: " + Server.ip() + ".");
           this.portHosting = port;
           this.state = GameState.MULTIPLAYER_LOBBY_HOSTING;
@@ -112,17 +119,24 @@ class CurrGame {
   }
   
   void findMultiPlayerGame() {
+    // First search for IPs
+    ArrayList<String> IPs = this.findAddressesOnLAN();
+    // Then search for open ports
+    this.lobbyClients = this.findHosts(IPs);
+    // Reset timers so clients not removed before initial ping request comes in
+    for (int i = 0; i < this.lobbyClients.size(); i++) {
+      this.lobbyClients.get(i).lastPingRequest = millis();
+    }
+    // Message if no connections found
     rectMode(CORNERS);
     fill(constants.defaultBackgroundColor);
     stroke(constants.defaultBackgroundColor);
     rect(10, 720, 265, 738);
-    ArrayList<String> IPs = this.findAddressesOnLAN();
-    this.lobbyClients = this.findHosts(IPs);
     if (this.lobbyClients.size() == 0) {
       textSize(13);
       textAlign(LEFT, TOP);
       fill(0);
-      text("No games found. Maybe try \"Find IP\"", 10, 723);
+      text("No connections found. Try \"Find IP\"", 10, 723);
     }
   }
   ArrayList<String> findAddressesOnLAN() {
@@ -157,26 +171,15 @@ class CurrGame {
       thread1.start();
       thread2.start();
     }
-    Thread localhostThread = new Thread(new Runnable() {
-      public void run() {
-        try {
-          if (InetAddress.getByName("localhost").isReachable(constants.defaultPingTimeout)) {
-            IPs.add("localhost");
-          }
-        } catch (Exception e) {
-          //e.printStackTrace();
-        }
-      }
-    });
-    threads.add(localhostThread);
-    localhostThread.start();
     for(Thread thread : threads) {
       try {
         thread.join();
       } catch(InterruptedException e) {
+        thread.interrupt();
         //e.printStackTrace();
       }
     }
+    println("IPs found: " + IPs);
     return IPs;
   }
   ArrayList<Joinee> findHosts(ArrayList<String> IPs) {
@@ -194,6 +197,7 @@ class CurrGame {
             try {
               Client testClient = new Client(inst, ip, port);
               if (testClient.active()) {
+                println("Connected at " + ip + " with port " + port + ".");
                 possibleLobbies.add(new Joinee(testClient, port, "LOBBY: "));
               }
               else {
@@ -212,11 +216,11 @@ class CurrGame {
         thread.start();
       }
     }
-    delay(constants.defaultPingTimeout);
     for(Thread thread : threads) {
       try {
-        thread.interrupt();
+        thread.join();
       } catch(Exception e) {
+        thread.interrupt();
         //e.printStackTrace();
       }
     }
@@ -229,8 +233,7 @@ class CurrGame {
       println("ERROR: selected lobby " + index + " but only " + this.lobbyClients.size() + " lobbies exist.");
       return;
     }
-    this.otherPlayer = this.lobbyClients.get(this.buttons.cSB.getHIGH());
-    this.otherPlayer.write("Join Lobby");
+    this.lobbyClients.get(this.buttons.cSB.getHIGH()).write("Join Lobby");
   }
   
   void toggleRematch() {
@@ -240,7 +243,7 @@ class CurrGame {
       this.buttons.paB.changeColor(color(0, 255, 0), color(0), color(200, 100, 100), color(255, 40, 20));
       this.buttons.paB.setMOMES("Cancel");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
-        this.server.write("LOBBY: Host Rematch Sent");
+        this.server.write("| LOBBY: Host Rematch Sent");
         this.checkRematches();
       }
       if (this.state == GameState.MULTIPLAYER_JOINED) {
@@ -252,7 +255,7 @@ class CurrGame {
       this.buttons.paB.changeColor(color(255, 10, 10), color(0), color(100, 200, 100), color(40, 255, 20));
       this.buttons.paB.setMOMES("Resend Offer");
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
-        this.server.write("LOBBY: Host Rematch Revoked");
+        this.server.write("| LOBBY: Host Rematch Revoked");
       }
       if (this.state == GameState.MULTIPLAYER_JOINED) {
         this.otherPlayer.write("Joinee Rematch Revoked");
@@ -263,6 +266,8 @@ class CurrGame {
     if ((this.wantRematch[0]) && (this.wantRematch[1])) {
       if (this.state == GameState.MULTIPLAYER_HOSTING) {
         this.buttons.paB = new playAgainButton();
+        this.wantRematch[0] = false;
+        this.wantRematch[1] = false;
         this.myGame = new Game(constants.game1Borders);
         this.otherGame = new Game(constants.game2Borders);
         for (Joinee j : this.lobbyClients) {
@@ -272,16 +277,13 @@ class CurrGame {
             }
           }
         }
-        this.server.write("LOBBY: Start Game|");
+        this.server.write("| LOBBY: Start Game");
       }
     }
   }
   
   void clientConnects(Client someClient) {
     println("Client connected with IP address: " + someClient.ip());
-    if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
-      this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: "));
-    }
   }
   void clientDisconnects(Client someClient) {
     println("Client with IP address " + someClient.ip() + " has disconnected.");
@@ -299,7 +301,7 @@ class CurrGame {
       case MULTIPLAYER_LOBBY_HOSTING:
       case MULTIPLAYER_HOSTING:
         if (this.server != null) {
-          this.server.write("LOBBY: Quit Lobby");
+          this.server.write("| LOBBY: Quit Lobby");
           this.server.stop();
           this.server = null;
         }
@@ -316,13 +318,15 @@ class CurrGame {
             this.lobbyClients.get(i).client = null;
           }
         }
+        this.buttons.cSB.clearSTRS();
+        this.buttons.clearButton(0);
         this.lobbyClients.clear();
         break;
       default:
         println("ERROR: Leave lobby button pressed but state not recognized");
         break;
     }
-    this.state = GameState.MAIN_MENU;
+    this.goToMainMenu();
   }
   
   void kickPlayer() {
@@ -331,7 +335,7 @@ class CurrGame {
     }
     else {
       println("Kicked client with ID: " + this.otherPlayer.id);
-      this.server.write("LOBBY: Kick Player|");
+      this.server.write("| LOBBY: Kick Player");
       this.server.disconnect(this.otherPlayer.client);
       this.otherPlayer = null;
     }
@@ -348,7 +352,7 @@ class CurrGame {
         }
       }
     }
-    this.server.write("LOBBY: Start Game|");
+    this.server.write("| LOBBY: Start Game");
   }
   
   void clientEvent(Client someClient) {
@@ -357,6 +361,13 @@ class CurrGame {
       message = trim(message);
       if (message.equals("")) {
         continue;
+      }
+      if (this.state == GameState.MULTIPLAYER_LOBBY_HOSTING) {
+        if (message.contains("LOBBY: Initial Request: ")) {
+          if (split(message, ":").length > 2) {
+            this.lobbyClients.add(new Joinee(someClient, this.portHosting, "LOBBY: ", trim(split(message, ":")[2])));
+          }
+        }
       }
       this.messageQ.add(message);
     }
@@ -400,6 +411,7 @@ class CurrGame {
         for(int i = 0; i < this.lobbyClients.size(); i++) {
           Joinee j = this.lobbyClients.get(i);
           if ((j == null) || (j.client == null)) {
+            println("A client was null and was removed.");
             this.lobbyClients.remove(i);
             i--;
             continue;
@@ -413,10 +425,12 @@ class CurrGame {
               }
               if (millis() - j.lastPingRequest > constants.defaultPingTimeout) {
                 if (!j.receivedInitialResponse) {
+                  println("Client with id " + j.id + " has not received initial ping resolve so was removed");
                   removeClient = true;
                 }
-                j.ping = millis() - j.lastPingRequest;
-                if (j.ping > constants.defaultPingTimeout * 2) {
+                j.missedPingRequest();
+                if (j.pingRequestsMissed > constants.maxPingRequestsMissed) {
+                  println("Client with id " + j.id + " has missed " + j.pingRequestsMissed + " ping requests so was removed.");
                   removeClient = true;
                 }
               }
@@ -435,8 +449,8 @@ class CurrGame {
           }
           else if (displayMessage) {
             int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
-            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.id + ": ")) / textWidth(" "));
-            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.id + " " + multiplyString(" ", secondGap) + j.ping + " ms");
+            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + ": ")) / textWidth(" "));
+            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + " " + multiplyString(" ", secondGap) + j.ping + " ms");
           }
         }
         this.buttons.cSB.setSTR(lbStrings);
@@ -445,7 +459,7 @@ class CurrGame {
         if (!this.otherPlayer.client.active()) {
           this.otherPlayer.client.stop();
           this.otherPlayer = null;
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
           break;
         }
         if (this.otherPlayer.receivedInitialResponse && !this.otherPlayer.waitingForResponse) {
@@ -457,7 +471,7 @@ class CurrGame {
       case SINGLEPLAYER:
         if (this.myGame.isOver()) {
           this.myGame = null;
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
           break;
         }
         this.myGame.update();
@@ -507,12 +521,12 @@ class CurrGame {
         textSize(13);
         textAlign(LEFT, TOP);
         fill(0);
-        text("Connection to Lobby", 10, 725);
+        text("Connection to lobby", 10, 725);
         lbStrings = new String[0];
         boolean leaveLobby = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, this.otherPlayer.name + "  (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, trim(split(this.otherPlayer.name, ":")[0]) + "  (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 if (!this.otherPlayer.receivedInitialResponse) {
@@ -535,12 +549,12 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to the lobby", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         else {
           showMessageDialog(null, "There was an error connecting to the lobby", "", PLAIN_MESSAGE);
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
         }
         this.buttons.cSB.setSTR(lbStrings);
         break;
@@ -614,7 +628,7 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to your opponent", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         this.buttons.cSB.setSTR(lbStrings);
@@ -632,7 +646,7 @@ class CurrGame {
         boolean leaveGame = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, this.otherPlayer.name + " (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, trim(split(this.otherPlayer.name, ":")[0]) + " (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 this.otherPlayer.missedPingRequest();
@@ -652,12 +666,12 @@ class CurrGame {
             this.otherPlayer.client.stop();
             this.otherPlayer = null;
             showMessageDialog(null, "You lost connection to the game", "", PLAIN_MESSAGE);
-            this.state = GameState.MAIN_MENU;
+            this.goToMainMenu();
           }
         }
         else {
           showMessageDialog(null, "There was an error connecting to the game", "", PLAIN_MESSAGE);
-          this.state = GameState.MAIN_MENU;
+          this.goToMainMenu();
         }
         this.buttons.cSB.setSTR(lbStrings);
         break;
@@ -693,7 +707,20 @@ class CurrGame {
                     break;
                   }
                   if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
-                    this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                    boolean duplicateConnection = false;
+                    for (Joinee j : this.lobbyClients) {
+                      if ((j.receivedInitialResponse) && (j.name.equals(trim(splitMessage[3])))) {
+                        duplicateConnection = true;
+                        break;
+                      }
+                    }
+                    if (duplicateConnection) {
+                      this.lobbyClients.get(index).client.stop();
+                      this.lobbyClients.remove(index);
+                    }
+                    else {
+                      this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                    }
                   }
                   break;
                 case "Join Lobby":
@@ -705,6 +732,8 @@ class CurrGame {
                     }
                     this.lobbyClients.clear();
                     this.messageQ.clear();
+                    this.buttons.clearButton(6);
+                    this.buttons.cSB.setHIGH(-1);
                     this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
                   }
                   break;
@@ -786,11 +815,13 @@ class CurrGame {
                     println("ERROR: No IP address for ping request");
                     break;
                   }
-                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                  this.server.write("| LOBBY: Ping Resolve: " + trim(splitMessage[2]));
                   break;
                 case "Ping Resolve":
-                  if (this.otherPlayer.messageForMe(splitMessage)) {
-                    this.otherPlayer.resolvePingRequest();
+                  if (this.otherPlayer != null) {
+                    if (this.otherPlayer.messageForMe(splitMessage)) {
+                      this.otherPlayer.resolvePingRequest();
+                    }
                   }
                   break;
                 case "Initial Request":
@@ -798,23 +829,18 @@ class CurrGame {
                     println("ERROR: No IP address for initial request");
                     break;
                   }
-                  this.server.write("LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :|");
+                  this.server.write("| LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :");
                   break;
                 case "Initial Resolve":
                   if (splitMessage.length < 3) {
                     println("ERROR: initial resolve message invalid");
                     break;
                   }
-                  try {
-                    if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
-                      this.lobbyClients.get(index).resolveInitialRequest();
-                    }
-                  } catch(Exception e) {}
-                  try {
+                  if (this.otherPlayer != null) {
                     if (this.otherPlayer.messageForMe(splitMessage)) {
                       this.otherPlayer.resolveInitialRequest();
                     }
-                  } catch(Exception e) {}
+                  }
                   break;
                 case "Join Lobby":
                   if (splitMessage.length < 3) {
@@ -826,12 +852,12 @@ class CurrGame {
                       println("ERROR: client ID not found.");
                       break;
                     }
-                    this.server.write("LOBBY: Join Lobby: " + trim(splitMessage[2]) + "|");
+                    this.server.write("| LOBBY: Join Lobby: " + trim(splitMessage[2]));
                     this.otherPlayer = this.lobbyClients.get(index);
                     this.lobbyClients.remove(index);
                   }
                   else {
-                    this.server.write("LOBBY: Lobby Full: " + trim(splitMessage[2]) + "|");
+                    this.server.write("| LOBBY: Lobby Full: " + trim(splitMessage[2]));
                   }
                   break;
                 default:
@@ -859,13 +885,13 @@ class CurrGame {
                   println("You were kicked from the lobby");
                   this.otherPlayer = null;
                   this.messageQ.clear();
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Quit Lobby":
                   println("The host quit the lobby");
                   this.otherPlayer = null;
                   this.messageQ.clear();
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Initial Request":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
@@ -918,7 +944,7 @@ class CurrGame {
                     println("ERROR: No IP address for ping request");
                     break;
                   }
-                  this.server.write("LOBBY: Ping Resolve: " + trim(splitMessage[2]) + "|");
+                  this.server.write("| LOBBY: Ping Resolve: " + trim(splitMessage[2]));
                   break;
                 case "Ping Resolve":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
@@ -970,11 +996,13 @@ class CurrGame {
                     }
                     this.otherPlayer = null;
                   }
-                  this.state = GameState.MAIN_MENU;
+                  this.goToMainMenu();
                   break;
                 case "Start Game":
                   println("Game is starting");
                   this.buttons.paB = new playAgainButton();
+                  this.wantRematch[0] = false;
+                  this.wantRematch[1] = false;
                   this.myGame = new Game(constants.game1Borders);
                   this.otherGame = new Game(constants.game2Borders);
                   this.messageQ.clear();

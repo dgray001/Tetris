@@ -1,3 +1,31 @@
+class tableListBar {
+  private listBar listB;
+  private float headerHeight;
+  private ArrayList<Pair<String, Float>> headers = new ArrayList<Pair<String, Float>>();
+  tableListBar(float xi, float yi, float xf, float yf, float headerHeight) {
+    if (headerHeight > yf - yi) {
+      println("ERROR: headerSize for tableListBar larger than space given");
+    }
+    this.listB = new listBar(xi, yi + headerHeight, xf, yf);
+    this.headerHeight = headerHeight;
+  }
+  
+  public void update(float x, float y) {
+    // Draw outer box
+    rectMode(CORNERS);
+    stroke(0);
+    fill(200);
+    rect(this.listB.getXI(), this.listB.getYI() - this.headerHeight, this.listB.getXF(), this.listB.getYF());
+    // Update listBar
+    this.listB.update(x, y);
+    // Write header text
+    textSize(this.headerHeight - 2);
+    textAlign(LEFT, BOTTOM);
+    fill(0);
+    String headerText = "";
+  }
+}
+
 class listBar extends scrollBar {
   private int selected = -1; // item selected on list
   listBar(float xi, float yi, float xf, float yf) {
@@ -148,6 +176,8 @@ abstract class scrollBar {
     return this.strings[i];
   } public int getLENG() {
     return this.strings.length;
+  } public void clearSTRS() {
+    this.strings = new String[0];
   }
   public void setCURR(int curr) {
     this.currStart = curr;
