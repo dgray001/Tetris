@@ -2,8 +2,10 @@ class AllButtons {
   private quitButton qB = new quitButton();
   
   private newGameButton ngB = new newGameButton();
+  private pauseGameButton pgB = new pauseGameButton();
   private leaveLobbyButton llB = new leaveLobbyButton();
   
+  private endGameButton egB = new endGameButton();
   private hostGameButton hgB = new hostGameButton();
   private kickPlayerButton kpB = new kickPlayerButton();
   private playAgainButton paB = new playAgainButton();
@@ -42,10 +44,13 @@ class AllButtons {
         this.jlB.update(mouseX, mouseY);
         this.fiB.update(mouseX, mouseY);
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.update(mouseX, mouseY);
+        this.pgB.update(mouseX, mouseY);
+        this.egB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.update(mouseX, mouseY);
@@ -102,10 +107,13 @@ class AllButtons {
         }
         this.fiB.mousePress();
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.mousePress();
+        this.pgB.mousePress();
+        this.egB.mousePress();
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mousePress();
@@ -156,10 +164,13 @@ class AllButtons {
         }
         this.fiB.mouseRelease();
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.mouseRelease();
+        this.pgB.mouseRelease();
+        this.egB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mouseRelease();
@@ -195,6 +206,11 @@ class AllButtons {
     this.cSB.scroll(count);
   }
   
+  void clearButtons(int[] ids) {
+    for (int id : ids) {
+      this.clearButton(id);
+    }
+  }
   void clearButton(int id) {
     fill(constants.defaultBackgroundColor);
     stroke(constants.defaultBackgroundColor);
@@ -251,6 +267,17 @@ class newGameButton extends recButton {
     currGame.startSinglePlayerGame();
   }
 }
+class pauseGameButton extends recButton {
+  pauseGameButton() {
+    super("Pause Game", 14, 70, 690, 160, 715);
+    this.setREB(true);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.pauseGame();
+  }
+}
 class leaveLobbyButton extends recButton {
   leaveLobbyButton() {
     super("Leave Lobby", 14, 70, 690, 160, 715);
@@ -264,6 +291,17 @@ class leaveLobbyButton extends recButton {
 }
 
 // Button 3
+class endGameButton extends recButton {
+  endGameButton() {
+    super("End Game", 14, 170, 690, 260, 715);
+    this.setREB(true);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.endGame();
+  }
+}
 class hostGameButton extends recButton {
   hostGameButton() {
     super("Host Game", 14, 170, 690, 260, 715);

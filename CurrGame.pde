@@ -15,6 +15,7 @@ class CurrGame {
   AllButtons buttons = new AllButtons();
   private Queue<String> messageQ = new LinkedList<String>();
   private boolean[] wantRematch = new boolean[2];
+  private boolean paused = false;
   
   CurrGame(Tetris thisInstance) {
     this.thisInstance = thisInstance;
@@ -29,6 +30,24 @@ class CurrGame {
   void startSinglePlayerGame() {
     this.myGame = new Game(constants.game1Borders);
     this.state = GameState.SINGLEPLAYER;
+    this.buttons.clearButtons(new int[]{0, 5, 6});
+  }
+  
+  void pauseGame() {
+    if (this.paused) {
+      this.paused = false;
+      this.buttons.pgB.setMES("Pause Game");
+      this.buttons.pgB.defaultColors();
+    }
+    else {
+      this.paused = true;
+      this.buttons.pgB.setMES("Resume");
+      this.myGame.gameOverMessage("Game", "Paused");
+      this.buttons.pgB.changeColor(color(120), color(0), color(170), color(220));
+    }
+  }
+  
+  void endGame() {
   }
   
   void hostTwoPlayerGame() {
@@ -469,6 +488,9 @@ class CurrGame {
         }
         break;
       case SINGLEPLAYER:
+        if (this.paused) {
+          return;
+        }
         if (this.myGame.isOver()) {
           this.myGame = null;
           this.goToMainMenu();
