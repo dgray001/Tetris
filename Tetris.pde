@@ -1,5 +1,5 @@
 // Tetris
-// v0.3.1b
+// v0.3.1c
 // 20211220
 
 import java.util.*;
@@ -23,6 +23,10 @@ void setup() {
   frameRate(constants.maxFPS);
   background(constants.defaultBackgroundColor);
   constants.loadImages();
+  fill(0);
+  textSize(14);
+  textAlign(LEFT, BOTTOM);
+  text("Customize", 1240, 707);
 }
 
 void draw() {

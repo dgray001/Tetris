@@ -20,6 +20,11 @@ class AllButtons {
   
   private findIpButton fiB = new findIpButton();
   
+  private customizePieceButton cpB = new customizePieceButton();
+  private customizeBoardButton cbB = new customizeBoardButton();
+  private customizeSoundButton csB = new customizeSoundButton();
+  private customizeKeysButton ckB = new customizeKeysButton();
+  
   AllButtons() {
   }
   
@@ -29,6 +34,10 @@ class AllButtons {
     rectMode(CORNERS);
     rect(0, 685, 600, 720);
     qB.update(mouseX, mouseY);
+    cpB.update(mouseX, mouseY);
+    cbB.update(mouseX, mouseY);
+    csB.update(mouseX, mouseY);
+    ckB.update(mouseX, mouseY);
     switch(state) {
       case MAIN_MENU:
         this.ngB.update(mouseX, mouseY);
@@ -90,6 +99,10 @@ class AllButtons {
   }
   void mousePress(GameState state) {
     qB.mousePress();
+    cpB.mousePress();
+    cbB.mousePress();
+    csB.mousePress();
+    ckB.mousePress();
     switch(state) {
       case MAIN_MENU:
         this.ngB.mousePress();
@@ -153,6 +166,10 @@ class AllButtons {
   }
   void mouseRelease(GameState state) {
     qB.mouseRelease();
+    cpB.mouseRelease();
+    cbB.mouseRelease();
+    csB.mouseRelease();
+    ckB.mouseRelease();
     switch(state) {
       case MAIN_MENU:
         this.ngB.mouseRelease();
@@ -401,5 +418,51 @@ class findIpButton extends recButton {
     this.setMON(false);
     this.setCLK(false);
     currGame.directConnect();
+  }
+}
+
+// Option Buttons
+class customizePieceButton extends recButton {
+  customizePieceButton() {
+    super("Pieces", 14, 1240, 709, 1320, 729);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeBoardButton extends recButton {
+  customizeBoardButton() {
+    super("Board", 14, 1240, 732, 1320, 752);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeSoundButton extends recButton {
+  customizeSoundButton() {
+    super("Sounds", 14, 1240, 755, 1320, 775);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeKeysButton extends recButton {
+  customizeKeysButton() {
+    super("Hotkeys", 14, 1240, 778, 1320, 798);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
   }
 }
