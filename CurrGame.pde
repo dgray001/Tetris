@@ -48,6 +48,10 @@ class CurrGame {
   }
   
   void endGame() {
+    if (showConfirmDialog(null, "Are you sure you want to quit this game?", "Tetris", YES_NO_OPTION, PLAIN_MESSAGE) == YES_OPTION) {
+      this.myGame = null;
+      this.goToMainMenu();
+    }
   }
   
   void hostTwoPlayerGame() {

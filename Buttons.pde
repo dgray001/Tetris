@@ -251,7 +251,10 @@ class quitButton extends recButton {
     this.setREB(true);
   }
   void click() {
-    exit();
+    int response = showConfirmDialog(null, "Are you sure you want to exit?", "Tetris", YES_NO_OPTION, PLAIN_MESSAGE);
+    if (response == YES_OPTION) {
+      exit();
+    }
   }
 }
 
