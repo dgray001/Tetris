@@ -25,8 +25,8 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.3.3a
-// 20211220
+// v0.3.3c
+// 20211223
 
 
 
@@ -1156,6 +1156,12 @@ class customizePieceButton extends recButton {
   public void click() {
     this.setMON(false);
     this.setCLK(false);
+    String[] styles = new String[]{ "2d_normal", "2d_smooth", "3d_normal", "3d_fat" };
+    String response = (String)showInputDialog(null, "Piece Style", "Tetris", PLAIN_MESSAGE, null, styles, options.pieceType);
+    if (response == null) {
+      return;
+    }
+    options.pieceType = response;
   }
 }
 class customizeBoardButton extends recButton {
@@ -1167,6 +1173,13 @@ class customizeBoardButton extends recButton {
   public void click() {
     this.setMON(false);
     this.setCLK(false);
+    int response = showConfirmDialog(null, "Gridlines?", "Tetris", YES_NO_OPTION, PLAIN_MESSAGE);
+    if (response == YES_OPTION) {
+      options.gridlines = true;
+    }
+    else if (response == NO_OPTION) {
+      options.gridlines = false;
+    }
   }
 }
 class customizeSoundButton extends recButton {
@@ -3889,12 +3902,14 @@ class Space {
   public void drawSpace(float xi, float yi, float sideLength) {
     int fillColor = stringToColor(this.spaceColor.getColorName());
     if (!occupied && !shadow) {
+      strokeWeight(0.5f);
       fill(fillColor);
       stroke(constants.defaultSpaceStroke);
       if (!options.gridlines) {
         stroke(stringToColor(this.spaceColor.getColorName()));
       }
       square(xi, yi, sideLength);
+      strokeWeight(1);
       return;
     }
     switch(options.pieceType) {
