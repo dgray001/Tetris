@@ -8,24 +8,11 @@ public enum Shape {
   }
 }
 
-public enum Color {
-  BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow"), CYAN("cyan"), FUCHSIA("fuchsia"), PURPLE("purple"),
-  ORANGE("orange"), PINK("pink"), TAN("tan"), GRAY("gray"), BROWN("brown"), BLACK("black"), WHITE("white"), DEEP_BLACK("deep_black");
-  private String name;
-  private Color(String name) {
-    this.name = name;
-  }
-  public String getColorName() {
-    return this.name;
-  }
-}
-
 public enum Direction {
   DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT;
 }
 
 public class Piece {
-    
   private Shape shape;
   private int xLocation;
   private int yLocation;
@@ -279,8 +266,8 @@ public class Piece {
     int yDif = max(constants.minPieceDisplayGridSize, maxY - minY);
     float sideLength = min((xf - xi) / xDif, (yf - yi) / yDif);
     // draw squares
-    switch(options.pieceType) {
-      case "2d_normal":
+    switch(options.pieceStyle) {
+      case FLAT_NORMAL:
         fill(stringToColor(this.pieceColor.getColorName()));
         stroke(constants.defaultPieceStroke);
         rectMode(CORNER);
@@ -288,7 +275,7 @@ public class Piece {
           square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
         }
         break;
-      case "2d_smooth":
+      case FLAT_SMOOTH:
         fill(stringToColor(this.pieceColor.getColorName()));
         stroke(stringToColor(this.pieceColor.getColorName()));
         rectMode(CORNER);
@@ -296,7 +283,7 @@ public class Piece {
           square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
         }
         break;
-      case "3d_normal":
+      case RAISED_NORMAL:
         imageMode(CORNER);
         PImage image_3d_normal = null;
         switch(this.pieceColor) {
@@ -353,7 +340,7 @@ public class Piece {
           }
         }
         break;
-      case "3d_fat":
+      case RAISED_FAT:
         imageMode(CORNER);
         PImage image_3d_fat = null;
         switch(this.pieceColor) {

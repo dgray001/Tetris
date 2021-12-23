@@ -30,7 +30,7 @@ class Constants {
   public final float shadowOpacity = 100.0;
   
   // Piece
-  public final String defaultPieceType = "2d_smooth";
+  public final PieceStyle defaultPieceStyle = PieceStyle.RAISED_NORMAL;
   public final color defaultPieceFill = color(255);
   public final color defaultPieceStroke = color(0);
   public final Color defaultIFill = Color.CYAN;
