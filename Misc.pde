@@ -51,7 +51,40 @@ public color stringToColor(String colorName) {
       return color(210, 180, 140);
     case "black":
       return color(30, 30, 30);
+    case "deep_black":
+      return color(0, 0, 0);
     default:
       return color(0);
+  }
+}
+
+public Color stringToColorEnum(String colorName) {
+  switch(colorName) {
+    case "blue":
+      return Color.BLUE;
+    case "red":
+      return Color.RED;
+    case "green":
+      return Color.GREEN;
+    case "yellow":
+      return Color.YELLOW;
+    case "cyan":
+      return Color.CYAN;
+    case "fuchsia":
+      return Color.FUCHSIA;
+    case "purple":
+      return Color.PURPLE;
+    case "orange":
+      return Color.ORANGE;
+    case "pink":
+      return Color.PINK;
+    case "gray":
+      return Color.GRAY;
+    case "tan":
+      return Color.TAN;
+    case "black":
+      return Color.BLACK;
+    default:
+      return Color.BLACK;
   }
 }

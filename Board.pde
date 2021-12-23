@@ -95,6 +95,7 @@ class Board {
     // resolve space logic
     this.addPieceLogic();
   }
+  
   void addPieceLogic() {
     if (this.piece == null) {
       return;
@@ -119,9 +120,7 @@ class Board {
       if (this.spaces[x][y].getOccupied()) {
         println("ERROR: Space is occupied.");
       }
-      this.spaces[x][y].setShadow(true);
-      this.spaces[x][y].setShadowFill(this.piece.getPieceFill());
-      this.spaces[x][y].setShadowStroke(this.piece.getPieceStroke());
+      this.spaces[x][y].setShadow(this.piece.pieceColor);
     }
     // then calculate actual piece
     pieceSpaces = this.piece.getPieceSpace();
@@ -138,9 +137,7 @@ class Board {
       if (this.spaces[x][y].getOccupied()) {
         println("ERROR: Space is occupied.");
       }
-      this.spaces[x][y].setOccupied(true);
-      this.spaces[x][y].setSpaceFill(this.piece.getPieceFill());
-      this.spaces[x][y].setSpaceStroke(this.piece.getPieceStroke());
+      this.spaces[x][y].setColor(this.piece.pieceColor);
     }
   }
   void removePieceLogic() {
@@ -162,9 +159,7 @@ class Board {
       if (!this.spaces[x][y].getOccupied()) {
         println("ERROR: Space not occupied.");
       }
-      this.spaces[x][y].setOccupied(false);
-      this.spaces[x][y].setSpaceFill(constants.defaultSpaceFill);
-      this.spaces[x][y].setSpaceStroke(constants.defaultSpaceStroke);
+      this.spaces[x][y].removeColor();
     }
     // then calculate piece shadow if falling
     // make copy of piece fall
@@ -186,9 +181,7 @@ class Board {
       if (this.spaces[x][y].getOccupied()) {
         println("ERROR: Space is occupied.");
       }
-      this.spaces[x][y].setShadow(false);
-      this.spaces[x][y].setShadowFill(constants.defaultSpaceFill);
-      this.spaces[x][y].setShadowStroke(constants.defaultSpaceStroke);
+      this.spaces[x][y].removeShadow();
     }
   }
   boolean aPieceFalling() {
@@ -314,9 +307,7 @@ class Board {
       if (rowFilled) {
         // remove current row
         for (int i = 0; i < this.spaces.length; i++) {
-          this.spaces[i][j].setOccupied(false);
-          this.spaces[i][j].setSpaceFill(constants.defaultSpaceFill);
-          this.spaces[i][j].setSpaceStroke(constants.defaultSpaceStroke);
+          this.spaces[i][j].removeColor();
         }
         // drop other rows 1 space
         for (int k = j; k > 0; k--) {

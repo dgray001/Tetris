@@ -85,7 +85,7 @@ class VisualEffect {
             if (squareSize * y + j < 0) {
               continue;
             }
-            stroke(color(this.piece.pieceFill), 255 * (j / (squareSize * this.integer1)));
+            stroke(stringToColor(this.piece.pieceColor.getColorName()), 255 * (j / (squareSize * this.integer1)));
             line(board.xi + squareSize * (x + 1), board.yi + squareSize * (y + 1) + j, board.xi + squareSize * (x + 2), board.yi + squareSize * (y + 1) + j);
           }
         }

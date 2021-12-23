@@ -17,6 +17,7 @@ class Constants {
   public final int maxPingRequestsMissed = 3;
   
   // Board
+  public final boolean defaultGridlines = false;
   public final int defaultBoardColumns = 10;
   public final int defaultBoardRows = 20;
   public final color boardBackground = color(0);
@@ -24,20 +25,21 @@ class Constants {
   public final color boardBorderStroke = color(100, 100, 100);
   
   // Space
-  public final color defaultSpaceFill = color(0);
+  public final Color defaultSpaceColor = Color.DEEP_BLACK;
   public final color defaultSpaceStroke = color(255);
   public final float shadowOpacity = 100.0;
   
   // Piece
+  public final String defaultPieceType = "2d_smooth";
   public final color defaultPieceFill = color(255);
   public final color defaultPieceStroke = color(0);
-  public final color IFill = color(0, 255, 255);
-  public final color JFill = color(255, 192, 203);
-  public final color LFill = color(255, 165, 0);
-  public final color OFill = color(255, 255, 0);
-  public final color SFill = color(255, 0, 0);
-  public final color TFill = color(128, 0, 128);
-  public final color ZFill = color(0, 255, 0);
+  public final Color defaultIFill = Color.CYAN;
+  public final Color defaultJFill = Color.FUCHSIA;
+  public final Color defaultLFill = Color.ORANGE;
+  public final Color defaultOFill = Color.YELLOW;
+  public final Color defaultSFill = Color.RED;
+  public final Color defaultTFill = Color.PURPLE;
+  public final Color defaultZFill = Color.GREEN;
   public final int minPieceDisplayGridSize = 3;
   
   // Game
@@ -54,11 +56,59 @@ class Constants {
   
   // Images
   public PImage lightning;
+  public PImage fat_3D_blue;
+  public PImage fat_3D_red;
+  public PImage fat_3D_green;
+  public PImage fat_3D_yellow;
+  public PImage fat_3D_cyan;
+  public PImage fat_3D_purple;
+  public PImage fat_3D_fuchsia;
+  public PImage fat_3D_orange;
+  public PImage fat_3D_pink;
+  public PImage fat_3D_gray;
+  public PImage fat_3D_tan;
+  public PImage fat_3D_black;
+  public PImage normal_3D_blue;
+  public PImage normal_3D_red;
+  public PImage normal_3D_green;
+  public PImage normal_3D_yellow;
+  public PImage normal_3D_cyan;
+  public PImage normal_3D_purple;
+  public PImage normal_3D_fuchsia;
+  public PImage normal_3D_orange;
+  public PImage normal_3D_pink;
+  public PImage normal_3D_gray;
+  public PImage normal_3D_tan;
+  public PImage normal_3D_black;
   
   Constants() {
   }
   
   void loadImages() {
     this.lightning = loadImage(sketchPath("") + "data/lightning.png");
+    this.fat_3D_blue = loadImage(sketchPath("") + "data/pieces/3d_fat_blue.jpg");
+    this.fat_3D_red = loadImage(sketchPath("") + "data/pieces/3d_fat_red.jpg");
+    this.fat_3D_green = loadImage(sketchPath("") + "data/pieces/3d_fat_green.jpg");
+    this.fat_3D_yellow = loadImage(sketchPath("") + "data/pieces/3d_fat_yellow.jpg");
+    this.fat_3D_cyan = loadImage(sketchPath("") + "data/pieces/3d_fat_cyan.jpg");
+    this.fat_3D_fuchsia = loadImage(sketchPath("") + "data/pieces/3d_fat_fuchsia.jpg");
+    this.fat_3D_purple = loadImage(sketchPath("") + "data/pieces/3d_fat_purple.jpg");
+    this.fat_3D_pink = loadImage(sketchPath("") + "data/pieces/3d_fat_pink.jpg");
+    this.fat_3D_orange = loadImage(sketchPath("") + "data/pieces/3d_fat_orange.jpg");
+    this.fat_3D_gray = loadImage(sketchPath("") + "data/pieces/3d_fat_gray.jpg");
+    this.fat_3D_tan = loadImage(sketchPath("") + "data/pieces/3d_fat_tan.jpg");
+    this.fat_3D_black = loadImage(sketchPath("") + "data/pieces/3d_fat_black.jpg");
+    this.normal_3D_blue = loadImage(sketchPath("") + "data/pieces/3d_normal_blue.jpg");
+    this.normal_3D_red = loadImage(sketchPath("") + "data/pieces/3d_normal_red.jpg");
+    this.normal_3D_green = loadImage(sketchPath("") + "data/pieces/3d_normal_green.jpg");
+    this.normal_3D_yellow = loadImage(sketchPath("") + "data/pieces/3d_normal_yellow.jpg");
+    this.normal_3D_cyan = loadImage(sketchPath("") + "data/pieces/3d_normal_cyan.jpg");
+    this.normal_3D_fuchsia = loadImage(sketchPath("") + "data/pieces/3d_normal_fuchsia.jpg");
+    this.normal_3D_purple = loadImage(sketchPath("") + "data/pieces/3d_normal_purple.jpg");
+    this.normal_3D_pink = loadImage(sketchPath("") + "data/pieces/3d_normal_pink.jpg");
+    this.normal_3D_orange = loadImage(sketchPath("") + "data/pieces/3d_normal_orange.jpg");
+    this.normal_3D_gray = loadImage(sketchPath("") + "data/pieces/3d_normal_gray.jpg");
+    this.normal_3D_tan = loadImage(sketchPath("") + "data/pieces/3d_normal_tan.jpg");
+    this.normal_3D_black = loadImage(sketchPath("") + "data/pieces/3d_normal_black.jpg");
   }
 }

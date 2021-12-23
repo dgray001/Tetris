@@ -28,6 +28,12 @@ abstract class button {
     this.mColor = mC;
     this.cColor = cC;
   }
+  void defaultColors() {
+  this.dColor = color(220, 220, 220);
+  this.tColor = color(0);
+  this.mColor = color(170, 170, 170);
+  this.cColor = color(120, 120, 120);
+  }
   
   void setMES(String mes) {
     this.message = mes;

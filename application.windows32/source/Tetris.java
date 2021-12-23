@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.3.0
+// v0.3.3a
 // 20211220
 
 
@@ -39,6 +39,7 @@ public class Tetris extends PApplet {
 
 
 Constants constants = new Constants();
+Options options;
 CurrGame currGame = new CurrGame(this);
 int frameTimer = millis();
 int frameCounter = frameCount;
@@ -49,6 +50,11 @@ public void setup() {
   frameRate(constants.maxFPS);
   background(constants.defaultBackgroundColor);
   constants.loadImages();
+  options = new Options(constants);
+  fill(0);
+  textSize(14);
+  textAlign(LEFT, BOTTOM);
+  text("Customize", 1240, 707);
 }
 
 public void draw() {
@@ -196,6 +202,7 @@ class Board {
     // resolve space logic
     this.addPieceLogic();
   }
+  
   public void addPieceLogic() {
     if (this.piece == null) {
       return;
@@ -220,9 +227,7 @@ class Board {
       if (this.spaces[x][y].getOccupied()) {
         println("ERROR: Space is occupied.");
       }
-      this.spaces[x][y].setShadow(true);
-      this.spaces[x][y].setShadowFill(this.piece.getPieceFill());
-      this.spaces[x][y].setShadowStroke(this.piece.getPieceStroke());
+      this.spaces[x][y].setShadow(this.piece.pieceColor);
     }
     // then calculate actual piece
     pieceSpaces = this.piece.getPieceSpace();
@@ -239,9 +244,7 @@ class Board {
       if (this.spaces[x][y].getOccupied()) {
         println("ERROR: Space is occupied.");
       }
-      this.spaces[x][y].setOccupied(true);
-      this.spaces[x][y].setSpaceFill(this.piece.getPieceFill());
-      this.spaces[x][y].setSpaceStroke(this.piece.getPieceStroke());
+      this.spaces[x][y].setColor(this.piece.pieceColor);
     }
   }
   public void removePieceLogic() {
@@ -263,9 +266,7 @@ class Board {
       if (!this.spaces[x][y].getOccupied()) {
         println("ERROR: Space not occupied.");
       }
-      this.spaces[x][y].setOccupied(false);
-      this.spaces[x][y].setSpaceFill(constants.defaultSpaceFill);
-      this.spaces[x][y].setSpaceStroke(constants.defaultSpaceStroke);
+      this.spaces[x][y].removeColor();
     }
     // then calculate piece shadow if falling
     // make copy of piece fall
@@ -287,9 +288,7 @@ class Board {
       if (this.spaces[x][y].getOccupied()) {
         println("ERROR: Space is occupied.");
       }
-      this.spaces[x][y].setShadow(false);
-      this.spaces[x][y].setShadowFill(constants.defaultSpaceFill);
-      this.spaces[x][y].setShadowStroke(constants.defaultSpaceStroke);
+      this.spaces[x][y].removeShadow();
     }
   }
   public boolean aPieceFalling() {
@@ -415,9 +414,7 @@ class Board {
       if (rowFilled) {
         // remove current row
         for (int i = 0; i < this.spaces.length; i++) {
-          this.spaces[i][j].setOccupied(false);
-          this.spaces[i][j].setSpaceFill(constants.defaultSpaceFill);
-          this.spaces[i][j].setSpaceStroke(constants.defaultSpaceStroke);
+          this.spaces[i][j].removeColor();
         }
         // drop other rows 1 space
         for (int k = j; k > 0; k--) {
@@ -465,6 +462,12 @@ abstract class button {
     this.tColor = tC;
     this.mColor = mC;
     this.cColor = cC;
+  }
+  public void defaultColors() {
+  this.dColor = color(220, 220, 220);
+  this.tColor = color(0);
+  this.mColor = color(170, 170, 170);
+  this.cColor = color(120, 120, 120);
   }
   
   public void setMES(String mes) {
@@ -724,8 +727,10 @@ class AllButtons {
   private quitButton qB = new quitButton();
   
   private newGameButton ngB = new newGameButton();
+  private pauseGameButton pgB = new pauseGameButton();
   private leaveLobbyButton llB = new leaveLobbyButton();
   
+  private endGameButton egB = new endGameButton();
   private hostGameButton hgB = new hostGameButton();
   private kickPlayerButton kpB = new kickPlayerButton();
   private playAgainButton paB = new playAgainButton();
@@ -740,6 +745,11 @@ class AllButtons {
   
   private findIpButton fiB = new findIpButton();
   
+  private customizePieceButton cpB = new customizePieceButton();
+  private customizeBoardButton cbB = new customizeBoardButton();
+  private customizeSoundButton csB = new customizeSoundButton();
+  private customizeKeysButton ckB = new customizeKeysButton();
+  
   AllButtons() {
   }
   
@@ -749,6 +759,10 @@ class AllButtons {
     rectMode(CORNERS);
     rect(0, 685, 600, 720);
     qB.update(mouseX, mouseY);
+    cpB.update(mouseX, mouseY);
+    cbB.update(mouseX, mouseY);
+    csB.update(mouseX, mouseY);
+    ckB.update(mouseX, mouseY);
     switch(state) {
       case MAIN_MENU:
         this.ngB.update(mouseX, mouseY);
@@ -764,10 +778,13 @@ class AllButtons {
         this.jlB.update(mouseX, mouseY);
         this.fiB.update(mouseX, mouseY);
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.update(mouseX, mouseY);
+        this.pgB.update(mouseX, mouseY);
+        this.egB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.update(mouseX, mouseY);
@@ -807,6 +824,10 @@ class AllButtons {
   }
   public void mousePress(GameState state) {
     qB.mousePress();
+    cpB.mousePress();
+    cbB.mousePress();
+    csB.mousePress();
+    ckB.mousePress();
     switch(state) {
       case MAIN_MENU:
         this.ngB.mousePress();
@@ -824,10 +845,13 @@ class AllButtons {
         }
         this.fiB.mousePress();
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.mousePress();
+        this.pgB.mousePress();
+        this.egB.mousePress();
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mousePress();
@@ -867,6 +891,10 @@ class AllButtons {
   }
   public void mouseRelease(GameState state) {
     qB.mouseRelease();
+    cpB.mouseRelease();
+    cbB.mouseRelease();
+    csB.mouseRelease();
+    ckB.mouseRelease();
     switch(state) {
       case MAIN_MENU:
         this.ngB.mouseRelease();
@@ -878,10 +906,13 @@ class AllButtons {
         }
         this.fiB.mouseRelease();
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.mouseRelease();
+        this.pgB.mouseRelease();
+        this.egB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mouseRelease();
@@ -917,6 +948,11 @@ class AllButtons {
     this.cSB.scroll(count);
   }
   
+  public void clearButtons(int[] ids) {
+    for (int id : ids) {
+      this.clearButton(id);
+    }
+  }
   public void clearButton(int id) {
     fill(constants.defaultBackgroundColor);
     stroke(constants.defaultBackgroundColor);
@@ -957,7 +993,10 @@ class quitButton extends recButton {
     this.setREB(true);
   }
   public void click() {
-    exit();
+    int response = showConfirmDialog(null, "Are you sure you want to exit?", "Tetris", YES_NO_OPTION, PLAIN_MESSAGE);
+    if (response == YES_OPTION) {
+      exit();
+    }
   }
 }
 
@@ -973,6 +1012,17 @@ class newGameButton extends recButton {
     currGame.startSinglePlayerGame();
   }
 }
+class pauseGameButton extends recButton {
+  pauseGameButton() {
+    super("Pause Game", 14, 70, 690, 160, 715);
+    this.setREB(true);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.pauseGame();
+  }
+}
 class leaveLobbyButton extends recButton {
   leaveLobbyButton() {
     super("Leave Lobby", 14, 70, 690, 160, 715);
@@ -986,6 +1036,17 @@ class leaveLobbyButton extends recButton {
 }
 
 // Button 3
+class endGameButton extends recButton {
+  endGameButton() {
+    super("End Game", 14, 170, 690, 260, 715);
+    this.setREB(true);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.endGame();
+  }
+}
 class hostGameButton extends recButton {
   hostGameButton() {
     super("Host Game", 14, 170, 690, 260, 715);
@@ -1084,6 +1145,52 @@ class findIpButton extends recButton {
     currGame.directConnect();
   }
 }
+
+// Option Buttons
+class customizePieceButton extends recButton {
+  customizePieceButton() {
+    super("Pieces", 14, 1240, 709, 1320, 729);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeBoardButton extends recButton {
+  customizeBoardButton() {
+    super("Board", 14, 1240, 732, 1320, 752);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeSoundButton extends recButton {
+  customizeSoundButton() {
+    super("Sounds", 14, 1240, 755, 1320, 775);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeKeysButton extends recButton {
+  customizeKeysButton() {
+    super("Hotkeys", 14, 1240, 778, 1320, 798);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  public void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
 class Constants {
   // Tetris
   public final int defaultTickLength = 400;
@@ -1103,6 +1210,7 @@ class Constants {
   public final int maxPingRequestsMissed = 3;
   
   // Board
+  public final boolean defaultGridlines = false;
   public final int defaultBoardColumns = 10;
   public final int defaultBoardRows = 20;
   public final int boardBackground = color(0);
@@ -1110,20 +1218,21 @@ class Constants {
   public final int boardBorderStroke = color(100, 100, 100);
   
   // Space
-  public final int defaultSpaceFill = color(0);
+  public final Color defaultSpaceColor = Color.DEEP_BLACK;
   public final int defaultSpaceStroke = color(255);
   public final float shadowOpacity = 100.0f;
   
   // Piece
+  public final String defaultPieceType = "2d_smooth";
   public final int defaultPieceFill = color(255);
   public final int defaultPieceStroke = color(0);
-  public final int IFill = color(0, 255, 255);
-  public final int JFill = color(255, 192, 203);
-  public final int LFill = color(255, 165, 0);
-  public final int OFill = color(255, 255, 0);
-  public final int SFill = color(255, 0, 0);
-  public final int TFill = color(128, 0, 128);
-  public final int ZFill = color(0, 255, 0);
+  public final Color defaultIFill = Color.CYAN;
+  public final Color defaultJFill = Color.FUCHSIA;
+  public final Color defaultLFill = Color.ORANGE;
+  public final Color defaultOFill = Color.YELLOW;
+  public final Color defaultSFill = Color.RED;
+  public final Color defaultTFill = Color.PURPLE;
+  public final Color defaultZFill = Color.GREEN;
   public final int minPieceDisplayGridSize = 3;
   
   // Game
@@ -1140,12 +1249,60 @@ class Constants {
   
   // Images
   public PImage lightning;
+  public PImage fat_3D_blue;
+  public PImage fat_3D_red;
+  public PImage fat_3D_green;
+  public PImage fat_3D_yellow;
+  public PImage fat_3D_cyan;
+  public PImage fat_3D_purple;
+  public PImage fat_3D_fuchsia;
+  public PImage fat_3D_orange;
+  public PImage fat_3D_pink;
+  public PImage fat_3D_gray;
+  public PImage fat_3D_tan;
+  public PImage fat_3D_black;
+  public PImage normal_3D_blue;
+  public PImage normal_3D_red;
+  public PImage normal_3D_green;
+  public PImage normal_3D_yellow;
+  public PImage normal_3D_cyan;
+  public PImage normal_3D_purple;
+  public PImage normal_3D_fuchsia;
+  public PImage normal_3D_orange;
+  public PImage normal_3D_pink;
+  public PImage normal_3D_gray;
+  public PImage normal_3D_tan;
+  public PImage normal_3D_black;
   
   Constants() {
   }
   
   public void loadImages() {
     this.lightning = loadImage(sketchPath("") + "data/lightning.png");
+    this.fat_3D_blue = loadImage(sketchPath("") + "data/pieces/3d_fat_blue.jpg");
+    this.fat_3D_red = loadImage(sketchPath("") + "data/pieces/3d_fat_red.jpg");
+    this.fat_3D_green = loadImage(sketchPath("") + "data/pieces/3d_fat_green.jpg");
+    this.fat_3D_yellow = loadImage(sketchPath("") + "data/pieces/3d_fat_yellow.jpg");
+    this.fat_3D_cyan = loadImage(sketchPath("") + "data/pieces/3d_fat_cyan.jpg");
+    this.fat_3D_fuchsia = loadImage(sketchPath("") + "data/pieces/3d_fat_fuchsia.jpg");
+    this.fat_3D_purple = loadImage(sketchPath("") + "data/pieces/3d_fat_purple.jpg");
+    this.fat_3D_pink = loadImage(sketchPath("") + "data/pieces/3d_fat_pink.jpg");
+    this.fat_3D_orange = loadImage(sketchPath("") + "data/pieces/3d_fat_orange.jpg");
+    this.fat_3D_gray = loadImage(sketchPath("") + "data/pieces/3d_fat_gray.jpg");
+    this.fat_3D_tan = loadImage(sketchPath("") + "data/pieces/3d_fat_tan.jpg");
+    this.fat_3D_black = loadImage(sketchPath("") + "data/pieces/3d_fat_black.jpg");
+    this.normal_3D_blue = loadImage(sketchPath("") + "data/pieces/3d_normal_blue.jpg");
+    this.normal_3D_red = loadImage(sketchPath("") + "data/pieces/3d_normal_red.jpg");
+    this.normal_3D_green = loadImage(sketchPath("") + "data/pieces/3d_normal_green.jpg");
+    this.normal_3D_yellow = loadImage(sketchPath("") + "data/pieces/3d_normal_yellow.jpg");
+    this.normal_3D_cyan = loadImage(sketchPath("") + "data/pieces/3d_normal_cyan.jpg");
+    this.normal_3D_fuchsia = loadImage(sketchPath("") + "data/pieces/3d_normal_fuchsia.jpg");
+    this.normal_3D_purple = loadImage(sketchPath("") + "data/pieces/3d_normal_purple.jpg");
+    this.normal_3D_pink = loadImage(sketchPath("") + "data/pieces/3d_normal_pink.jpg");
+    this.normal_3D_orange = loadImage(sketchPath("") + "data/pieces/3d_normal_orange.jpg");
+    this.normal_3D_gray = loadImage(sketchPath("") + "data/pieces/3d_normal_gray.jpg");
+    this.normal_3D_tan = loadImage(sketchPath("") + "data/pieces/3d_normal_tan.jpg");
+    this.normal_3D_black = loadImage(sketchPath("") + "data/pieces/3d_normal_black.jpg");
   }
 }
 public enum GameState {
@@ -1165,6 +1322,7 @@ class CurrGame {
   AllButtons buttons = new AllButtons();
   private Queue<String> messageQ = new LinkedList<String>();
   private boolean[] wantRematch = new boolean[2];
+  private boolean paused = false;
   
   CurrGame(Tetris thisInstance) {
     this.thisInstance = thisInstance;
@@ -1179,6 +1337,28 @@ class CurrGame {
   public void startSinglePlayerGame() {
     this.myGame = new Game(constants.game1Borders);
     this.state = GameState.SINGLEPLAYER;
+    this.buttons.clearButtons(new int[]{0, 5, 6});
+  }
+  
+  public void pauseGame() {
+    if (this.paused) {
+      this.paused = false;
+      this.buttons.pgB.setMES("Pause Game");
+      this.buttons.pgB.defaultColors();
+    }
+    else {
+      this.paused = true;
+      this.buttons.pgB.setMES("Resume");
+      this.myGame.gameOverMessage("Game", "Paused");
+      this.buttons.pgB.changeColor(color(120), color(0), color(170), color(220));
+    }
+  }
+  
+  public void endGame() {
+    if (showConfirmDialog(null, "Are you sure you want to quit this game?", "Tetris", YES_NO_OPTION, PLAIN_MESSAGE) == YES_OPTION) {
+      this.myGame = null;
+      this.goToMainMenu();
+    }
   }
   
   public void hostTwoPlayerGame() {
@@ -1619,6 +1799,9 @@ class CurrGame {
         }
         break;
       case SINGLEPLAYER:
+        if (this.paused) {
+          return;
+        }
         if (this.myGame.isOver()) {
           this.myGame = null;
           this.goToMainMenu();
@@ -2307,8 +2490,6 @@ class Game {
       return "";
     }
     String updates = "";
-    this.drawVisualEffects();
-    updates += gameName + "visualEffects";
     if (millis() - this.lastTick > this.tickLength) {
       updates += gameName + "tick";
       this.incrementStatistic("Ticks");
@@ -2339,6 +2520,8 @@ class Game {
       updates += gameName + "drawBoard";
       updates += gameName + "drawPanel";
     }
+    this.drawVisualEffects();
+    updates += gameName + "visualEffects";
     return updates;
   }
   
@@ -2536,6 +2719,7 @@ class Game {
     }
     if (executeActions) {
       this.board.drawBoard();
+      this.drawVisualEffects();
     }
     updates += gameName + "drawBoard";
     return updates;
@@ -2763,6 +2947,172 @@ public String multiplyString(String string, int times) {
   }
   return multipliedString;
 }
+
+public boolean isColor(String colorName) {
+  switch(colorName) {
+    case "blue":
+    case "red":
+    case "green":
+    case "yellow":
+    case "cyan":
+    case "purple":
+    case "orange":
+    case "pink":
+    case "gray":
+    case "tan":
+    case "black":
+      return true;
+    default:
+      return false;
+  }
+}
+
+public int stringToColor(String colorName) {
+  switch(colorName) {
+    case "blue":
+      return color(0, 0, 255);
+    case "red":
+      return color(255, 0, 0);
+    case "green":
+      return color(0, 255, 0);
+    case "yellow":
+      return color(255, 255, 0);
+    case "cyan":
+      return color(0, 255, 255);
+    case "fuchsia":
+      return color(255, 0, 255);
+    case "purple":
+      return color(165, 0, 165);
+    case "orange":
+      return color(255, 165, 0);
+    case "pink":
+      return color(255, 105, 180);
+    case "gray":
+      return color(128, 128, 128);
+    case "tan":
+      return color(210, 180, 140);
+    case "black":
+      return color(30, 30, 30);
+    case "deep_black":
+      return color(0, 0, 0);
+    default:
+      return color(0);
+  }
+}
+
+public Color stringToColorEnum(String colorName) {
+  switch(colorName) {
+    case "blue":
+      return Color.BLUE;
+    case "red":
+      return Color.RED;
+    case "green":
+      return Color.GREEN;
+    case "yellow":
+      return Color.YELLOW;
+    case "cyan":
+      return Color.CYAN;
+    case "fuchsia":
+      return Color.FUCHSIA;
+    case "purple":
+      return Color.PURPLE;
+    case "orange":
+      return Color.ORANGE;
+    case "pink":
+      return Color.PINK;
+    case "gray":
+      return Color.GRAY;
+    case "tan":
+      return Color.TAN;
+    case "black":
+      return Color.BLACK;
+    default:
+      return Color.BLACK;
+  }
+}
+class Options {
+  private boolean gridlines;
+  private String pieceType;
+  private Color IFill;
+  private Color JFill;
+  private Color LFill;
+  private Color OFill;
+  private Color SFill;
+  private Color TFill;
+  private Color ZFill;
+  
+  Options(Constants constants) {
+    this.gridlines = constants.defaultGridlines;
+    this.pieceType = constants.defaultPieceType;
+    this.IFill = constants.defaultIFill;
+    this.JFill = constants.defaultJFill;
+    this.LFill = constants.defaultLFill;
+    this.OFill = constants.defaultOFill;
+    this.SFill = constants.defaultSFill;
+    this.TFill = constants.defaultTFill;
+    this.ZFill = constants.defaultZFill;
+    
+    String[] optionsFile = loadStrings("options.tetris");
+    if (optionsFile == null) {
+      return;
+    }
+    for (String line : optionsFile) {
+      String[] splitLine = split(line, ":");
+      if (splitLine.length < 2) {
+        continue;
+      }
+      String option = trim(splitLine[1]);
+      switch(trim(splitLine[0])) {
+        case "Gridlines":
+          if (option.equals("true")) {
+            this.gridlines = true;
+          }
+          else if (option.equals("false")) {
+            this.gridlines = false;
+          }
+          break;
+        case "IFill":
+          if (isColor(option)) {
+            this.IFill = stringToColorEnum(option);
+          }
+          break;
+        case "JFill":
+          if (isColor(option)) {
+            this.JFill = stringToColorEnum(option);
+          }
+          break;
+        case "LFill":
+          if (isColor(option)) {
+            this.LFill = stringToColorEnum(option);
+          }
+          break;
+        case "OFill":
+          if (isColor(option)) {
+            this.OFill = stringToColorEnum(option);
+          }
+          break;
+        case "SFill":
+          if (isColor(option)) {
+            this.SFill = stringToColorEnum(option);
+          }
+          break;
+        case "TFill":
+          if (isColor(option)) {
+            this.TFill = stringToColorEnum(option);
+          }
+          break;
+        case "ZFill":
+          if (isColor(option)) {
+            this.ZFill = stringToColorEnum(option);
+          }
+          break;
+        default:
+          break;
+      }
+    }
+  }
+
+}
 public enum Shape {
   I_BLOCK, J_BLOCK, L_BLOCK, O_BLOCK, S_BLOCK, T_BLOCK, Z_BLOCK;
   private static final List<Shape> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
@@ -2770,6 +3120,18 @@ public enum Shape {
   private static final Random RANDOM = new Random();
   public static Shape randomShape() {
     return VALUES.get(RANDOM.nextInt(SIZE));
+  }
+}
+
+public enum Color {
+  BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow"), CYAN("cyan"), FUCHSIA("fuchsia"), PURPLE("purple"),
+  ORANGE("orange"), PINK("pink"), TAN("tan"), GRAY("gray"), BROWN("brown"), BLACK("black"), WHITE("white"), DEEP_BLACK("deep_black");
+  private String name;
+  private Color(String name) {
+    this.name = name;
+  }
+  public String getColorName() {
+    return this.name;
   }
 }
 
@@ -2783,8 +3145,7 @@ public class Piece {
   private int xLocation;
   private int yLocation;
   private Direction rotation = Direction.DIRECTION_UP;
-  public int pieceFill = constants.defaultPieceFill;
-  public int pieceStroke = constants.defaultPieceStroke;
+  public Color pieceColor;
   
   Piece() {}
   Piece(int boardSizeX) {
@@ -2796,30 +3157,7 @@ public class Piece {
     if (this.shape == Shape.I_BLOCK) {
       this.yLocation = -3;
     }
-    // set piece color
-    switch(this.shape) {
-      case I_BLOCK:
-        this.pieceFill = constants.IFill;
-        break;
-      case J_BLOCK:
-        this.pieceFill = constants.JFill;
-        break;
-      case L_BLOCK:
-        this.pieceFill = constants.LFill;
-        break;
-      case O_BLOCK:
-        this.pieceFill = constants.OFill;
-        break;
-      case S_BLOCK:
-        this.pieceFill = constants.SFill;
-        break;
-      case T_BLOCK:
-        this.pieceFill = constants.TFill;
-        break;
-      case Z_BLOCK:
-        this.pieceFill = constants.ZFill;
-        break;
-    }
+    this.setPieceColor();
   }
   Piece(int boardSizeX, String shapeName) {
     // get random shape
@@ -2830,38 +3168,14 @@ public class Piece {
     if (this.shape == Shape.I_BLOCK) {
       this.yLocation = -3;
     }
-    // set piece color
-    switch(this.shape) {
-      case I_BLOCK:
-        this.pieceFill = constants.IFill;
-        break;
-      case J_BLOCK:
-        this.pieceFill = constants.JFill;
-        break;
-      case L_BLOCK:
-        this.pieceFill = constants.LFill;
-        break;
-      case O_BLOCK:
-        this.pieceFill = constants.OFill;
-        break;
-      case S_BLOCK:
-        this.pieceFill = constants.SFill;
-        break;
-      case T_BLOCK:
-        this.pieceFill = constants.TFill;
-        break;
-      case Z_BLOCK:
-        this.pieceFill = constants.ZFill;
-        break;
-    }
+    this.setPieceColor();
   }
   Piece(Piece piece) {
     this.shape = piece.shape;
     this.xLocation = piece.xLocation;
     this.yLocation = piece.yLocation;
     this.rotation = piece.rotation;
-    this.pieceFill = piece.pieceFill;
-    this.pieceStroke = piece.pieceStroke;
+    this.pieceColor = piece.pieceColor;
   }
   
   public Shape getShape() {
@@ -2879,11 +3193,34 @@ public class Piece {
   public Direction getRotation() {
     return this.rotation;
   }
-  public int getPieceFill() {
-    return this.pieceFill;
+  public Color getPieceColor() {
+    return this.pieceColor;
   }
-  public int getPieceStroke() {
-    return this.pieceStroke;
+  
+  public void setPieceColor() {
+    switch(this.shape) {
+      case I_BLOCK:
+        this.pieceColor = options.IFill;
+        break;
+      case J_BLOCK:
+        this.pieceColor = options.JFill;
+        break;
+      case L_BLOCK:
+        this.pieceColor = options.LFill;
+        break;
+      case O_BLOCK:
+        this.pieceColor = options.OFill;
+        break;
+      case S_BLOCK:
+        this.pieceColor = options.SFill;
+        break;
+      case T_BLOCK:
+        this.pieceColor = options.TFill;
+        break;
+      case Z_BLOCK:
+        this.pieceColor = options.ZFill;
+        break;
+    }
   }
   
   public void movePiece(Direction dir) {
@@ -3057,11 +3394,140 @@ public class Piece {
     int yDif = max(constants.minPieceDisplayGridSize, maxY - minY);
     float sideLength = min((xf - xi) / xDif, (yf - yi) / yDif);
     // draw squares
-    fill(this.pieceFill);
-    stroke(this.pieceStroke);
-    rectMode(CORNER);
-    for (Pair<Integer, Integer> i : spaces) {
-      square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
+    switch(options.pieceType) {
+      case "2d_normal":
+        fill(stringToColor(this.pieceColor.getColorName()));
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        for (Pair<Integer, Integer> i : spaces) {
+          square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
+        }
+        break;
+      case "2d_smooth":
+        fill(stringToColor(this.pieceColor.getColorName()));
+        stroke(stringToColor(this.pieceColor.getColorName()));
+        rectMode(CORNER);
+        for (Pair<Integer, Integer> i : spaces) {
+          square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
+        }
+        break;
+      case "3d_normal":
+        imageMode(CORNER);
+        PImage image_3d_normal = null;
+        switch(this.pieceColor) {
+          case BLUE:
+            image_3d_normal = constants.normal_3D_blue;
+            break;
+          case RED:
+            image_3d_normal = constants.normal_3D_red;
+            break;
+          case GREEN:
+            image_3d_normal = constants.normal_3D_green;
+            break;
+          case YELLOW:
+            image_3d_normal = constants.normal_3D_yellow;
+            break;
+          case CYAN:
+            image_3d_normal = constants.normal_3D_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_normal = constants.normal_3D_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_normal = constants.normal_3D_purple;
+            break;
+          case ORANGE:
+            image_3d_normal = constants.normal_3D_orange;
+            break;
+          case TAN:
+            image_3d_normal = constants.normal_3D_tan;
+            break;
+          case PINK:
+            image_3d_normal = constants.normal_3D_pink;
+            break;
+          case GRAY:
+            image_3d_normal = constants.normal_3D_gray;
+            break;
+          case BROWN:
+            //image_3d_normal = constants.normal_3D_brown;
+            break;
+          case BLACK:
+            image_3d_normal = constants.normal_3D_black;
+            break;
+          case WHITE:
+            //image_3d_normal = constants.normal_3D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_normal != null) {
+          for (Pair<Integer, Integer> i : spaces) {
+            tint(255);
+            image(image_3d_normal, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
+          }
+        }
+        break;
+      case "3d_fat":
+        imageMode(CORNER);
+        PImage image_3d_fat = null;
+        switch(this.pieceColor) {
+          case BLUE:
+            image_3d_fat = constants.fat_3D_blue;
+            break;
+          case RED:
+            image_3d_fat = constants.fat_3D_red;
+            break;
+          case GREEN:
+            image_3d_fat = constants.fat_3D_green;
+            break;
+          case YELLOW:
+            image_3d_fat = constants.fat_3D_yellow;
+            break;
+          case CYAN:
+            image_3d_fat = constants.fat_3D_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_fat = constants.fat_3D_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_fat = constants.fat_3D_purple;
+            break;
+          case ORANGE:
+            image_3d_fat = constants.fat_3D_orange;
+            break;
+          case TAN:
+            image_3d_fat = constants.fat_3D_tan;
+            break;
+          case PINK:
+            image_3d_fat = constants.fat_3D_pink;
+            break;
+          case GRAY:
+            image_3d_fat = constants.fat_3D_gray;
+            break;
+          case BROWN:
+            //image_3d_fat = constants.fat_3D_brown;
+            break;
+          case BLACK:
+            image_3d_fat = constants.fat_3D_black;
+            break;
+          case WHITE:
+            //image_3d_fat = constants.fat_3D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_fat != null) {
+          for (Pair<Integer, Integer> i : spaces) {
+            tint(255);
+            image(image_3d_fat, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
+          }
+        }
+        break;
+      default:
+        println("ERROR: piecetype not recognized.");
+        break;
     }
   }
   
@@ -3387,51 +3853,197 @@ abstract class scrollBar {
 }
 class Space {
   public boolean occupied = false;
-  public int spaceFill = constants.defaultSpaceFill;
-  public int spaceStroke = constants.defaultSpaceStroke;
   public boolean shadow = false;
-  public int shadowFill = constants.defaultSpaceFill;
-  public int shadowStroke = constants.defaultSpaceStroke;
+  public Color spaceColor = constants.defaultSpaceColor;
   
   Space() {
   }
   Space(Space space) {
     this.occupied = space.occupied;
-    this.spaceFill = space.spaceFill;
-    this.spaceStroke = space.spaceStroke;
+    this.shadow = space.shadow;
+    this.spaceColor = space.spaceColor;
   }
   
   public boolean getOccupied() {
     return this.occupied;
   }
   
-  public void setOccupied(boolean x) {
-    this.occupied = x;
+  public void setShadow(Color c) {
+    this.shadow = true;
+    this.spaceColor = c;
   }
-  public void setSpaceFill(int x) {
-    this.spaceFill = x;
+  public void removeShadow() {
+    this.shadow = false;
+    this.spaceColor = constants.defaultSpaceColor;
   }
-  public void setSpaceStroke(int x) {
-    this.spaceStroke = x;
+  public void setColor(Color c) {
+    this.occupied = true;
+    this.shadow = false;
+    this.spaceColor = c;
   }
-  public void setShadow(boolean x) {
-    this.shadow = x;
-  }
-  public void setShadowFill(int x) {
-    this.shadowFill = x;
-  }
-  public void setShadowStroke(int x) {
-    this.shadowStroke = x;
+  public void removeColor() {
+    this.occupied = false;
+    this.spaceColor = constants.defaultSpaceColor;
   }
   
   public void drawSpace(float xi, float yi, float sideLength) {
-      fill(this.spaceFill);
-      stroke(this.spaceStroke);
+    int fillColor = stringToColor(this.spaceColor.getColorName());
+    if (!occupied && !shadow) {
+      fill(fillColor);
+      stroke(constants.defaultSpaceStroke);
+      if (!options.gridlines) {
+        stroke(stringToColor(this.spaceColor.getColorName()));
+      }
       square(xi, yi, sideLength);
-    if (this.shadow) {
-      fill(this.shadowFill, constants.shadowOpacity);
-      stroke(this.shadowStroke);
-      square(xi, yi, sideLength);
+      return;
+    }
+    switch(options.pieceType) {
+      case "2d_normal":
+        if (this.shadow) {
+          fill(fillColor, constants.shadowOpacity);
+        }
+        else {
+          fill(fillColor);
+        }
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        square(xi, yi, sideLength);
+        break;
+      case "2d_smooth":
+        if (this.shadow) {
+          fill(fillColor, constants.shadowOpacity);
+          stroke(fillColor, 0);
+        }
+        else {
+          fill(fillColor);
+          stroke(fillColor);
+        }
+        rectMode(CORNER);
+        square(xi, yi, sideLength);
+        break;
+      case "3d_normal":
+        imageMode(CORNER);
+        PImage image_3d_normal = null;
+        switch(this.spaceColor) {
+          case BLUE:
+            image_3d_normal = constants.normal_3D_blue;
+            break;
+          case RED:
+            image_3d_normal = constants.normal_3D_red;
+            break;
+          case GREEN:
+            image_3d_normal = constants.normal_3D_green;
+            break;
+          case YELLOW:
+            image_3d_normal = constants.normal_3D_yellow;
+            break;
+          case CYAN:
+            image_3d_normal = constants.normal_3D_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_normal = constants.normal_3D_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_normal = constants.normal_3D_purple;
+            break;
+          case ORANGE:
+            image_3d_normal = constants.normal_3D_orange;
+            break;
+          case TAN:
+            image_3d_normal = constants.normal_3D_tan;
+            break;
+          case PINK:
+            image_3d_normal = constants.normal_3D_pink;
+            break;
+          case GRAY:
+            image_3d_normal = constants.normal_3D_gray;
+            break;
+          case BROWN:
+            //image_3d_normal = constants.normal_3D_brown;
+            break;
+          case BLACK:
+            image_3d_normal = constants.normal_3D_black;
+            break;
+          case WHITE:
+            //image_3d_normal = constants.normal_3D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_normal != null) {
+          if (this.shadow) {
+            tint(255, constants.shadowOpacity);
+          }
+          else {
+            tint(255);
+          }
+          image(image_3d_normal, xi, yi, sideLength, sideLength);
+        }
+        break;
+      case "3d_fat":
+        imageMode(CORNER);
+        PImage image_3d_fat = null;
+        switch(this.spaceColor) {
+          case BLUE:
+            image_3d_fat = constants.fat_3D_blue;
+            break;
+          case RED:
+            image_3d_fat = constants.fat_3D_red;
+            break;
+          case GREEN:
+            image_3d_fat = constants.fat_3D_green;
+            break;
+          case YELLOW:
+            image_3d_fat = constants.fat_3D_yellow;
+            break;
+          case CYAN:
+            image_3d_fat = constants.fat_3D_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_fat = constants.fat_3D_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_fat = constants.fat_3D_purple;
+            break;
+          case ORANGE:
+            image_3d_fat = constants.fat_3D_orange;
+            break;
+          case TAN:
+            image_3d_fat = constants.fat_3D_tan;
+            break;
+          case PINK:
+            image_3d_fat = constants.fat_3D_pink;
+            break;
+          case GRAY:
+            image_3d_fat = constants.fat_3D_gray;
+            break;
+          case BROWN:
+            //image_3d_fat = constants.fat_3D_brown;
+            break;
+          case BLACK:
+            image_3d_fat = constants.fat_3D_black;
+            break;
+          case WHITE:
+            //image_3d_fat = constants.fat_3D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_fat != null) {
+          if (this.shadow) {
+            tint(255, constants.shadowOpacity);
+          }
+          else {
+            tint(255);
+          }
+          image(image_3d_fat, xi, yi, sideLength, sideLength);
+        }
+        break;
+      default:
+        println("ERROR: piecetype not recognized.");
+        break;
     }
   }
 }
@@ -3522,7 +4134,7 @@ class VisualEffect {
             if (squareSize * y + j < 0) {
               continue;
             }
-            stroke(color(this.piece.pieceFill), 255 * (j / (squareSize * this.integer1)));
+            stroke(stringToColor(this.piece.pieceColor.getColorName()), 255 * (j / (squareSize * this.integer1)));
             line(board.xi + squareSize * (x + 1), board.yi + squareSize * (y + 1) + j, board.xi + squareSize * (x + 2), board.yi + squareSize * (y + 1) + j);
           }
         }

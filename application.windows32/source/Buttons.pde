@@ -2,8 +2,10 @@ class AllButtons {
   private quitButton qB = new quitButton();
   
   private newGameButton ngB = new newGameButton();
+  private pauseGameButton pgB = new pauseGameButton();
   private leaveLobbyButton llB = new leaveLobbyButton();
   
+  private endGameButton egB = new endGameButton();
   private hostGameButton hgB = new hostGameButton();
   private kickPlayerButton kpB = new kickPlayerButton();
   private playAgainButton paB = new playAgainButton();
@@ -18,6 +20,11 @@ class AllButtons {
   
   private findIpButton fiB = new findIpButton();
   
+  private customizePieceButton cpB = new customizePieceButton();
+  private customizeBoardButton cbB = new customizeBoardButton();
+  private customizeSoundButton csB = new customizeSoundButton();
+  private customizeKeysButton ckB = new customizeKeysButton();
+  
   AllButtons() {
   }
   
@@ -27,6 +34,10 @@ class AllButtons {
     rectMode(CORNERS);
     rect(0, 685, 600, 720);
     qB.update(mouseX, mouseY);
+    cpB.update(mouseX, mouseY);
+    cbB.update(mouseX, mouseY);
+    csB.update(mouseX, mouseY);
+    ckB.update(mouseX, mouseY);
     switch(state) {
       case MAIN_MENU:
         this.ngB.update(mouseX, mouseY);
@@ -42,10 +53,13 @@ class AllButtons {
         this.jlB.update(mouseX, mouseY);
         this.fiB.update(mouseX, mouseY);
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.update(mouseX, mouseY);
+        this.pgB.update(mouseX, mouseY);
+        this.egB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.update(mouseX, mouseY);
@@ -85,6 +99,10 @@ class AllButtons {
   }
   void mousePress(GameState state) {
     qB.mousePress();
+    cpB.mousePress();
+    cbB.mousePress();
+    csB.mousePress();
+    ckB.mousePress();
     switch(state) {
       case MAIN_MENU:
         this.ngB.mousePress();
@@ -102,10 +120,13 @@ class AllButtons {
         }
         this.fiB.mousePress();
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.mousePress();
+        this.pgB.mousePress();
+        this.egB.mousePress();
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mousePress();
@@ -145,6 +166,10 @@ class AllButtons {
   }
   void mouseRelease(GameState state) {
     qB.mouseRelease();
+    cpB.mouseRelease();
+    cbB.mouseRelease();
+    csB.mouseRelease();
+    ckB.mouseRelease();
     switch(state) {
       case MAIN_MENU:
         this.ngB.mouseRelease();
@@ -156,10 +181,13 @@ class AllButtons {
         }
         this.fiB.mouseRelease();
         break;
+      case OPTIONS:
+        break;
       case CONNECTING_TO_LOBBY:
         break;
       case SINGLEPLAYER:
-        this.ngB.mouseRelease();
+        this.pgB.mouseRelease();
+        this.egB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_HOSTING:
         this.llB.mouseRelease();
@@ -195,6 +223,11 @@ class AllButtons {
     this.cSB.scroll(count);
   }
   
+  void clearButtons(int[] ids) {
+    for (int id : ids) {
+      this.clearButton(id);
+    }
+  }
   void clearButton(int id) {
     fill(constants.defaultBackgroundColor);
     stroke(constants.defaultBackgroundColor);
@@ -235,7 +268,10 @@ class quitButton extends recButton {
     this.setREB(true);
   }
   void click() {
-    exit();
+    int response = showConfirmDialog(null, "Are you sure you want to exit?", "Tetris", YES_NO_OPTION, PLAIN_MESSAGE);
+    if (response == YES_OPTION) {
+      exit();
+    }
   }
 }
 
@@ -251,6 +287,17 @@ class newGameButton extends recButton {
     currGame.startSinglePlayerGame();
   }
 }
+class pauseGameButton extends recButton {
+  pauseGameButton() {
+    super("Pause Game", 14, 70, 690, 160, 715);
+    this.setREB(true);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.pauseGame();
+  }
+}
 class leaveLobbyButton extends recButton {
   leaveLobbyButton() {
     super("Leave Lobby", 14, 70, 690, 160, 715);
@@ -264,6 +311,17 @@ class leaveLobbyButton extends recButton {
 }
 
 // Button 3
+class endGameButton extends recButton {
+  endGameButton() {
+    super("End Game", 14, 170, 690, 260, 715);
+    this.setREB(true);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+    currGame.endGame();
+  }
+}
 class hostGameButton extends recButton {
   hostGameButton() {
     super("Host Game", 14, 170, 690, 260, 715);
@@ -360,5 +418,51 @@ class findIpButton extends recButton {
     this.setMON(false);
     this.setCLK(false);
     currGame.directConnect();
+  }
+}
+
+// Option Buttons
+class customizePieceButton extends recButton {
+  customizePieceButton() {
+    super("Pieces", 14, 1240, 709, 1320, 729);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeBoardButton extends recButton {
+  customizeBoardButton() {
+    super("Board", 14, 1240, 732, 1320, 752);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeSoundButton extends recButton {
+  customizeSoundButton() {
+    super("Sounds", 14, 1240, 755, 1320, 775);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
+  }
+}
+class customizeKeysButton extends recButton {
+  customizeKeysButton() {
+    super("Hotkeys", 14, 1240, 778, 1320, 798);
+    this.setREB(true);
+    this.setRND(3);
+  }
+  void click() {
+    this.setMON(false);
+    this.setCLK(false);
   }
 }

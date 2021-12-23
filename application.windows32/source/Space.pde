@@ -1,50 +1,196 @@
 class Space {
   public boolean occupied = false;
-  public color spaceFill = constants.defaultSpaceFill;
-  public color spaceStroke = constants.defaultSpaceStroke;
   public boolean shadow = false;
-  public color shadowFill = constants.defaultSpaceFill;
-  public color shadowStroke = constants.defaultSpaceStroke;
+  public Color spaceColor = constants.defaultSpaceColor;
   
   Space() {
   }
   Space(Space space) {
     this.occupied = space.occupied;
-    this.spaceFill = space.spaceFill;
-    this.spaceStroke = space.spaceStroke;
+    this.shadow = space.shadow;
+    this.spaceColor = space.spaceColor;
   }
   
   boolean getOccupied() {
     return this.occupied;
   }
   
-  void setOccupied(boolean x) {
-    this.occupied = x;
+  void setShadow(Color c) {
+    this.shadow = true;
+    this.spaceColor = c;
   }
-  void setSpaceFill(color x) {
-    this.spaceFill = x;
+  void removeShadow() {
+    this.shadow = false;
+    this.spaceColor = constants.defaultSpaceColor;
   }
-  void setSpaceStroke(color x) {
-    this.spaceStroke = x;
+  void setColor(Color c) {
+    this.occupied = true;
+    this.shadow = false;
+    this.spaceColor = c;
   }
-  void setShadow(boolean x) {
-    this.shadow = x;
-  }
-  void setShadowFill(color x) {
-    this.shadowFill = x;
-  }
-  void setShadowStroke(color x) {
-    this.shadowStroke = x;
+  void removeColor() {
+    this.occupied = false;
+    this.spaceColor = constants.defaultSpaceColor;
   }
   
   void drawSpace(float xi, float yi, float sideLength) {
-      fill(this.spaceFill);
-      stroke(this.spaceStroke);
+    color fillColor = stringToColor(this.spaceColor.getColorName());
+    if (!occupied && !shadow) {
+      fill(fillColor);
+      stroke(constants.defaultSpaceStroke);
+      if (!options.gridlines) {
+        stroke(stringToColor(this.spaceColor.getColorName()));
+      }
       square(xi, yi, sideLength);
-    if (this.shadow) {
-      fill(this.shadowFill, constants.shadowOpacity);
-      stroke(this.shadowStroke);
-      square(xi, yi, sideLength);
+      return;
+    }
+    switch(options.pieceType) {
+      case "2d_normal":
+        if (this.shadow) {
+          fill(fillColor, constants.shadowOpacity);
+        }
+        else {
+          fill(fillColor);
+        }
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        square(xi, yi, sideLength);
+        break;
+      case "2d_smooth":
+        if (this.shadow) {
+          fill(fillColor, constants.shadowOpacity);
+          stroke(fillColor, 0);
+        }
+        else {
+          fill(fillColor);
+          stroke(fillColor);
+        }
+        rectMode(CORNER);
+        square(xi, yi, sideLength);
+        break;
+      case "3d_normal":
+        imageMode(CORNER);
+        PImage image_3d_normal = null;
+        switch(this.spaceColor) {
+          case BLUE:
+            image_3d_normal = constants.normal_3D_blue;
+            break;
+          case RED:
+            image_3d_normal = constants.normal_3D_red;
+            break;
+          case GREEN:
+            image_3d_normal = constants.normal_3D_green;
+            break;
+          case YELLOW:
+            image_3d_normal = constants.normal_3D_yellow;
+            break;
+          case CYAN:
+            image_3d_normal = constants.normal_3D_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_normal = constants.normal_3D_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_normal = constants.normal_3D_purple;
+            break;
+          case ORANGE:
+            image_3d_normal = constants.normal_3D_orange;
+            break;
+          case TAN:
+            image_3d_normal = constants.normal_3D_tan;
+            break;
+          case PINK:
+            image_3d_normal = constants.normal_3D_pink;
+            break;
+          case GRAY:
+            image_3d_normal = constants.normal_3D_gray;
+            break;
+          case BROWN:
+            //image_3d_normal = constants.normal_3D_brown;
+            break;
+          case BLACK:
+            image_3d_normal = constants.normal_3D_black;
+            break;
+          case WHITE:
+            //image_3d_normal = constants.normal_3D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_normal != null) {
+          if (this.shadow) {
+            tint(255, constants.shadowOpacity);
+          }
+          else {
+            tint(255);
+          }
+          image(image_3d_normal, xi, yi, sideLength, sideLength);
+        }
+        break;
+      case "3d_fat":
+        imageMode(CORNER);
+        PImage image_3d_fat = null;
+        switch(this.spaceColor) {
+          case BLUE:
+            image_3d_fat = constants.fat_3D_blue;
+            break;
+          case RED:
+            image_3d_fat = constants.fat_3D_red;
+            break;
+          case GREEN:
+            image_3d_fat = constants.fat_3D_green;
+            break;
+          case YELLOW:
+            image_3d_fat = constants.fat_3D_yellow;
+            break;
+          case CYAN:
+            image_3d_fat = constants.fat_3D_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_fat = constants.fat_3D_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_fat = constants.fat_3D_purple;
+            break;
+          case ORANGE:
+            image_3d_fat = constants.fat_3D_orange;
+            break;
+          case TAN:
+            image_3d_fat = constants.fat_3D_tan;
+            break;
+          case PINK:
+            image_3d_fat = constants.fat_3D_pink;
+            break;
+          case GRAY:
+            image_3d_fat = constants.fat_3D_gray;
+            break;
+          case BROWN:
+            //image_3d_fat = constants.fat_3D_brown;
+            break;
+          case BLACK:
+            image_3d_fat = constants.fat_3D_black;
+            break;
+          case WHITE:
+            //image_3d_fat = constants.fat_3D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_fat != null) {
+          if (this.shadow) {
+            tint(255, constants.shadowOpacity);
+          }
+          else {
+            tint(255);
+          }
+          image(image_3d_fat, xi, yi, sideLength, sideLength);
+        }
+        break;
+      default:
+        println("ERROR: piecetype not recognized.");
+        break;
     }
   }
 }

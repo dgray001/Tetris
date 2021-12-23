@@ -8,6 +8,18 @@ public enum Shape {
   }
 }
 
+public enum Color {
+  BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow"), CYAN("cyan"), FUCHSIA("fuchsia"), PURPLE("purple"),
+  ORANGE("orange"), PINK("pink"), TAN("tan"), GRAY("gray"), BROWN("brown"), BLACK("black"), WHITE("white"), DEEP_BLACK("deep_black");
+  private String name;
+  private Color(String name) {
+    this.name = name;
+  }
+  public String getColorName() {
+    return this.name;
+  }
+}
+
 public enum Direction {
   DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT;
 }
@@ -18,8 +30,7 @@ public class Piece {
   private int xLocation;
   private int yLocation;
   private Direction rotation = Direction.DIRECTION_UP;
-  public color pieceFill = constants.defaultPieceFill;
-  public color pieceStroke = constants.defaultPieceStroke;
+  public Color pieceColor;
   
   Piece() {}
   Piece(int boardSizeX) {
@@ -31,30 +42,7 @@ public class Piece {
     if (this.shape == Shape.I_BLOCK) {
       this.yLocation = -3;
     }
-    // set piece color
-    switch(this.shape) {
-      case I_BLOCK:
-        this.pieceFill = constants.IFill;
-        break;
-      case J_BLOCK:
-        this.pieceFill = constants.JFill;
-        break;
-      case L_BLOCK:
-        this.pieceFill = constants.LFill;
-        break;
-      case O_BLOCK:
-        this.pieceFill = constants.OFill;
-        break;
-      case S_BLOCK:
-        this.pieceFill = constants.SFill;
-        break;
-      case T_BLOCK:
-        this.pieceFill = constants.TFill;
-        break;
-      case Z_BLOCK:
-        this.pieceFill = constants.ZFill;
-        break;
-    }
+    this.setPieceColor();
   }
   Piece(int boardSizeX, String shapeName) {
     // get random shape
@@ -65,38 +53,14 @@ public class Piece {
     if (this.shape == Shape.I_BLOCK) {
       this.yLocation = -3;
     }
-    // set piece color
-    switch(this.shape) {
-      case I_BLOCK:
-        this.pieceFill = constants.IFill;
-        break;
-      case J_BLOCK:
-        this.pieceFill = constants.JFill;
-        break;
-      case L_BLOCK:
-        this.pieceFill = constants.LFill;
-        break;
-      case O_BLOCK:
-        this.pieceFill = constants.OFill;
-        break;
-      case S_BLOCK:
-        this.pieceFill = constants.SFill;
-        break;
-      case T_BLOCK:
-        this.pieceFill = constants.TFill;
-        break;
-      case Z_BLOCK:
-        this.pieceFill = constants.ZFill;
-        break;
-    }
+    this.setPieceColor();
   }
   Piece(Piece piece) {
     this.shape = piece.shape;
     this.xLocation = piece.xLocation;
     this.yLocation = piece.yLocation;
     this.rotation = piece.rotation;
-    this.pieceFill = piece.pieceFill;
-    this.pieceStroke = piece.pieceStroke;
+    this.pieceColor = piece.pieceColor;
   }
   
   Shape getShape() {
@@ -114,11 +78,34 @@ public class Piece {
   Direction getRotation() {
     return this.rotation;
   }
-  color getPieceFill() {
-    return this.pieceFill;
+  Color getPieceColor() {
+    return this.pieceColor;
   }
-  color getPieceStroke() {
-    return this.pieceStroke;
+  
+  void setPieceColor() {
+    switch(this.shape) {
+      case I_BLOCK:
+        this.pieceColor = options.IFill;
+        break;
+      case J_BLOCK:
+        this.pieceColor = options.JFill;
+        break;
+      case L_BLOCK:
+        this.pieceColor = options.LFill;
+        break;
+      case O_BLOCK:
+        this.pieceColor = options.OFill;
+        break;
+      case S_BLOCK:
+        this.pieceColor = options.SFill;
+        break;
+      case T_BLOCK:
+        this.pieceColor = options.TFill;
+        break;
+      case Z_BLOCK:
+        this.pieceColor = options.ZFill;
+        break;
+    }
   }
   
   void movePiece(Direction dir) {
@@ -292,11 +279,140 @@ public class Piece {
     int yDif = max(constants.minPieceDisplayGridSize, maxY - minY);
     float sideLength = min((xf - xi) / xDif, (yf - yi) / yDif);
     // draw squares
-    fill(this.pieceFill);
-    stroke(this.pieceStroke);
-    rectMode(CORNER);
-    for (Pair<Integer, Integer> i : spaces) {
-      square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
+    switch(options.pieceType) {
+      case "2d_normal":
+        fill(stringToColor(this.pieceColor.getColorName()));
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        for (Pair<Integer, Integer> i : spaces) {
+          square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
+        }
+        break;
+      case "2d_smooth":
+        fill(stringToColor(this.pieceColor.getColorName()));
+        stroke(stringToColor(this.pieceColor.getColorName()));
+        rectMode(CORNER);
+        for (Pair<Integer, Integer> i : spaces) {
+          square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
+        }
+        break;
+      case "3d_normal":
+        imageMode(CORNER);
+        PImage image_3d_normal = null;
+        switch(this.pieceColor) {
+          case BLUE:
+            image_3d_normal = constants.normal_3D_blue;
+            break;
+          case RED:
+            image_3d_normal = constants.normal_3D_red;
+            break;
+          case GREEN:
+            image_3d_normal = constants.normal_3D_green;
+            break;
+          case YELLOW:
+            image_3d_normal = constants.normal_3D_yellow;
+            break;
+          case CYAN:
+            image_3d_normal = constants.normal_3D_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_normal = constants.normal_3D_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_normal = constants.normal_3D_purple;
+            break;
+          case ORANGE:
+            image_3d_normal = constants.normal_3D_orange;
+            break;
+          case TAN:
+            image_3d_normal = constants.normal_3D_tan;
+            break;
+          case PINK:
+            image_3d_normal = constants.normal_3D_pink;
+            break;
+          case GRAY:
+            image_3d_normal = constants.normal_3D_gray;
+            break;
+          case BROWN:
+            //image_3d_normal = constants.normal_3D_brown;
+            break;
+          case BLACK:
+            image_3d_normal = constants.normal_3D_black;
+            break;
+          case WHITE:
+            //image_3d_normal = constants.normal_3D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_normal != null) {
+          for (Pair<Integer, Integer> i : spaces) {
+            tint(255);
+            image(image_3d_normal, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
+          }
+        }
+        break;
+      case "3d_fat":
+        imageMode(CORNER);
+        PImage image_3d_fat = null;
+        switch(this.pieceColor) {
+          case BLUE:
+            image_3d_fat = constants.fat_3D_blue;
+            break;
+          case RED:
+            image_3d_fat = constants.fat_3D_red;
+            break;
+          case GREEN:
+            image_3d_fat = constants.fat_3D_green;
+            break;
+          case YELLOW:
+            image_3d_fat = constants.fat_3D_yellow;
+            break;
+          case CYAN:
+            image_3d_fat = constants.fat_3D_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_fat = constants.fat_3D_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_fat = constants.fat_3D_purple;
+            break;
+          case ORANGE:
+            image_3d_fat = constants.fat_3D_orange;
+            break;
+          case TAN:
+            image_3d_fat = constants.fat_3D_tan;
+            break;
+          case PINK:
+            image_3d_fat = constants.fat_3D_pink;
+            break;
+          case GRAY:
+            image_3d_fat = constants.fat_3D_gray;
+            break;
+          case BROWN:
+            //image_3d_fat = constants.fat_3D_brown;
+            break;
+          case BLACK:
+            image_3d_fat = constants.fat_3D_black;
+            break;
+          case WHITE:
+            //image_3d_fat = constants.fat_3D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_fat != null) {
+          for (Pair<Integer, Integer> i : spaces) {
+            tint(255);
+            image(image_3d_fat, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
+          }
+        }
+        break;
+      default:
+        println("ERROR: piecetype not recognized.");
+        break;
     }
   }
   
