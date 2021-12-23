@@ -442,6 +442,13 @@ class customizeBoardButton extends recButton {
   void click() {
     this.setMON(false);
     this.setCLK(false);
+    int response = showConfirmDialog(null, "Gridlines?", "Tetris", YES_NO_OPTION, PLAIN_MESSAGE);
+    if (response == YES_OPTION) {
+      options.gridlines = true;
+    }
+    else if (response == NO_OPTION) {
+      options.gridlines = false;
+    }
   }
 }
 class customizeSoundButton extends recButton {

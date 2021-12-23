@@ -36,12 +36,14 @@ class Space {
   void drawSpace(float xi, float yi, float sideLength) {
     color fillColor = stringToColor(this.spaceColor.getColorName());
     if (!occupied && !shadow) {
+      strokeWeight(0.5);
       fill(fillColor);
       stroke(constants.defaultSpaceStroke);
       if (!options.gridlines) {
         stroke(stringToColor(this.spaceColor.getColorName()));
       }
       square(xi, yi, sideLength);
+      strokeWeight(1);
       return;
     }
     switch(options.pieceType) {
