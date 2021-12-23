@@ -70,6 +70,12 @@ class Options {
             this.gridlines = false;
           }
           break;
+        case "PieceStyle":
+          try {
+            this.pieceStyle = PieceStyle.VALUES.get(Arrays.asList(PieceStyle.getStyleList()).indexOf(option));
+          } catch (Exception e) {
+          }
+          break;
         case "IFill":
           if (isColor(option)) {
             this.IFill = stringToColorEnum(option);
@@ -110,5 +116,19 @@ class Options {
       }
     }
   }
-
+  
+  void saveOptions() {
+    PrintWriter optionsFile = createWriter("options.tetris");
+    optionsFile.println("Gridlines: " + this.gridlines);
+    optionsFile.println("PieceStyle: " + this.pieceStyle.getStyle());
+    optionsFile.println("IFill: " + this.IFill.getColorName());
+    optionsFile.println("JFill: " + this.JFill.getColorName());
+    optionsFile.println("LFill: " + this.LFill.getColorName());
+    optionsFile.println("OFill: " + this.OFill.getColorName());
+    optionsFile.println("SFill: " + this.SFill.getColorName());
+    optionsFile.println("TFill: " + this.TFill.getColorName());
+    optionsFile.println("ZFill: " + this.ZFill.getColorName());
+    optionsFile.flush();
+    optionsFile.close();
+  }
 }

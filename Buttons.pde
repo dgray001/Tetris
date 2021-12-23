@@ -441,6 +441,7 @@ class customizePieceButton extends recButton {
     } catch (Exception e) {
       showMessageDialog(null, "Couldn't adjust piece style.", "Tetris", PLAIN_MESSAGE);
     }
+    options.saveOptions();
   }
 }
 class customizeBoardButton extends recButton {
@@ -459,6 +460,7 @@ class customizeBoardButton extends recButton {
     else if (response == NO_OPTION) {
       options.gridlines = false;
     }
+    options.saveOptions();
   }
 }
 class customizeSoundButton extends recButton {
