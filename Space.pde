@@ -70,6 +70,17 @@ class Space {
         rectMode(CORNER);
         square(xi, yi, sideLength);
         break;
+      case FLAT_DYNAMIC:
+        if (this.shadow) {
+          fill(dynamicColorChanger(fillColor), constants.shadowOpacity);
+        }
+        else {
+          fill(dynamicColorChanger(fillColor));
+        }
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        square(xi, yi, sideLength);
+        break;
       case RAISED_NORMAL:
         imageMode(CORNER);
         PImage image_3d_normal = null;

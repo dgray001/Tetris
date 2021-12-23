@@ -25,6 +25,33 @@ public boolean isColor(String colorName) {
   }
 }
 
+public color dynamicColorChanger(color c) {
+  float c_r = c >> 16 & 0xFF;
+  float c_g = c >> 8 & 0xFF;
+  float c_b = c & 0xFF;
+  float time = millis() / 3.0;
+  if ((c_r + time) % (255 * 2) > 255) {
+    c_r = 255 - (c_r + time) % 255;
+  }
+  else {
+    c_r = (c_r + time) % 255;
+  }
+  if ((c_g + time) % (255 * 2) > 255) {
+    c_g = 255 - (c_g + time) % 255;
+  }
+  else {
+    c_g = (c_g + time) % 255;
+  }
+  if ((c_b + time) % (255 * 2) > 255) {
+    c_b = 255 - (c_b + time) % 255;
+  }
+  else {
+    c_b = (c_b + time) % 255;
+  }
+  color returnColor = color(c_r, c_g, c_b);
+  return returnColor;
+}
+
 public color stringToColor(String colorName) {
   switch(colorName) {
     case "blue":

@@ -283,6 +283,14 @@ public class Piece {
           square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
         }
         break;
+      case FLAT_DYNAMIC:
+        fill(dynamicColorChanger(stringToColor(this.pieceColor.getColorName())));
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        for (Pair<Integer, Integer> i : spaces) {
+          square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
+        }
+        break;
       case RAISED_NORMAL:
         imageMode(CORNER);
         PImage image_3d_normal = null;
