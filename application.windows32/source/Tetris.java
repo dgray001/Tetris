@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.3.4d
+// v0.3.4e
 // 20211223
 
 
@@ -2312,7 +2312,7 @@ class CurrGame {
               break;
             case "HOST_GAME":
               if (this.myGame.executeMessage(trim(splitMessage[1]))) {
-                this.server.write(message);
+                this.server.write("|" + message);
               }
               else {
                 println("ERROR: HOST_GAME message not recognized -> " + trim(splitMessage[1]));
@@ -2320,7 +2320,7 @@ class CurrGame {
               break;
             case "JOINEE_GAME":
               if (this.otherGame.executeMessage(trim(splitMessage[1]))) {
-                this.server.write(message);
+                this.server.write("|" + message);
               }
               else {
                 println("ERROR: JOINEE_GAME message not recognized -> " + trim(splitMessage[1]));
