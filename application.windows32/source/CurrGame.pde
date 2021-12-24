@@ -591,16 +591,12 @@ class CurrGame {
         String otherGameChanges = this.otherGame.update("| JOINEE_GAME: ", false);
         // check for game over messages
         if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
-          if (myGameChanges.contains("HOST_GAME: tick")) {
-            this.myGame.gameOverMessage("You", "Won");
-            myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
-          }
+          this.myGame.gameOverMessage("You", "Won");
+          myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
         }
         if ((this.myGame.gameOver) && (!this.otherGame.gameOver)) {
-          if (otherGameChanges.contains("JOINEE_GAME: tick")) {
-            this.otherGame.gameOverMessage("You", "Won");
-            otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
-          }
+          this.otherGame.gameOverMessage("You", "Won");
+          otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
         }
         if ((!hostGameOver) && (this.myGame.gameOver)) {
           this.buttons.paB.setDIS(false);
@@ -1104,7 +1100,7 @@ class CurrGame {
             this.myGame.gameOverMessage("You", "Won");
             gameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
           }
-          this.otherPlayer.write(gameChanges);
+          this.otherPlayer.client.write(gameChanges);
         }
         break;
       default:

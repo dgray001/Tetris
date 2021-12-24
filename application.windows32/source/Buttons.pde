@@ -431,12 +431,17 @@ class customizePieceButton extends recButton {
   void click() {
     this.setMON(false);
     this.setCLK(false);
-    String[] styles = new String[]{ "2d_normal", "2d_smooth", "3d_normal", "3d_fat" };
-    String response = (String)showInputDialog(null, "Piece Style", "Tetris", PLAIN_MESSAGE, null, styles, options.pieceType);
+    String[] styles = PieceStyle.getStyleList();
+    String response = (String)showInputDialog(null, "Piece Style", "Tetris", PLAIN_MESSAGE, null, styles, options.pieceStyle.getStyle());
     if (response == null) {
       return;
     }
-    options.pieceType = response;
+    try {
+      options.pieceStyle = PieceStyle.VALUES.get(Arrays.asList(styles).indexOf(response));
+    } catch (Exception e) {
+      showMessageDialog(null, "Couldn't adjust piece style.", "Tetris", PLAIN_MESSAGE);
+    }
+    options.saveOptions();
   }
 }
 class customizeBoardButton extends recButton {
@@ -455,6 +460,7 @@ class customizeBoardButton extends recButton {
     else if (response == NO_OPTION) {
       options.gridlines = false;
     }
+    options.saveOptions();
   }
 }
 class customizeSoundButton extends recButton {

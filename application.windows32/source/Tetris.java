@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.3.3c
+// v0.3.4a
 // 20211223
 
 
@@ -1156,12 +1156,17 @@ class customizePieceButton extends recButton {
   public void click() {
     this.setMON(false);
     this.setCLK(false);
-    String[] styles = new String[]{ "2d_normal", "2d_smooth", "3d_normal", "3d_fat" };
-    String response = (String)showInputDialog(null, "Piece Style", "Tetris", PLAIN_MESSAGE, null, styles, options.pieceType);
+    String[] styles = PieceStyle.getStyleList();
+    String response = (String)showInputDialog(null, "Piece Style", "Tetris", PLAIN_MESSAGE, null, styles, options.pieceStyle.getStyle());
     if (response == null) {
       return;
     }
-    options.pieceType = response;
+    try {
+      options.pieceStyle = PieceStyle.VALUES.get(Arrays.asList(styles).indexOf(response));
+    } catch (Exception e) {
+      showMessageDialog(null, "Couldn't adjust piece style.", "Tetris", PLAIN_MESSAGE);
+    }
+    options.saveOptions();
   }
 }
 class customizeBoardButton extends recButton {
@@ -1180,6 +1185,7 @@ class customizeBoardButton extends recButton {
     else if (response == NO_OPTION) {
       options.gridlines = false;
     }
+    options.saveOptions();
   }
 }
 class customizeSoundButton extends recButton {
@@ -1236,7 +1242,7 @@ class Constants {
   public final float shadowOpacity = 100.0f;
   
   // Piece
-  public final String defaultPieceType = "2d_smooth";
+  public final PieceStyle defaultPieceStyle = PieceStyle.RAISED_NORMAL;
   public final int defaultPieceFill = color(255);
   public final int defaultPieceStroke = color(0);
   public final Color defaultIFill = Color.CYAN;
@@ -1911,16 +1917,12 @@ class CurrGame {
         String otherGameChanges = this.otherGame.update("| JOINEE_GAME: ", false);
         // check for game over messages
         if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
-          if (myGameChanges.contains("HOST_GAME: tick")) {
-            this.myGame.gameOverMessage("You", "Won");
-            myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
-          }
+          this.myGame.gameOverMessage("You", "Won");
+          myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
         }
         if ((this.myGame.gameOver) && (!this.otherGame.gameOver)) {
-          if (otherGameChanges.contains("JOINEE_GAME: tick")) {
-            this.otherGame.gameOverMessage("You", "Won");
-            otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
-          }
+          this.otherGame.gameOverMessage("You", "Won");
+          otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
         }
         if ((!hostGameOver) && (this.myGame.gameOver)) {
           this.buttons.paB.setDIS(false);
@@ -2424,7 +2426,7 @@ class CurrGame {
             this.myGame.gameOverMessage("You", "Won");
             gameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
           }
-          this.otherPlayer.write(gameChanges);
+          this.otherPlayer.client.write(gameChanges);
         }
         break;
       default:
@@ -2980,6 +2982,33 @@ public boolean isColor(String colorName) {
   }
 }
 
+public int dynamicColorChanger(int c) {
+  float c_r = c >> 16 & 0xFF;
+  float c_g = c >> 8 & 0xFF;
+  float c_b = c & 0xFF;
+  float time = millis() / 3.0f;
+  if ((c_r + time) % (255 * 2) > 255) {
+    c_r = 255 - (c_r + time) % 255;
+  }
+  else {
+    c_r = (c_r + time) % 255;
+  }
+  if ((c_g + time) % (255 * 2) > 255) {
+    c_g = 255 - (c_g + time) % 255;
+  }
+  else {
+    c_g = (c_g + time) % 255;
+  }
+  if ((c_b + time) % (255 * 2) > 255) {
+    c_b = 255 - (c_b + time) % 255;
+  }
+  else {
+    c_b = (c_b + time) % 255;
+  }
+  int returnColor = color(c_r, c_g, c_b);
+  return returnColor;
+}
+
 public int stringToColor(String colorName) {
   switch(colorName) {
     case "blue":
@@ -3043,9 +3072,40 @@ public Color stringToColorEnum(String colorName) {
       return Color.BLACK;
   }
 }
+public enum PieceStyle {
+  FLAT_NORMAL("2D normal"), FLAT_SMOOTH("2D smooth"), FLAT_DYNAMIC("2D dynamic"), RAISED_NORMAL("3D normal"), RAISED_FAT("3D fat"), RAISED_DYNAMIC("3D dynamic");
+  private static final List<PieceStyle> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
+  private String style;
+  private PieceStyle(String style) {
+    this.style = style;
+  }
+  public static String[] getStyleList() {
+    String[] styleList = new String[PieceStyle.VALUES.size()];
+    for (int i = 0; i < PieceStyle.VALUES.size(); i++) {
+      styleList[i] = PieceStyle.VALUES.get(i).getStyle();
+    }
+    return styleList;
+  }
+  public String getStyle() {
+    return this.style;
+  }
+}
+
+public enum Color {
+  BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow"), CYAN("cyan"), FUCHSIA("fuchsia"), PURPLE("purple"),
+  ORANGE("orange"), PINK("pink"), TAN("tan"), GRAY("gray"), BROWN("brown"), BLACK("black"), WHITE("white"), DEEP_BLACK("deep_black");
+  private String name;
+  private Color(String name) {
+    this.name = name;
+  }
+  public String getColorName() {
+    return this.name;
+  }
+}
+
 class Options {
   private boolean gridlines;
-  private String pieceType;
+  private PieceStyle pieceStyle;
   private Color IFill;
   private Color JFill;
   private Color LFill;
@@ -3056,7 +3116,7 @@ class Options {
   
   Options(Constants constants) {
     this.gridlines = constants.defaultGridlines;
-    this.pieceType = constants.defaultPieceType;
+    this.pieceStyle = constants.defaultPieceStyle;
     this.IFill = constants.defaultIFill;
     this.JFill = constants.defaultJFill;
     this.LFill = constants.defaultLFill;
@@ -3082,6 +3142,12 @@ class Options {
           }
           else if (option.equals("false")) {
             this.gridlines = false;
+          }
+          break;
+        case "PieceStyle":
+          try {
+            this.pieceStyle = PieceStyle.VALUES.get(Arrays.asList(PieceStyle.getStyleList()).indexOf(option));
+          } catch (Exception e) {
           }
           break;
         case "IFill":
@@ -3124,7 +3190,21 @@ class Options {
       }
     }
   }
-
+  
+  public void saveOptions() {
+    PrintWriter optionsFile = createWriter("options.tetris");
+    optionsFile.println("Gridlines: " + this.gridlines);
+    optionsFile.println("PieceStyle: " + this.pieceStyle.getStyle());
+    optionsFile.println("IFill: " + this.IFill.getColorName());
+    optionsFile.println("JFill: " + this.JFill.getColorName());
+    optionsFile.println("LFill: " + this.LFill.getColorName());
+    optionsFile.println("OFill: " + this.OFill.getColorName());
+    optionsFile.println("SFill: " + this.SFill.getColorName());
+    optionsFile.println("TFill: " + this.TFill.getColorName());
+    optionsFile.println("ZFill: " + this.ZFill.getColorName());
+    optionsFile.flush();
+    optionsFile.close();
+  }
 }
 public enum Shape {
   I_BLOCK, J_BLOCK, L_BLOCK, O_BLOCK, S_BLOCK, T_BLOCK, Z_BLOCK;
@@ -3136,24 +3216,11 @@ public enum Shape {
   }
 }
 
-public enum Color {
-  BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow"), CYAN("cyan"), FUCHSIA("fuchsia"), PURPLE("purple"),
-  ORANGE("orange"), PINK("pink"), TAN("tan"), GRAY("gray"), BROWN("brown"), BLACK("black"), WHITE("white"), DEEP_BLACK("deep_black");
-  private String name;
-  private Color(String name) {
-    this.name = name;
-  }
-  public String getColorName() {
-    return this.name;
-  }
-}
-
 public enum Direction {
   DIRECTION_UP, DIRECTION_RIGHT, DIRECTION_DOWN, DIRECTION_LEFT;
 }
 
 public class Piece {
-    
   private Shape shape;
   private int xLocation;
   private int yLocation;
@@ -3407,8 +3474,8 @@ public class Piece {
     int yDif = max(constants.minPieceDisplayGridSize, maxY - minY);
     float sideLength = min((xf - xi) / xDif, (yf - yi) / yDif);
     // draw squares
-    switch(options.pieceType) {
-      case "2d_normal":
+    switch(options.pieceStyle) {
+      case FLAT_NORMAL:
         fill(stringToColor(this.pieceColor.getColorName()));
         stroke(constants.defaultPieceStroke);
         rectMode(CORNER);
@@ -3416,7 +3483,7 @@ public class Piece {
           square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
         }
         break;
-      case "2d_smooth":
+      case FLAT_SMOOTH:
         fill(stringToColor(this.pieceColor.getColorName()));
         stroke(stringToColor(this.pieceColor.getColorName()));
         rectMode(CORNER);
@@ -3424,7 +3491,15 @@ public class Piece {
           square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
         }
         break;
-      case "3d_normal":
+      case FLAT_DYNAMIC:
+        fill(dynamicColorChanger(stringToColor(this.pieceColor.getColorName())));
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        for (Pair<Integer, Integer> i : spaces) {
+          square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
+        }
+        break;
+      case RAISED_NORMAL:
         imageMode(CORNER);
         PImage image_3d_normal = null;
         switch(this.pieceColor) {
@@ -3481,7 +3556,7 @@ public class Piece {
           }
         }
         break;
-      case "3d_fat":
+      case RAISED_FAT:
         imageMode(CORNER);
         PImage image_3d_fat = null;
         switch(this.pieceColor) {
@@ -3912,8 +3987,8 @@ class Space {
       strokeWeight(1);
       return;
     }
-    switch(options.pieceType) {
-      case "2d_normal":
+    switch(options.pieceStyle) {
+      case FLAT_NORMAL:
         if (this.shadow) {
           fill(fillColor, constants.shadowOpacity);
         }
@@ -3924,7 +3999,7 @@ class Space {
         rectMode(CORNER);
         square(xi, yi, sideLength);
         break;
-      case "2d_smooth":
+      case FLAT_SMOOTH:
         if (this.shadow) {
           fill(fillColor, constants.shadowOpacity);
           stroke(fillColor, 0);
@@ -3936,7 +4011,18 @@ class Space {
         rectMode(CORNER);
         square(xi, yi, sideLength);
         break;
-      case "3d_normal":
+      case FLAT_DYNAMIC:
+        if (this.shadow) {
+          fill(dynamicColorChanger(fillColor), constants.shadowOpacity);
+        }
+        else {
+          fill(dynamicColorChanger(fillColor));
+        }
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        square(xi, yi, sideLength);
+        break;
+      case RAISED_NORMAL:
         imageMode(CORNER);
         PImage image_3d_normal = null;
         switch(this.spaceColor) {
@@ -3996,7 +4082,7 @@ class Space {
           image(image_3d_normal, xi, yi, sideLength, sideLength);
         }
         break;
-      case "3d_fat":
+      case RAISED_FAT:
         imageMode(CORNER);
         PImage image_3d_fat = null;
         switch(this.spaceColor) {

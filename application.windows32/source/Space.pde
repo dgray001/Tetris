@@ -46,8 +46,8 @@ class Space {
       strokeWeight(1);
       return;
     }
-    switch(options.pieceType) {
-      case "2d_normal":
+    switch(options.pieceStyle) {
+      case FLAT_NORMAL:
         if (this.shadow) {
           fill(fillColor, constants.shadowOpacity);
         }
@@ -58,7 +58,7 @@ class Space {
         rectMode(CORNER);
         square(xi, yi, sideLength);
         break;
-      case "2d_smooth":
+      case FLAT_SMOOTH:
         if (this.shadow) {
           fill(fillColor, constants.shadowOpacity);
           stroke(fillColor, 0);
@@ -70,7 +70,18 @@ class Space {
         rectMode(CORNER);
         square(xi, yi, sideLength);
         break;
-      case "3d_normal":
+      case FLAT_DYNAMIC:
+        if (this.shadow) {
+          fill(dynamicColorChanger(fillColor), constants.shadowOpacity);
+        }
+        else {
+          fill(dynamicColorChanger(fillColor));
+        }
+        stroke(constants.defaultPieceStroke);
+        rectMode(CORNER);
+        square(xi, yi, sideLength);
+        break;
+      case RAISED_NORMAL:
         imageMode(CORNER);
         PImage image_3d_normal = null;
         switch(this.spaceColor) {
@@ -130,7 +141,7 @@ class Space {
           image(image_3d_normal, xi, yi, sideLength, sideLength);
         }
         break;
-      case "3d_fat":
+      case RAISED_FAT:
         imageMode(CORNER);
         PImage image_3d_fat = null;
         switch(this.spaceColor) {
