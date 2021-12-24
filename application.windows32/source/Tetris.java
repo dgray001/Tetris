@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.3.4b
+// v0.3.4c
 // 20211223
 
 
@@ -1922,6 +1922,7 @@ class CurrGame {
           this.buttons.paB.changeColor(color(220), color(0), color(170), color(120));
           if (!joineeGameOver) {
             this.myGame.addGameOverMessage("You", "Lost");
+            this.myGame.drawBoard();
             myGameChanges += "| HOST_GAME: addGameOverMessage=You, Lost";
             this.otherGame.addGameOverMessage("You", "Won");
             otherGameChanges += "| JOINEE_GAME: addGameOverMessage=You, Won";
@@ -1932,6 +1933,7 @@ class CurrGame {
             this.myGame.addGameOverMessage("You", "Won");
             myGameChanges += "| HOST_GAME: addGameOverMessage=You, Won";
             this.otherGame.addGameOverMessage("You", "Lost");
+            this.otherGame.drawBoard();
             otherGameChanges += "| JOINEE_GAME: addGameOverMessage=You, Lost";
           }
         }
@@ -2377,7 +2379,7 @@ class CurrGame {
               break;
             case "HOST_GAME":
               if (!this.otherGame.executeMessage(trim(splitMessage[1]))) {
-                println("ERROR: HOST_GAME message not recognized -> " + trim(splitMessage[1]));
+                println("ERROR: HOST_GAMEfdas message not recognized -> " + trim(splitMessage[1]));
               }
               break;
             case "JOINEE_GAME":
@@ -2737,9 +2739,9 @@ class Game {
     if (message.equals("")) {
       return false;
     }
-    String[] messageSplit = split(message, '=');
+    String[] messageSplit = split(message, "=");
     if (this.gameOver) {
-      if (!trim(messageSplit[0]).equals("gameOverMessage")) {
+      if (!trim(messageSplit[0]).equals("addGameOverMessage")) {
         return false;
       }
     }
@@ -2816,7 +2818,7 @@ class Game {
         break;
       case "addGameOverMessage":
         if (messageSplit.length > 1) {
-          String[] parameters = split(trim(messageSplit[1]), ',');
+          String[] parameters = split(trim(messageSplit[1]), ",");
           if (parameters.length != 2) {
             return false;
           }

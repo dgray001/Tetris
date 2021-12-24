@@ -303,9 +303,9 @@ class Game {
     if (message.equals("")) {
       return false;
     }
-    String[] messageSplit = split(message, '=');
+    String[] messageSplit = split(message, "=");
     if (this.gameOver) {
-      if (!trim(messageSplit[0]).equals("gameOverMessage")) {
+      if (!trim(messageSplit[0]).equals("addGameOverMessage")) {
         return false;
       }
     }
@@ -382,7 +382,7 @@ class Game {
         break;
       case "addGameOverMessage":
         if (messageSplit.length > 1) {
-          String[] parameters = split(trim(messageSplit[1]), ',');
+          String[] parameters = split(trim(messageSplit[1]), ",");
           if (parameters.length != 2) {
             return false;
           }

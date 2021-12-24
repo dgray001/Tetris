@@ -596,6 +596,7 @@ class CurrGame {
           this.buttons.paB.changeColor(color(220), color(0), color(170), color(120));
           if (!joineeGameOver) {
             this.myGame.addGameOverMessage("You", "Lost");
+            this.myGame.drawBoard();
             myGameChanges += "| HOST_GAME: addGameOverMessage=You, Lost";
             this.otherGame.addGameOverMessage("You", "Won");
             otherGameChanges += "| JOINEE_GAME: addGameOverMessage=You, Won";
@@ -606,6 +607,7 @@ class CurrGame {
             this.myGame.addGameOverMessage("You", "Won");
             myGameChanges += "| HOST_GAME: addGameOverMessage=You, Won";
             this.otherGame.addGameOverMessage("You", "Lost");
+            this.otherGame.drawBoard();
             otherGameChanges += "| JOINEE_GAME: addGameOverMessage=You, Lost";
           }
         }
@@ -1051,7 +1053,7 @@ class CurrGame {
               break;
             case "HOST_GAME":
               if (!this.otherGame.executeMessage(trim(splitMessage[1]))) {
-                println("ERROR: HOST_GAME message not recognized -> " + trim(splitMessage[1]));
+                println("ERROR: HOST_GAMEfdas message not recognized -> " + trim(splitMessage[1]));
               }
               break;
             case "JOINEE_GAME":
