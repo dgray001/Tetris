@@ -52,6 +52,9 @@ public color dynamicColorChanger(color c) {
   return returnColor;
 }
 
+public color ColorToColor(Color c) {
+  return stringToColor(c.getColorName());
+}
 public color stringToColor(String colorName) {
   switch(colorName) {
     case "blue":
@@ -69,7 +72,7 @@ public color stringToColor(String colorName) {
     case "purple":
       return color(165, 0, 165);
     case "orange":
-      return color(255, 165, 0);
+      return color(255, 175, 0);
     case "pink":
       return color(255, 105, 180);
     case "gray":

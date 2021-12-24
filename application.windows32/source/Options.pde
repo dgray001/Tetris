@@ -1,5 +1,5 @@
 public enum PieceStyle {
-  FLAT_NORMAL("2D normal"), FLAT_SMOOTH("2D smooth"), FLAT_DYNAMIC("2D dynamic"), RAISED_NORMAL("3D normal"), RAISED_FAT("3D fat"), RAISED_DYNAMIC("3D dynamic");
+  FLAT_NORMAL("2D normal"), FLAT_SMOOTH("2D smooth"), FLAT_FADE("2D fade"), FLAT_DYNAMIC("2D dynamic"), RAISED_FADE("3D Fade"), RAISED_SHARP("3D Fade Sharp"), RAISED_NORMAL("3D normal"), RAISED_FAT("3D fat");
   private static final List<PieceStyle> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
   private String style;
   private PieceStyle(String style) {
@@ -20,6 +20,7 @@ public enum PieceStyle {
 public enum Color {
   BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow"), CYAN("cyan"), FUCHSIA("fuchsia"), PURPLE("purple"),
   ORANGE("orange"), PINK("pink"), TAN("tan"), GRAY("gray"), BROWN("brown"), BLACK("black"), WHITE("white"), DEEP_BLACK("deep_black");
+  private static final List<Color> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
   private String name;
   private Color(String name) {
     this.name = name;

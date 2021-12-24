@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.3.4e
+// v0.3.4f
 // 20211223
 
 
@@ -1242,7 +1242,7 @@ class Constants {
   public final float shadowOpacity = 100.0f;
   
   // Piece
-  public final PieceStyle defaultPieceStyle = PieceStyle.RAISED_NORMAL;
+  public final PieceStyle defaultPieceStyle = PieceStyle.RAISED_FADE;
   public final int defaultPieceFill = color(255);
   public final int defaultPieceStroke = color(0);
   public final Color defaultIFill = Color.CYAN;
@@ -1268,6 +1268,20 @@ class Constants {
   
   // Images
   public PImage lightning;
+  
+  public PImage fade_2D_blue;
+  public PImage fade_2D_red;
+  public PImage fade_2D_green;
+  public PImage fade_2D_yellow;
+  public PImage fade_2D_cyan;
+  public PImage fade_2D_purple;
+  public PImage fade_2D_fuchsia;
+  public PImage fade_2D_orange;
+  public PImage fade_2D_pink;
+  public PImage fade_2D_gray;
+  public PImage fade_2D_tan;
+  public PImage fade_2D_black;
+    
   public PImage fat_3D_blue;
   public PImage fat_3D_red;
   public PImage fat_3D_green;
@@ -1280,6 +1294,7 @@ class Constants {
   public PImage fat_3D_gray;
   public PImage fat_3D_tan;
   public PImage fat_3D_black;
+  
   public PImage normal_3D_blue;
   public PImage normal_3D_red;
   public PImage normal_3D_green;
@@ -1293,11 +1308,51 @@ class Constants {
   public PImage normal_3D_tan;
   public PImage normal_3D_black;
   
+  public PImage fade_3D_soft_blue;
+  public PImage fade_3D_soft_red;
+  public PImage fade_3D_soft_green;
+  public PImage fade_3D_soft_yellow;
+  public PImage fade_3D_soft_cyan;
+  public PImage fade_3D_soft_purple;
+  public PImage fade_3D_soft_fuchsia;
+  public PImage fade_3D_soft_orange;
+  public PImage fade_3D_soft_pink;
+  public PImage fade_3D_soft_gray;
+  public PImage fade_3D_soft_tan;
+  public PImage fade_3D_soft_black;
+  
+  public PImage fade_3D_sharp_blue;
+  public PImage fade_3D_sharp_red;
+  public PImage fade_3D_sharp_green;
+  public PImage fade_3D_sharp_yellow;
+  public PImage fade_3D_sharp_cyan;
+  public PImage fade_3D_sharp_purple;
+  public PImage fade_3D_sharp_fuchsia;
+  public PImage fade_3D_sharp_orange;
+  public PImage fade_3D_sharp_pink;
+  public PImage fade_3D_sharp_gray;
+  public PImage fade_3D_sharp_tan;
+  public PImage fade_3D_sharp_black;
+  
   Constants() {
   }
   
   public void loadImages() {
     this.lightning = loadImage(sketchPath("") + "data/lightning.png");
+    
+    this.fade_2D_blue = loadImage(sketchPath("") + "data/pieces/2D_fade_blue.jpg");
+    this.fade_2D_red = loadImage(sketchPath("") + "data/pieces/2D_fade_red.jpg");
+    this.fade_2D_green = loadImage(sketchPath("") + "data/pieces/2D_fade_green.jpg");
+    this.fade_2D_yellow = loadImage(sketchPath("") + "data/pieces/2D_fade_yellow.jpg");
+    this.fade_2D_cyan = loadImage(sketchPath("") + "data/pieces/2D_fade_cyan.jpg");
+    this.fade_2D_fuchsia = loadImage(sketchPath("") + "data/pieces/2D_fade_fuchsia.jpg");
+    this.fade_2D_purple = loadImage(sketchPath("") + "data/pieces/2D_fade_purple.jpg");
+    this.fade_2D_pink = loadImage(sketchPath("") + "data/pieces/2D_fade_pink.jpg");
+    this.fade_2D_orange = loadImage(sketchPath("") + "data/pieces/2D_fade_orange.jpg");
+    this.fade_2D_gray = loadImage(sketchPath("") + "data/pieces/2D_fade_gray.jpg");
+    this.fade_2D_tan = loadImage(sketchPath("") + "data/pieces/2D_fade_tan.jpg");
+    this.fade_2D_black = loadImage(sketchPath("") + "data/pieces/2D_fade_black.jpg");
+    
     this.fat_3D_blue = loadImage(sketchPath("") + "data/pieces/3d_fat_blue.jpg");
     this.fat_3D_red = loadImage(sketchPath("") + "data/pieces/3d_fat_red.jpg");
     this.fat_3D_green = loadImage(sketchPath("") + "data/pieces/3d_fat_green.jpg");
@@ -1310,6 +1365,7 @@ class Constants {
     this.fat_3D_gray = loadImage(sketchPath("") + "data/pieces/3d_fat_gray.jpg");
     this.fat_3D_tan = loadImage(sketchPath("") + "data/pieces/3d_fat_tan.jpg");
     this.fat_3D_black = loadImage(sketchPath("") + "data/pieces/3d_fat_black.jpg");
+    
     this.normal_3D_blue = loadImage(sketchPath("") + "data/pieces/3d_normal_blue.jpg");
     this.normal_3D_red = loadImage(sketchPath("") + "data/pieces/3d_normal_red.jpg");
     this.normal_3D_green = loadImage(sketchPath("") + "data/pieces/3d_normal_green.jpg");
@@ -1322,6 +1378,56 @@ class Constants {
     this.normal_3D_gray = loadImage(sketchPath("") + "data/pieces/3d_normal_gray.jpg");
     this.normal_3D_tan = loadImage(sketchPath("") + "data/pieces/3d_normal_tan.jpg");
     this.normal_3D_black = loadImage(sketchPath("") + "data/pieces/3d_normal_black.jpg");
+    
+    this.fade_3D_soft_blue = loadImage(sketchPath("") + "data/pieces/3D_soft_blue.jpg");
+    this.fade_3D_soft_red = loadImage(sketchPath("") + "data/pieces/3D_soft_red.jpg");
+    this.fade_3D_soft_green = loadImage(sketchPath("") + "data/pieces/3D_soft_green.jpg");
+    this.fade_3D_soft_yellow = loadImage(sketchPath("") + "data/pieces/3D_soft_yellow.jpg");
+    this.fade_3D_soft_cyan = loadImage(sketchPath("") + "data/pieces/3D_soft_cyan.jpg");
+    this.fade_3D_soft_fuchsia = loadImage(sketchPath("") + "data/pieces/3D_soft_fuchsia.jpg");
+    this.fade_3D_soft_purple = loadImage(sketchPath("") + "data/pieces/3D_soft_purple.jpg");
+    this.fade_3D_soft_pink = loadImage(sketchPath("") + "data/pieces/3D_soft_pink.jpg");
+    this.fade_3D_soft_orange = loadImage(sketchPath("") + "data/pieces/3D_soft_orange.jpg");
+    this.fade_3D_soft_gray = loadImage(sketchPath("") + "data/pieces/3D_soft_gray.jpg");
+    this.fade_3D_soft_tan = loadImage(sketchPath("") + "data/pieces/3D_soft_tan.jpg");
+    this.fade_3D_soft_black = loadImage(sketchPath("") + "data/pieces/3D_soft_black.jpg");
+    
+    this.fade_3D_sharp_blue = loadImage(sketchPath("") + "data/pieces/3D_sharp_blue.jpg");
+    this.fade_3D_sharp_red = loadImage(sketchPath("") + "data/pieces/3D_sharp_red.jpg");
+    this.fade_3D_sharp_green = loadImage(sketchPath("") + "data/pieces/3D_sharp_green.jpg");
+    this.fade_3D_sharp_yellow = loadImage(sketchPath("") + "data/pieces/3D_sharp_yellow.jpg");
+    this.fade_3D_sharp_cyan = loadImage(sketchPath("") + "data/pieces/3D_sharp_cyan.jpg");
+    this.fade_3D_sharp_fuchsia = loadImage(sketchPath("") + "data/pieces/3D_sharp_fuchsia.jpg");
+    this.fade_3D_sharp_purple = loadImage(sketchPath("") + "data/pieces/3D_sharp_purple.jpg");
+    this.fade_3D_sharp_pink = loadImage(sketchPath("") + "data/pieces/3D_sharp_pink.jpg");
+    this.fade_3D_sharp_orange = loadImage(sketchPath("") + "data/pieces/3D_sharp_orange.jpg");
+    this.fade_3D_sharp_gray = loadImage(sketchPath("") + "data/pieces/3D_sharp_gray.jpg");
+    this.fade_3D_sharp_tan = loadImage(sketchPath("") + "data/pieces/3D_sharp_tan.jpg");
+    this.fade_3D_sharp_black = loadImage(sketchPath("") + "data/pieces/3D_sharp_black.jpg");
+  }
+  
+  public HashMap<Color, PImage> generateImages(PImage inputImage) {
+    HashMap<Color, PImage> returnMap = new HashMap<Color, PImage>();
+    for (Color c : Color.VALUES) {
+      int c_color = ColorToColor(c);
+      float c_r = c_color >> 16 & 0xFF;
+      float c_g = c_color >> 8 & 0xFF;
+      float c_b = c_color & 0xFF;
+      PImage imageCopy = inputImage.copy();
+      imageCopy.loadPixels();
+      for(int i = 0; i < imageCopy.pixels.length; i++) {
+        float p_r = red(imageCopy.pixels[i]);
+        float p_g = green(imageCopy.pixels[i]);
+        float p_b = blue(imageCopy.pixels[i]);
+        p_r = sqrt(p_r * c_r);
+        p_g = sqrt(p_g * c_g);
+        p_b = sqrt(p_b * c_b);
+        imageCopy.pixels[i] = color(p_r, p_g, p_b);
+      }
+      imageCopy.updatePixels();
+      returnMap.put(c, imageCopy);
+    }
+    return returnMap;
   }
 }
 public enum GameState {
@@ -2995,6 +3101,9 @@ public int dynamicColorChanger(int c) {
   return returnColor;
 }
 
+public int ColorToColor(Color c) {
+  return stringToColor(c.getColorName());
+}
 public int stringToColor(String colorName) {
   switch(colorName) {
     case "blue":
@@ -3012,7 +3121,7 @@ public int stringToColor(String colorName) {
     case "purple":
       return color(165, 0, 165);
     case "orange":
-      return color(255, 165, 0);
+      return color(255, 175, 0);
     case "pink":
       return color(255, 105, 180);
     case "gray":
@@ -3059,7 +3168,7 @@ public Color stringToColorEnum(String colorName) {
   }
 }
 public enum PieceStyle {
-  FLAT_NORMAL("2D normal"), FLAT_SMOOTH("2D smooth"), FLAT_DYNAMIC("2D dynamic"), RAISED_NORMAL("3D normal"), RAISED_FAT("3D fat"), RAISED_DYNAMIC("3D dynamic");
+  FLAT_NORMAL("2D normal"), FLAT_SMOOTH("2D smooth"), FLAT_FADE("2D fade"), FLAT_DYNAMIC("2D dynamic"), RAISED_FADE("3D Fade"), RAISED_SHARP("3D Fade Sharp"), RAISED_NORMAL("3D normal"), RAISED_FAT("3D fat");
   private static final List<PieceStyle> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
   private String style;
   private PieceStyle(String style) {
@@ -3080,6 +3189,7 @@ public enum PieceStyle {
 public enum Color {
   BLUE("blue"), RED("red"), GREEN("green"), YELLOW("yellow"), CYAN("cyan"), FUCHSIA("fuchsia"), PURPLE("purple"),
   ORANGE("orange"), PINK("pink"), TAN("tan"), GRAY("gray"), BROWN("brown"), BLACK("black"), WHITE("white"), DEEP_BLACK("deep_black");
+  private static final List<Color> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
   private String name;
   private Color(String name) {
     this.name = name;
@@ -3485,6 +3595,177 @@ public class Piece {
           square(xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength);
         }
         break;
+      case FLAT_FADE:
+        imageMode(CORNER);
+        PImage image_2d_fade = null;
+        switch(this.pieceColor) {
+          case BLUE:
+            image_2d_fade = constants.fade_2D_blue;
+            break;
+          case RED:
+            image_2d_fade = constants.fade_2D_red;
+            break;
+          case GREEN:
+            image_2d_fade = constants.fade_2D_green;
+            break;
+          case YELLOW:
+            image_2d_fade = constants.fade_2D_yellow;
+            break;
+          case CYAN:
+            image_2d_fade = constants.fade_2D_cyan;
+            break;
+          case FUCHSIA:
+            image_2d_fade = constants.fade_2D_fuchsia;
+            break;
+          case PURPLE:
+            image_2d_fade = constants.fade_2D_purple;
+            break;
+          case ORANGE:
+            image_2d_fade = constants.fade_2D_orange;
+            break;
+          case TAN:
+            image_2d_fade = constants.fade_2D_tan;
+            break;
+          case PINK:
+            image_2d_fade = constants.fade_2D_pink;
+            break;
+          case GRAY:
+            image_2d_fade = constants.fade_2D_gray;
+            break;
+          case BROWN:
+            //image_2d_fade = constants.fade_2D_brown;
+            break;
+          case BLACK:
+            image_2d_fade = constants.fade_2D_black;
+            break;
+          case WHITE:
+            //image_2d_fade = constants.fade_2D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_2d_fade != null) {
+          tint(255);
+          for (Pair<Integer, Integer> i : spaces) {
+            image(image_2d_fade, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
+          }
+        }
+        break;
+      case RAISED_FADE:
+        imageMode(CORNER);
+        PImage image_3d_fade_soft = null;
+        switch(this.pieceColor) {
+          case BLUE:
+            image_3d_fade_soft = constants.fade_3D_soft_blue;
+            break;
+          case RED:
+            image_3d_fade_soft = constants.fade_3D_soft_red;
+            break;
+          case GREEN:
+            image_3d_fade_soft = constants.fade_3D_soft_green;
+            break;
+          case YELLOW:
+            image_3d_fade_soft = constants.fade_3D_soft_yellow;
+            break;
+          case CYAN:
+            image_3d_fade_soft = constants.fade_3D_soft_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_fade_soft = constants.fade_3D_soft_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_fade_soft = constants.fade_3D_soft_purple;
+            break;
+          case ORANGE:
+            image_3d_fade_soft = constants.fade_3D_soft_orange;
+            break;
+          case TAN:
+            image_3d_fade_soft = constants.fade_3D_soft_tan;
+            break;
+          case PINK:
+            image_3d_fade_soft = constants.fade_3D_soft_pink;
+            break;
+          case GRAY:
+            image_3d_fade_soft = constants.fade_3D_soft_gray;
+            break;
+          case BROWN:
+            //image_3d_fade_soft = constants.fade_3D_soft_brown;
+            break;
+          case BLACK:
+            image_3d_fade_soft = constants.fade_3D_soft_black;
+            break;
+          case WHITE:
+            //image_3d_fade_soft = constants.fade_3D_soft_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_fade_soft != null) {
+          tint(255);
+          for (Pair<Integer, Integer> i : spaces) {
+            image(image_3d_fade_soft, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
+          }
+        }
+        break;
+      case RAISED_SHARP:
+        imageMode(CORNER);
+        PImage image_3d_fade_sharp = null;
+        switch(this.pieceColor) {
+          case BLUE:
+            image_3d_fade_sharp = constants.fade_3D_sharp_blue;
+            break;
+          case RED:
+            image_3d_fade_sharp = constants.fade_3D_sharp_red;
+            break;
+          case GREEN:
+            image_3d_fade_sharp = constants.fade_3D_sharp_green;
+            break;
+          case YELLOW:
+            image_3d_fade_sharp = constants.fade_3D_sharp_yellow;
+            break;
+          case CYAN:
+            image_3d_fade_sharp = constants.fade_3D_sharp_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_fade_sharp = constants.fade_3D_sharp_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_fade_sharp = constants.fade_3D_sharp_purple;
+            break;
+          case ORANGE:
+            image_3d_fade_sharp = constants.fade_3D_sharp_orange;
+            break;
+          case TAN:
+            image_3d_fade_sharp = constants.fade_3D_sharp_tan;
+            break;
+          case PINK:
+            image_3d_fade_sharp = constants.fade_3D_sharp_pink;
+            break;
+          case GRAY:
+            image_3d_fade_sharp = constants.fade_3D_sharp_gray;
+            break;
+          case BROWN:
+            //image_3d_fade_sharp = constants.fade_3D_sharp_brown;
+            break;
+          case BLACK:
+            image_3d_fade_sharp = constants.fade_3D_sharp_black;
+            break;
+          case WHITE:
+            //image_3d_fade_sharp = constants.fade_3D_sharp_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_fade_sharp != null) {
+          tint(255);
+          for (Pair<Integer, Integer> i : spaces) {
+            image(image_3d_fade_sharp, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
+          }
+        }
+        break;
       case RAISED_NORMAL:
         imageMode(CORNER);
         PImage image_3d_normal = null;
@@ -3536,8 +3817,8 @@ public class Piece {
             break;
         }
         if (image_3d_normal != null) {
+          tint(255);
           for (Pair<Integer, Integer> i : spaces) {
-            tint(255);
             image(image_3d_normal, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
           }
         }
@@ -3593,8 +3874,8 @@ public class Piece {
             break;
         }
         if (image_3d_fat != null) {
+          tint(255);
           for (Pair<Integer, Integer> i : spaces) {
-            tint(255);
             image(image_3d_fat, xi + sideLength * (i.getKey() - minX), yi + sideLength * (i.getValue() - minY), sideLength, sideLength);
           }
         }
@@ -4007,6 +4288,186 @@ class Space {
         stroke(constants.defaultPieceStroke);
         rectMode(CORNER);
         square(xi, yi, sideLength);
+        break;
+      case FLAT_FADE:
+        imageMode(CORNER);
+        PImage image_2d_fade = null;
+        switch(this.spaceColor) {
+          case BLUE:
+            image_2d_fade = constants.fade_2D_blue;
+            break;
+          case RED:
+            image_2d_fade = constants.fade_2D_red;
+            break;
+          case GREEN:
+            image_2d_fade = constants.fade_2D_green;
+            break;
+          case YELLOW:
+            image_2d_fade = constants.fade_2D_yellow;
+            break;
+          case CYAN:
+            image_2d_fade = constants.fade_2D_cyan;
+            break;
+          case FUCHSIA:
+            image_2d_fade = constants.fade_2D_fuchsia;
+            break;
+          case PURPLE:
+            image_2d_fade = constants.fade_2D_purple;
+            break;
+          case ORANGE:
+            image_2d_fade = constants.fade_2D_orange;
+            break;
+          case TAN:
+            image_2d_fade = constants.fade_2D_tan;
+            break;
+          case PINK:
+            image_2d_fade = constants.fade_2D_pink;
+            break;
+          case GRAY:
+            image_2d_fade = constants.fade_2D_gray;
+            break;
+          case BROWN:
+            //image_2d_fade = constants.fade_2D_brown;
+            break;
+          case BLACK:
+            image_2d_fade = constants.fade_2D_black;
+            break;
+          case WHITE:
+            //image_2d_fade = constants.fade_2D_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_2d_fade != null) {
+          if (this.shadow) {
+            tint(255, constants.shadowOpacity);
+          }
+          else {
+            tint(255);
+          }
+          image(image_2d_fade, xi, yi, sideLength, sideLength);
+        }
+        break;
+      case RAISED_FADE:
+        imageMode(CORNER);
+        PImage image_3d_fade_soft = null;
+        switch(this.spaceColor) {
+          case BLUE:
+            image_3d_fade_soft = constants.fade_3D_soft_blue;
+            break;
+          case RED:
+            image_3d_fade_soft = constants.fade_3D_soft_red;
+            break;
+          case GREEN:
+            image_3d_fade_soft = constants.fade_3D_soft_green;
+            break;
+          case YELLOW:
+            image_3d_fade_soft = constants.fade_3D_soft_yellow;
+            break;
+          case CYAN:
+            image_3d_fade_soft = constants.fade_3D_soft_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_fade_soft = constants.fade_3D_soft_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_fade_soft = constants.fade_3D_soft_purple;
+            break;
+          case ORANGE:
+            image_3d_fade_soft = constants.fade_3D_soft_orange;
+            break;
+          case TAN:
+            image_3d_fade_soft = constants.fade_3D_soft_tan;
+            break;
+          case PINK:
+            image_3d_fade_soft = constants.fade_3D_soft_pink;
+            break;
+          case GRAY:
+            image_3d_fade_soft = constants.fade_3D_soft_gray;
+            break;
+          case BROWN:
+            //image_3d_fade_soft = constants.fade_3D_soft_brown;
+            break;
+          case BLACK:
+            image_3d_fade_soft = constants.fade_3D_soft_black;
+            break;
+          case WHITE:
+            //image_3d_fade_soft = constants.fade_3D_soft_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_fade_soft != null) {
+          if (this.shadow) {
+            tint(255, constants.shadowOpacity);
+          }
+          else {
+            tint(255);
+          }
+          image(image_3d_fade_soft, xi, yi, sideLength, sideLength);
+        }
+        break;
+      case RAISED_SHARP:
+        imageMode(CORNER);
+        PImage image_3d_fade_sharp = null;
+        switch(this.spaceColor) {
+          case BLUE:
+            image_3d_fade_sharp = constants.fade_3D_sharp_blue;
+            break;
+          case RED:
+            image_3d_fade_sharp = constants.fade_3D_sharp_red;
+            break;
+          case GREEN:
+            image_3d_fade_sharp = constants.fade_3D_sharp_green;
+            break;
+          case YELLOW:
+            image_3d_fade_sharp = constants.fade_3D_sharp_yellow;
+            break;
+          case CYAN:
+            image_3d_fade_sharp = constants.fade_3D_sharp_cyan;
+            break;
+          case FUCHSIA:
+            image_3d_fade_sharp = constants.fade_3D_sharp_fuchsia;
+            break;
+          case PURPLE:
+            image_3d_fade_sharp = constants.fade_3D_sharp_purple;
+            break;
+          case ORANGE:
+            image_3d_fade_sharp = constants.fade_3D_sharp_orange;
+            break;
+          case TAN:
+            image_3d_fade_sharp = constants.fade_3D_sharp_tan;
+            break;
+          case PINK:
+            image_3d_fade_sharp = constants.fade_3D_sharp_pink;
+            break;
+          case GRAY:
+            image_3d_fade_sharp = constants.fade_3D_sharp_gray;
+            break;
+          case BROWN:
+            //image_3d_fade_sharp = constants.fade_3D_sharp_brown;
+            break;
+          case BLACK:
+            image_3d_fade_sharp = constants.fade_3D_sharp_black;
+            break;
+          case WHITE:
+            //image_3d_fade_sharp = constants.fade_3D_sharp_white;
+            break;
+          default:
+            println("ERROR: piece color not recognized");
+            break;
+        }
+        if (image_3d_fade_sharp != null) {
+          if (this.shadow) {
+            tint(255, constants.shadowOpacity);
+          }
+          else {
+            tint(255);
+          }
+          image(image_3d_fade_sharp, xi, yi, sideLength, sideLength);
+        }
         break;
       case RAISED_NORMAL:
         imageMode(CORNER);
