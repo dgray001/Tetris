@@ -25,7 +25,7 @@ import java.io.IOException;
 public class Tetris extends PApplet {
 
 // Tetris
-// v0.3.4c
+// v0.3.4d
 // 20211223
 
 
@@ -2823,6 +2823,7 @@ class Game {
             return false;
           }
           this.addGameOverMessage(trim(parameters[0]), trim(parameters[1]));
+          this.drawBoard();
         }
         break;
       case "tick":

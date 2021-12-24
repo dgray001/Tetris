@@ -387,6 +387,7 @@ class Game {
             return false;
           }
           this.addGameOverMessage(trim(parameters[0]), trim(parameters[1]));
+          this.drawBoard();
         }
         break;
       case "tick":
