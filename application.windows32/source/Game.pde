@@ -9,6 +9,8 @@ class Game {
   private float xf = 0;
   private float yf = 0;
   private boolean gameOver = false;
+  private boolean displayGameOverMessage = false;
+  private String[] gameOverMessage = new String[]{"", ""};
   private HashMap<String, Integer> statistics = new HashMap<String, Integer>();
   
   Game(float[] borders) {
@@ -54,11 +56,11 @@ class Game {
   String update() {
     return this.update("", true);
   }
-  String update(String gameName, boolean gameOverMessage) {
+  String update(String gameName, boolean singlePlayer) {
+    String updates = "";
     if (this.gameOver) {
       return "";
     }
-    String updates = "";
     if (millis() - this.lastTick > this.tickLength) {
       updates += gameName + "tick";
       this.incrementStatistic("Ticks");
@@ -70,9 +72,10 @@ class Game {
       else {
         this.gameOver = this.board.getPieceOverflow();
         if (this.gameOver) {
-          if (gameOverMessage) {
-            this.gameOverMessage();
+          if (singlePlayer) {
+            this.addGameOverMessage("Game", "Over");
           }
+          this.drawBoard();
           this.showStats();
           updates += gameName + "gameOver";
           return updates;
@@ -84,14 +87,18 @@ class Game {
         updates += gameName + "addPiece=" + newPiece.getShapeName();
       }
       this.lastTick = millis();
-      this.board.drawBoard();
-      this.drawPanel();
-      updates += gameName + "drawBoard";
-      updates += gameName + "drawPanel";
     }
-    this.drawVisualEffects();
-    updates += gameName + "visualEffects";
+    this.drawBoard();
+    updates += gameName + "drawBoard";
     return updates;
+  }
+  
+  void drawBoard() {
+    this.board.drawBoard();
+    this.drawPanel();
+    if (this.displayGameOverMessage) {
+      this.drawGameOverMessage();
+    }
   }
   
   void drawPanel() {
@@ -162,17 +169,15 @@ class Game {
     text(this.statistics.get("Quadruple Combos"), this.xi + 0.1 * (this.xf - this.xi), this.yi + textHeight * 19);
   }
   
-  void drawVisualEffects() {
-    this.board.drawVisualEffects();
+  void addGameOverMessage(String s1, String s2) {
+    this.displayGameOverMessage = true;
+    this.gameOverMessage[0] = s1;
+    this.gameOverMessage[1] = s2;
   }
-  void clearVisualEffects() {
-    this.board.clearVisualEffects();
+  void clearGameOverMessage() {
+    this.displayGameOverMessage = false;
   }
-  
-  void gameOverMessage() {
-    this.gameOverMessage("Game", "Over");
-  }
-  void gameOverMessage(String s1, String s2) {
+  void drawGameOverMessage() {
     fill(color(0), 150);
     stroke(color(0), 150);
     rectMode(CORNERS);
@@ -180,9 +185,9 @@ class Game {
     fill(255);
     textSize(60);
     textAlign(CENTER, BOTTOM);
-    text(s1, this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
+    text(this.gameOverMessage[0], this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
     textAlign(CENTER, TOP);
-    text(s2, this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
+    text(this.gameOverMessage[1], this.board.xi + 0.5 * (this.board.xf - this.board.xi), this.board.yi + 0.5 * (this.board.yf - this.board.yi));
   }
   
   void addPiece(Piece p) {
@@ -287,8 +292,7 @@ class Game {
       }
     }
     if (executeActions) {
-      this.board.drawBoard();
-      this.drawVisualEffects();
+      this.drawBoard();
     }
     updates += gameName + "drawBoard";
     return updates;
@@ -318,7 +322,7 @@ class Game {
         this.addPiece(newPiece);
         break;
       case "drawBoard":
-        this.board.drawBoard();
+        this.drawBoard();
         break;
       case "drawPanel":
         this.drawPanel();
@@ -376,27 +380,18 @@ class Game {
         this.gameOver = true;
         this.showStats();
         break;
-      case "gameOverMessage":
+      case "addGameOverMessage":
         if (messageSplit.length > 1) {
           String[] parameters = split(trim(messageSplit[1]), ',');
           if (parameters.length != 2) {
             return false;
           }
-          this.gameOverMessage(trim(parameters[0]), trim(parameters[1]));
-        }
-        else {
-          this.gameOverMessage();
+          this.addGameOverMessage(trim(parameters[0]), trim(parameters[1]));
         }
         break;
       case "tick":
         this.incrementStatistic("Ticks");
         this.increaseStatistic("Points", constants.scoreTick);
-        break;
-      case "visualEffects":
-        this.drawVisualEffects();
-        break;
-      case "clearEffects":
-        this.clearVisualEffects();
         break;
       default:
         return false;

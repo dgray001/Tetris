@@ -36,13 +36,14 @@ class CurrGame {
   void pauseGame() {
     if (this.paused) {
       this.paused = false;
+      this.myGame.clearGameOverMessage();
       this.buttons.pgB.setMES("Pause Game");
       this.buttons.pgB.defaultColors();
     }
     else {
       this.paused = true;
+      this.myGame.addGameOverMessage("Game", "Paused");
       this.buttons.pgB.setMES("Resume");
-      this.myGame.gameOverMessage("Game", "Paused");
       this.buttons.pgB.changeColor(color(120), color(0), color(170), color(220));
     }
   }
@@ -589,27 +590,23 @@ class CurrGame {
         boolean joineeGameOver = this.otherGame.gameOver;
         String myGameChanges = this.myGame.update("| HOST_GAME: ", false);
         String otherGameChanges = this.otherGame.update("| JOINEE_GAME: ", false);
-        // check for game over messages
-        if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
-          this.myGame.gameOverMessage("You", "Won");
-          myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
-        }
-        if ((this.myGame.gameOver) && (!this.otherGame.gameOver)) {
-          this.otherGame.gameOverMessage("You", "Won");
-          otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
-        }
+        // check for game overs
         if ((!hostGameOver) && (this.myGame.gameOver)) {
           this.buttons.paB.setDIS(false);
           this.buttons.paB.changeColor(color(220), color(0), color(170), color(120));
           if (!joineeGameOver) {
-            this.myGame.gameOverMessage("You", "Lost");
-            myGameChanges += "| HOST_GAME: gameOverMessage=You, Lost";
+            this.myGame.addGameOverMessage("You", "Lost");
+            myGameChanges += "| HOST_GAME: addGameOverMessage=You, Lost";
+            this.otherGame.addGameOverMessage("You", "Won");
+            otherGameChanges += "| JOINEE_GAME: addGameOverMessage=You, Won";
           }
         }
         if ((!joineeGameOver) && (this.otherGame.gameOver)) {
           if (!hostGameOver) {
-            this.otherGame.gameOverMessage("You", "Lost");
-            otherGameChanges += "| JOINEE_GAME: gameOverMessage=You, Lost";
+            this.myGame.addGameOverMessage("You", "Won");
+            myGameChanges += "| HOST_GAME: addGameOverMessage=You, Won";
+            this.otherGame.addGameOverMessage("You", "Lost");
+            otherGameChanges += "| JOINEE_GAME: addGameOverMessage=You, Lost";
           }
         }
         if (!myGameChanges.equals("")) {
@@ -702,7 +699,7 @@ class CurrGame {
     }
     while(this.messageQ.peek() != null) {
       String message = this.messageQ.remove();
-      println(message);
+      println("time: " + millis() + "\n  " + message);
       String[] splitMessage = split(message, ':');
       if (splitMessage.length < 2) {
         println("ERROR: invalid message: " + splitMessage);
@@ -1085,21 +1082,12 @@ class CurrGame {
       case MULTIPLAYER_HOSTING:
         String myGameChanges = this.myGame.pressedKey("| HOST_GAME: ");
         if (!myGameChanges.equals("")) {
-          // check for game over messages
-          if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
-            this.myGame.gameOverMessage("You", "Won");
-            myGameChanges += "| HOST_GAME: gameOverMessage=You, Won";
-          }
           this.server.write(myGameChanges);
         }
         break;
       case MULTIPLAYER_JOINED:
         String gameChanges = this.myGame.pressedKey("| JOINEE_GAME: ", false);
         if (!gameChanges.equals("")) {
-          if ((!this.myGame.gameOver) && (this.otherGame.gameOver)) {
-            this.myGame.gameOverMessage("You", "Won");
-            gameChanges += "| JOINEE_GAME: gameOverMessage=You, Won";
-          }
           this.otherPlayer.client.write(gameChanges);
         }
         break;

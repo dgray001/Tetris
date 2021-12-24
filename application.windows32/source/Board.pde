@@ -69,10 +69,10 @@ class Board {
         this.spaces[i][j].drawSpace(xCurr + squareSize * i, yCurr + squareSize * j, squareSize);
       }
     }
+    this.drawVisualEffects();
   }
   
   void drawVisualEffects() {
-    this.drawBoard();
     for (int i = 0; i < this.visualEffects.size(); i++) {
       if (this.visualEffects.get(i).drawVisualEffect(this)) {
         this.visualEffects.remove(i);
