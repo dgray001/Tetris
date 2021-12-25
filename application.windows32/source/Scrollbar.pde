@@ -1,3 +1,130 @@
+class chatBox {
+  private listBar listB;
+  private int inputTextSize = 18;
+  private boolean mouseOnTextBox = false;
+  private boolean typing = false;
+  private String typingText = "";
+  private int cursorBlinkRate = 500;
+  private boolean blinking = false;
+  private int lastBlink = millis();
+  
+  chatBox(float xi, float yi, float xf, float yf) {
+    this.listB = new listBar(xi, yi, xf, yf - this.inputTextSize - 3);
+    this.listB.setFillColor(color(0));
+    this.listB.setTextColor(color(255));
+    this.listB.setHighlightedColor(color(255));
+  }
+  
+  public void setTextSize(int size) {
+    float deltaYF = size - this.inputTextSize;
+    this.inputTextSize = size;
+    this.listB.setYF(this.listB.getYF() - deltaYF);
+  }
+  
+  public void update(float x, float y) {
+    // update listbar
+    this.listB.update(x, y);
+    // draw chat box
+    rectMode(CORNERS);
+    stroke(255);
+    fill(0);
+    if (this.typing) {
+      fill(50);
+    }
+    rect(this.listB.getXI(), this.listB.getYF(), this.listB.getXF(), this.listB.getYF() + this.inputTextSize + 3);
+    // update mouseOnTextBox
+    if ((x > this.listB.getXI()) && (x < this.listB.getXF()) && (y > this.listB.getYF()) && (y < this.listB.getYF() + this.inputTextSize + 3)) {
+      this.mouseOnTextBox = true;
+    }
+    else {
+      this.mouseOnTextBox = false;
+    }
+    // draw what's typed
+    textSize(this.inputTextSize);
+    textAlign(LEFT, CENTER);
+    fill(255);
+    String typedString = this.typingText;
+    float allowedWidth = this.listB.getXF() - this.listB.getXI() - 4 - textWidth(" ");
+    while(textWidth(typedString) > allowedWidth) {
+      typedString = typedString.substring(1, typedString.length());
+    }
+    text(typedString, this.listB.getXI() + 2, this.listB.getYF() + 0.5 * (this.inputTextSize + 3));
+    // draw cursor if typing
+    if (this.typing) {
+      if (!this.blinking) {
+        line(this.listB.getXI() + 2 + textWidth(typedString) + 2, this.listB.getYF() + 2, this.listB.getXI() + 2 + textWidth(typedString) + 2, this.listB.getYF() + this.inputTextSize + 1);
+      }
+      if (millis() - this.lastBlink > this. cursorBlinkRate) {
+        this.lastBlink = millis();
+        this.blinking = !this.blinking;
+      }
+    }
+  }
+  
+  void addChat(String username, String text) {
+  }
+  
+  public void mousePress() {
+    this.listB.mousePress();
+    if (this.mouseOnTextBox) {
+      this.typing = true;
+    }
+    else {
+      this.typing = false;
+    }
+  }
+  
+  public void mouseRelease() {
+    this.listB.mouseRelease();
+  }
+  
+  public void pressedKey(String username) {
+    if (!this.typing) {
+      return;
+    }
+    if (key == CODED) {
+      switch(keyCode) {
+      }
+    }
+    else {
+      switch(key) {
+        case BACKSPACE:
+          try {
+            this.typingText = this.typingText.substring(0, this.typingText.length() - 1);
+          } catch (StringIndexOutOfBoundsException e) {
+          }
+          this.blinking = false;
+          this.lastBlink = millis();
+          break;
+        case ENTER:
+        case RETURN:
+          if (this.typingText.equals("")) {
+            this.typing = false;
+            break;
+          }
+          this.addChat(username, this.typingText);
+          this.typingText = "";
+          break;
+        case ESC:
+          this.typing = false;
+          break;
+        case TAB:
+        case DELETE:
+          break;
+        default:
+          this.typingText += key;
+          this.blinking = false;
+          this.lastBlink = millis();
+          break;
+      }
+    }
+  }
+  
+  public void scroll(int e) {
+    this.listB.scroll(e);
+  }
+}
+
 class tableListBar {
   private listBar listB;
   private float headerHeight;
@@ -121,6 +248,9 @@ abstract class scrollBar {
   private boolean inBox = false;
   private float delay = 0;
   private boolean doubleClick = true; // requires double click to select
+  private color fillColor = color(255);
+  private color textColor = color(0);
+  private color highlightedColor = color(170);
   
   scrollBar(float xi, float yi, float xf, float yf) {
     this.xInitial = xi;
@@ -211,6 +341,15 @@ abstract class scrollBar {
   public void setDBLCLK(boolean b) {
     this.doubleClick = b;
   }
+  public void setFillColor(color c) {
+    this.fillColor = c;
+  }
+  public void setTextColor(color c) {
+    this.textColor = c;
+  }
+  public void setHighlightedColor(color c) {
+    this.highlightedColor = c;
+  }
   
   public void update(float x, float y) {
     if (this.highlighted >= this.strings.length) {
@@ -223,7 +362,7 @@ abstract class scrollBar {
     }
     rectMode(CORNERS);
     stroke(0);
-    fill(255);
+    fill(this.fillColor);
     rect(this.xInitial, this.yInitial, this.xFinal, this.yFinal); // draw white box
     textSize(this.textSize);
     int numSeen = (int)Math.floor((this.yFinal - this.yInitial) / (this.textSize + 5)); // number of lines seen at a given time
@@ -240,9 +379,9 @@ abstract class scrollBar {
     float yi = this.yInitial;
     for (int i = this.currStart; i < this.currStart + numSeen; i++) {
       if (i == this.highlighted) {
-        fill(170, 170, 170);
+        fill(highlightedColor);
         text(this.strings[i], this.xInitial+2, yi+2);
-        fill(0);
+        fill(textColor);
       } else {
         text(this.strings[i], this.xInitial+2, yi+2);
       }

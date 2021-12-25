@@ -1,6 +1,6 @@
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.6a";
+  public final String version = "Tetris v0.3.6b";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
@@ -128,7 +128,7 @@ class Constants {
   
   void loadImages() {
     this.lightning = loadImage(sketchPath("") + "data/lightning.png");
-    
+    /*
     this.fade_2D_blue = loadImage(sketchPath("") + "data/pieces/2D_fade_blue.jpg");
     this.fade_2D_red = loadImage(sketchPath("") + "data/pieces/2D_fade_red.jpg");
     this.fade_2D_green = loadImage(sketchPath("") + "data/pieces/2D_fade_green.jpg");
@@ -141,7 +141,7 @@ class Constants {
     this.fade_2D_gray = loadImage(sketchPath("") + "data/pieces/2D_fade_gray.jpg");
     this.fade_2D_tan = loadImage(sketchPath("") + "data/pieces/2D_fade_tan.jpg");
     this.fade_2D_black = loadImage(sketchPath("") + "data/pieces/2D_fade_black.jpg");
-    
+    */
     this.fat_3D_blue = loadImage(sketchPath("") + "data/pieces/3d_fat_blue.jpg");
     this.fat_3D_red = loadImage(sketchPath("") + "data/pieces/3d_fat_red.jpg");
     this.fat_3D_green = loadImage(sketchPath("") + "data/pieces/3d_fat_green.jpg");
@@ -167,7 +167,7 @@ class Constants {
     this.normal_3D_gray = loadImage(sketchPath("") + "data/pieces/3d_normal_gray.jpg");
     this.normal_3D_tan = loadImage(sketchPath("") + "data/pieces/3d_normal_tan.jpg");
     this.normal_3D_black = loadImage(sketchPath("") + "data/pieces/3d_normal_black.jpg");
-    
+    /*
     this.fade_3D_soft_blue = loadImage(sketchPath("") + "data/pieces/3D_soft_blue.jpg");
     this.fade_3D_soft_red = loadImage(sketchPath("") + "data/pieces/3D_soft_red.jpg");
     this.fade_3D_soft_green = loadImage(sketchPath("") + "data/pieces/3D_soft_green.jpg");
@@ -193,6 +193,7 @@ class Constants {
     this.fade_3D_sharp_gray = loadImage(sketchPath("") + "data/pieces/3D_sharp_gray.jpg");
     this.fade_3D_sharp_tan = loadImage(sketchPath("") + "data/pieces/3D_sharp_tan.jpg");
     this.fade_3D_sharp_black = loadImage(sketchPath("") + "data/pieces/3D_sharp_black.jpg");
+    */
   }
   
   HashMap<Color, PImage> generateImages(PImage inputImage) {

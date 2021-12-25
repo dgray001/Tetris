@@ -745,6 +745,8 @@ class AllButtons {
   
   private findIpButton fiB = new findIpButton();
   
+  private chatBox lcB = new chatBox(400, 690, 930, 798);
+  
   private customizePieceButton cpB = new customizePieceButton();
   private customizeBoardButton cbB = new customizeBoardButton();
   private customizeSoundButton csB = new customizeSoundButton();
@@ -802,23 +804,27 @@ class AllButtons {
         this.sgB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
+        this.lcB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
+        this.lcB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_HOSTING:
         this.llB.update(mouseX, mouseY);
         this.paB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
+        this.lcB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_JOINED:
         this.llB.update(mouseX, mouseY);
         this.paB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
+        this.lcB.update(mouseX, mouseY);
         break;
     }
   }
@@ -869,23 +875,27 @@ class AllButtons {
         else {
           this.cSB.mousePress();
         }
+        this.lcB.mousePress();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
+        this.lcB.mousePress();
         break;
       case MULTIPLAYER_HOSTING:
         this.llB.mousePress();
         this.paB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
+        this.lcB.mousePress();
         break;
       case MULTIPLAYER_JOINED:
         this.llB.mousePress();
         this.paB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
+        this.lcB.mousePress();
         break;
     }
   }
@@ -924,28 +934,36 @@ class AllButtons {
         }
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
+        this.lcB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
+        this.lcB.mouseRelease();
         break;
       case MULTIPLAYER_HOSTING:
         this.llB.mouseRelease();
         this.paB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
+        this.lcB.mouseRelease();
         break;
       case MULTIPLAYER_JOINED:
         this.llB.mouseRelease();
         this.paB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
+        this.lcB.mouseRelease();
         break;
     }
   }
+  public void pressedKey(String username) {
+    this.lcB.pressedKey(username);
+  }
   public void scroll(int count) {
     this.cSB.scroll(count);
+    this.lcB.scroll(count);
   }
   
   public void clearButtons(int[] ids) {
@@ -1212,7 +1230,7 @@ class customizeKeysButton extends recButton {
 }
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.6a";
+  public final String version = "Tetris v0.3.6b";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
@@ -1340,7 +1358,7 @@ class Constants {
   
   public void loadImages() {
     this.lightning = loadImage(sketchPath("") + "data/lightning.png");
-    
+    /*
     this.fade_2D_blue = loadImage(sketchPath("") + "data/pieces/2D_fade_blue.jpg");
     this.fade_2D_red = loadImage(sketchPath("") + "data/pieces/2D_fade_red.jpg");
     this.fade_2D_green = loadImage(sketchPath("") + "data/pieces/2D_fade_green.jpg");
@@ -1353,7 +1371,7 @@ class Constants {
     this.fade_2D_gray = loadImage(sketchPath("") + "data/pieces/2D_fade_gray.jpg");
     this.fade_2D_tan = loadImage(sketchPath("") + "data/pieces/2D_fade_tan.jpg");
     this.fade_2D_black = loadImage(sketchPath("") + "data/pieces/2D_fade_black.jpg");
-    
+    */
     this.fat_3D_blue = loadImage(sketchPath("") + "data/pieces/3d_fat_blue.jpg");
     this.fat_3D_red = loadImage(sketchPath("") + "data/pieces/3d_fat_red.jpg");
     this.fat_3D_green = loadImage(sketchPath("") + "data/pieces/3d_fat_green.jpg");
@@ -1379,7 +1397,7 @@ class Constants {
     this.normal_3D_gray = loadImage(sketchPath("") + "data/pieces/3d_normal_gray.jpg");
     this.normal_3D_tan = loadImage(sketchPath("") + "data/pieces/3d_normal_tan.jpg");
     this.normal_3D_black = loadImage(sketchPath("") + "data/pieces/3d_normal_black.jpg");
-    
+    /*
     this.fade_3D_soft_blue = loadImage(sketchPath("") + "data/pieces/3D_soft_blue.jpg");
     this.fade_3D_soft_red = loadImage(sketchPath("") + "data/pieces/3D_soft_red.jpg");
     this.fade_3D_soft_green = loadImage(sketchPath("") + "data/pieces/3D_soft_green.jpg");
@@ -1405,6 +1423,7 @@ class Constants {
     this.fade_3D_sharp_gray = loadImage(sketchPath("") + "data/pieces/3D_sharp_gray.jpg");
     this.fade_3D_sharp_tan = loadImage(sketchPath("") + "data/pieces/3D_sharp_tan.jpg");
     this.fade_3D_sharp_black = loadImage(sketchPath("") + "data/pieces/3D_sharp_black.jpg");
+    */
   }
   
   public HashMap<Color, PImage> generateImages(PImage inputImage) {
@@ -2551,6 +2570,7 @@ class CurrGame {
   }
   
   public void keyPress() {
+    this.buttons.pressedKey(this.user.name);
     switch(this.state) {
       case SINGLEPLAYER:
         this.myGame.pressedKey();
@@ -3993,6 +4013,133 @@ public class Piece {
     println(this.xLocation + " "  + this.yLocation);
   }
 }
+class chatBox {
+  private listBar listB;
+  private int inputTextSize = 18;
+  private boolean mouseOnTextBox = false;
+  private boolean typing = false;
+  private String typingText = "";
+  private int cursorBlinkRate = 500;
+  private boolean blinking = false;
+  private int lastBlink = millis();
+  
+  chatBox(float xi, float yi, float xf, float yf) {
+    this.listB = new listBar(xi, yi, xf, yf - this.inputTextSize - 3);
+    this.listB.setFillColor(color(0));
+    this.listB.setTextColor(color(255));
+    this.listB.setHighlightedColor(color(255));
+  }
+  
+  public void setTextSize(int size) {
+    float deltaYF = size - this.inputTextSize;
+    this.inputTextSize = size;
+    this.listB.setYF(this.listB.getYF() - deltaYF);
+  }
+  
+  public void update(float x, float y) {
+    // update listbar
+    this.listB.update(x, y);
+    // draw chat box
+    rectMode(CORNERS);
+    stroke(255);
+    fill(0);
+    if (this.typing) {
+      fill(50);
+    }
+    rect(this.listB.getXI(), this.listB.getYF(), this.listB.getXF(), this.listB.getYF() + this.inputTextSize + 3);
+    // update mouseOnTextBox
+    if ((x > this.listB.getXI()) && (x < this.listB.getXF()) && (y > this.listB.getYF()) && (y < this.listB.getYF() + this.inputTextSize + 3)) {
+      this.mouseOnTextBox = true;
+    }
+    else {
+      this.mouseOnTextBox = false;
+    }
+    // draw what's typed
+    textSize(this.inputTextSize);
+    textAlign(LEFT, CENTER);
+    fill(255);
+    String typedString = this.typingText;
+    float allowedWidth = this.listB.getXF() - this.listB.getXI() - 4 - textWidth(" ");
+    while(textWidth(typedString) > allowedWidth) {
+      typedString = typedString.substring(1, typedString.length());
+    }
+    text(typedString, this.listB.getXI() + 2, this.listB.getYF() + 0.5f * (this.inputTextSize + 3));
+    // draw cursor if typing
+    if (this.typing) {
+      if (!this.blinking) {
+        line(this.listB.getXI() + 2 + textWidth(typedString) + 2, this.listB.getYF() + 2, this.listB.getXI() + 2 + textWidth(typedString) + 2, this.listB.getYF() + this.inputTextSize + 1);
+      }
+      if (millis() - this.lastBlink > this. cursorBlinkRate) {
+        this.lastBlink = millis();
+        this.blinking = !this.blinking;
+      }
+    }
+  }
+  
+  public void addChat(String username, String text) {
+  }
+  
+  public void mousePress() {
+    this.listB.mousePress();
+    if (this.mouseOnTextBox) {
+      this.typing = true;
+    }
+    else {
+      this.typing = false;
+    }
+  }
+  
+  public void mouseRelease() {
+    this.listB.mouseRelease();
+  }
+  
+  public void pressedKey(String username) {
+    if (!this.typing) {
+      return;
+    }
+    if (key == CODED) {
+      switch(keyCode) {
+      }
+    }
+    else {
+      switch(key) {
+        case BACKSPACE:
+          try {
+            this.typingText = this.typingText.substring(0, this.typingText.length() - 1);
+          } catch (StringIndexOutOfBoundsException e) {
+          }
+          this.blinking = false;
+          this.lastBlink = millis();
+          break;
+        case ENTER:
+        case RETURN:
+          if (this.typingText.equals("")) {
+            this.typing = false;
+            break;
+          }
+          this.addChat(username, this.typingText);
+          this.typingText = "";
+          break;
+        case ESC:
+          this.typing = false;
+          break;
+        case TAB:
+        case DELETE:
+          break;
+        default:
+          this.typingText += key;
+          this.blinking = false;
+          this.lastBlink = millis();
+          break;
+      }
+    }
+  }
+  
+  public void scroll(int e) {
+    this.listB.scroll(e);
+  }
+}
+
 class tableListBar {
   private listBar listB;
   private float headerHeight;
@@ -4116,6 +4263,9 @@ abstract class scrollBar {
   private boolean inBox = false;
   private float delay = 0;
   private boolean doubleClick = true; // requires double click to select
+  private int fillColor = color(255);
+  private int textColor = color(0);
+  private int highlightedColor = color(170);
   
   scrollBar(float xi, float yi, float xf, float yf) {
     this.xInitial = xi;
@@ -4206,6 +4356,15 @@ abstract class scrollBar {
   public void setDBLCLK(boolean b) {
     this.doubleClick = b;
   }
+  public void setFillColor(int c) {
+    this.fillColor = c;
+  }
+  public void setTextColor(int c) {
+    this.textColor = c;
+  }
+  public void setHighlightedColor(int c) {
+    this.highlightedColor = c;
+  }
   
   public void update(float x, float y) {
     if (this.highlighted >= this.strings.length) {
@@ -4218,7 +4377,7 @@ abstract class scrollBar {
     }
     rectMode(CORNERS);
     stroke(0);
-    fill(255);
+    fill(this.fillColor);
     rect(this.xInitial, this.yInitial, this.xFinal, this.yFinal); // draw white box
     textSize(this.textSize);
     int numSeen = (int)Math.floor((this.yFinal - this.yInitial) / (this.textSize + 5)); // number of lines seen at a given time
@@ -4235,9 +4394,9 @@ abstract class scrollBar {
     float yi = this.yInitial;
     for (int i = this.currStart; i < this.currStart + numSeen; i++) {
       if (i == this.highlighted) {
-        fill(170, 170, 170);
+        fill(highlightedColor);
         text(this.strings[i], this.xInitial+2, yi+2);
-        fill(0);
+        fill(textColor);
       } else {
         text(this.strings[i], this.xInitial+2, yi+2);
       }

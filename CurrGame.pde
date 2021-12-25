@@ -1118,6 +1118,7 @@ class CurrGame {
   }
   
   void keyPress() {
+    this.buttons.pressedKey(this.user.name);
     switch(this.state) {
       case SINGLEPLAYER:
         this.myGame.pressedKey();

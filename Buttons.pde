@@ -20,6 +20,8 @@ class AllButtons {
   
   private findIpButton fiB = new findIpButton();
   
+  private chatBox lcB = new chatBox(400, 690, 930, 798);
+  
   private customizePieceButton cpB = new customizePieceButton();
   private customizeBoardButton cbB = new customizeBoardButton();
   private customizeSoundButton csB = new customizeSoundButton();
@@ -77,23 +79,27 @@ class AllButtons {
         this.sgB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
+        this.lcB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
+        this.lcB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_HOSTING:
         this.llB.update(mouseX, mouseY);
         this.paB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
+        this.lcB.update(mouseX, mouseY);
         break;
       case MULTIPLAYER_JOINED:
         this.llB.update(mouseX, mouseY);
         this.paB.update(mouseX, mouseY);
         this.siB.update(mouseX, mouseY);
         this.cSB.update(mouseX, mouseY);
+        this.lcB.update(mouseX, mouseY);
         break;
     }
   }
@@ -144,23 +150,27 @@ class AllButtons {
         else {
           this.cSB.mousePress();
         }
+        this.lcB.mousePress();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
+        this.lcB.mousePress();
         break;
       case MULTIPLAYER_HOSTING:
         this.llB.mousePress();
         this.paB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
+        this.lcB.mousePress();
         break;
       case MULTIPLAYER_JOINED:
         this.llB.mousePress();
         this.paB.mousePress();
         this.siB.mousePress();
         this.cSB.mousePress();
+        this.lcB.mousePress();
         break;
     }
   }
@@ -199,28 +209,36 @@ class AllButtons {
         }
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
+        this.lcB.mouseRelease();
         break;
       case MULTIPLAYER_LOBBY_JOINED:
         this.llB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
+        this.lcB.mouseRelease();
         break;
       case MULTIPLAYER_HOSTING:
         this.llB.mouseRelease();
         this.paB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
+        this.lcB.mouseRelease();
         break;
       case MULTIPLAYER_JOINED:
         this.llB.mouseRelease();
         this.paB.mouseRelease();
         this.siB.mouseRelease();
         this.cSB.mouseRelease();
+        this.lcB.mouseRelease();
         break;
     }
   }
+  void pressedKey(String username) {
+    this.lcB.pressedKey(username);
+  }
   void scroll(int count) {
     this.cSB.scroll(count);
+    this.lcB.scroll(count);
   }
   
   void clearButtons(int[] ids) {
