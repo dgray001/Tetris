@@ -28,6 +28,7 @@ void setup() {
   textSize(12);
   textAlign(RIGHT, TOP);
   text(constants.version, 1325, 5);
+  currGame.initiateUser();
 }
 
 void draw() {

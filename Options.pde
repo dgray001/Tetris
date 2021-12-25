@@ -31,6 +31,8 @@ public enum Color {
 }
 
 class Options {
+  private String defaultUsername;
+  private ArrayList<String> usernames = new ArrayList<String>();
   private boolean gridlines;
   private PieceStyle pieceStyle;
   private Color IFill;
@@ -63,6 +65,9 @@ class Options {
       }
       String option = trim(splitLine[1]);
       switch(trim(splitLine[0])) {
+        case "defaultUsername":
+          this.defaultUsername = option;
+          break;
         case "Gridlines":
           if (option.equals("true")) {
             this.gridlines = true;
@@ -118,8 +123,36 @@ class Options {
     }
   }
   
+  User chooseDefaultUsername() {
+    User user;
+    while(true) {
+      if (this.usernames.size() == 0) {
+        user = createNewUser(this.usernames);
+        this.defaultUsername = user.name;
+        break;
+      }
+      else {
+        String response = null;
+        while (response == null) {
+          response = (String)showInputDialog(null, "Choose a user", "Tetris", PLAIN_MESSAGE, null, this.usernames.toArray(), this.usernames.get(0));
+        }
+        try {
+          user = new User(this.usernames.get(this.usernames.indexOf(response)));
+          break;
+        } catch (Exception e) {
+          continue;
+        }
+      }
+    }
+    this.saveOptions();
+    return user;
+  }
+  
   void saveOptions() {
     PrintWriter optionsFile = createWriter("options.tetris");
+    if (this.defaultUsername != null) {
+      optionsFile.println("defaultUsername: " + this.defaultUsername);
+    }
     optionsFile.println("Gridlines: " + this.gridlines);
     optionsFile.println("PieceStyle: " + this.pieceStyle.getStyle());
     optionsFile.println("IFill: " + this.IFill.getColorName());

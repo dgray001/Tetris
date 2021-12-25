@@ -118,3 +118,25 @@ public Color stringToColorEnum(String colorName) {
       return Color.BLACK;
   }
 }
+
+public User createNewUser(ArrayList<String> existingUsernames) {
+  String userName = showInputDialog(null, "What should we call you?", "Tetris", PLAIN_MESSAGE);
+  while (true) {
+    if (userName == null) {
+      userName = showInputDialog(null, "Please enter a name", "Tetris", PLAIN_MESSAGE);
+      continue;
+    }
+    if (userName == "") {
+      userName = showInputDialog(null, "Please enter a name", "Tetris", PLAIN_MESSAGE);
+      continue;
+    }
+    for (String name : existingUsernames) {
+      if (userName.equals(name)) {
+        userName = showInputDialog(null, "Username already in use", "Tetris", PLAIN_MESSAGE);
+        continue;
+      }
+    }
+    break;
+  }
+  return new User(userName);
+}

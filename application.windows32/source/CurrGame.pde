@@ -3,6 +3,7 @@ public enum GameState {
 }
 
 class CurrGame {
+  private User user;
   private Game myGame;
   private Game otherGame;
   private Server server;
@@ -19,6 +20,40 @@ class CurrGame {
   
   CurrGame(Tetris thisInstance) {
     this.thisInstance = thisInstance;
+  }
+  void initiateUser() {
+    if (options.defaultUsername == null) {
+      if (options.usernames.size() == 0) {
+        this.user = createNewUser(options.usernames);
+      } else {
+        this.user = options.chooseDefaultUsername();
+      }
+      this.user.saveUser();
+      options.defaultUsername = this.user.name;
+      options.saveOptions();
+      return;
+    }
+    String[] userFile = loadStrings("data/users/" + options.defaultUsername + ".user.tetris");
+    if (userFile == null) {
+      if (options.usernames.size() == 0) {
+        this.user = createNewUser(options.usernames);
+      } else {
+        this.user = options.chooseDefaultUsername();
+      }
+      this.user.saveUser();
+      options.defaultUsername = this.user.name;
+      options.saveOptions();
+      return;
+    }
+    this.user = new User(options.defaultUsername);
+    for (String line : userFile) {
+      String[] splitLine = split(line, ":");
+      String value = trim(splitLine[1]);
+      switch(trim(splitLine[0])) {
+        default:
+          break;
+      }
+    }
   }
   
   void goToMainMenu() {

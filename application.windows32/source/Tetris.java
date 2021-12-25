@@ -54,6 +54,7 @@ public void setup() {
   textSize(12);
   textAlign(RIGHT, TOP);
   text(constants.version, 1325, 5);
+  currGame.initiateUser();
 }
 
 public void draw() {
@@ -1211,7 +1212,7 @@ class customizeKeysButton extends recButton {
 }
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.5c";
+  public final String version = "Tetris v0.3.6a";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
@@ -1435,6 +1436,7 @@ public enum GameState {
 }
 
 class CurrGame {
+  private User user;
   private Game myGame;
   private Game otherGame;
   private Server server;
@@ -1451,6 +1453,40 @@ class CurrGame {
   
   CurrGame(Tetris thisInstance) {
     this.thisInstance = thisInstance;
+  }
+  public void initiateUser() {
+    if (options.defaultUsername == null) {
+      if (options.usernames.size() == 0) {
+        this.user = createNewUser(options.usernames);
+      } else {
+        this.user = options.chooseDefaultUsername();
+      }
+      this.user.saveUser();
+      options.defaultUsername = this.user.name;
+      options.saveOptions();
+      return;
+    }
+    String[] userFile = loadStrings("data/users/" + options.defaultUsername + ".user.tetris");
+    if (userFile == null) {
+      if (options.usernames.size() == 0) {
+        this.user = createNewUser(options.usernames);
+      } else {
+        this.user = options.chooseDefaultUsername();
+      }
+      this.user.saveUser();
+      options.defaultUsername = this.user.name;
+      options.saveOptions();
+      return;
+    }
+    this.user = new User(options.defaultUsername);
+    for (String line : userFile) {
+      String[] splitLine = split(line, ":");
+      String value = trim(splitLine[1]);
+      switch(trim(splitLine[0])) {
+        default:
+          break;
+      }
+    }
   }
   
   public void goToMainMenu() {
@@ -3178,6 +3214,28 @@ public Color stringToColorEnum(String colorName) {
       return Color.BLACK;
   }
 }
+
+public User createNewUser(ArrayList<String> existingUsernames) {
+  String userName = showInputDialog(null, "What should we call you?", "Tetris", PLAIN_MESSAGE);
+  while (true) {
+    if (userName == null) {
+      userName = showInputDialog(null, "Please enter a name", "Tetris", PLAIN_MESSAGE);
+      continue;
+    }
+    if (userName == "") {
+      userName = showInputDialog(null, "Please enter a name", "Tetris", PLAIN_MESSAGE);
+      continue;
+    }
+    for (String name : existingUsernames) {
+      if (userName.equals(name)) {
+        userName = showInputDialog(null, "Username already in use", "Tetris", PLAIN_MESSAGE);
+        continue;
+      }
+    }
+    break;
+  }
+  return new User(userName);
+}
 public enum PieceStyle {
   FLAT_NORMAL("2D normal"), FLAT_SMOOTH("2D smooth"), FLAT_FADE("2D fade"), FLAT_DYNAMIC("2D dynamic"), RAISED_FADE("3D Fade"), RAISED_SHARP("3D Fade Sharp"), RAISED_NORMAL("3D normal"), RAISED_FAT("3D fat");
   private static final List<PieceStyle> VALUES = Collections.unmodifiableList(Arrays.asList(values()));
@@ -3211,6 +3269,8 @@ public enum Color {
 }
 
 class Options {
+  private String defaultUsername;
+  private ArrayList<String> usernames = new ArrayList<String>();
   private boolean gridlines;
   private PieceStyle pieceStyle;
   private Color IFill;
@@ -3243,6 +3303,9 @@ class Options {
       }
       String option = trim(splitLine[1]);
       switch(trim(splitLine[0])) {
+        case "defaultUsername":
+          this.defaultUsername = option;
+          break;
         case "Gridlines":
           if (option.equals("true")) {
             this.gridlines = true;
@@ -3298,8 +3361,36 @@ class Options {
     }
   }
   
+  public User chooseDefaultUsername() {
+    User user;
+    while(true) {
+      if (this.usernames.size() == 0) {
+        user = createNewUser(this.usernames);
+        this.defaultUsername = user.name;
+        break;
+      }
+      else {
+        String response = null;
+        while (response == null) {
+          response = (String)showInputDialog(null, "Choose a user", "Tetris", PLAIN_MESSAGE, null, this.usernames.toArray(), this.usernames.get(0));
+        }
+        try {
+          user = new User(this.usernames.get(this.usernames.indexOf(response)));
+          break;
+        } catch (Exception e) {
+          continue;
+        }
+      }
+    }
+    this.saveOptions();
+    return user;
+  }
+  
   public void saveOptions() {
     PrintWriter optionsFile = createWriter("options.tetris");
+    if (this.defaultUsername != null) {
+      optionsFile.println("defaultUsername: " + this.defaultUsername);
+    }
     optionsFile.println("Gridlines: " + this.gridlines);
     optionsFile.println("PieceStyle: " + this.pieceStyle.getStyle());
     optionsFile.println("IFill: " + this.IFill.getColorName());
@@ -4604,6 +4695,23 @@ class Space {
         println("ERROR: piecetype not recognized.");
         break;
     }
+  }
+}
+class User {
+  private String name;
+  
+  User(String name) {
+    this.name = name;
+  }
+  
+  public void setName(String name) {
+    this.name = name;
+  }
+  
+  public void saveUser() {
+    PrintWriter userFile = createWriter("data/users/" + this.name + ".user.tetris");
+    userFile.flush();
+    userFile.close();
   }
 }
 public enum VisualEffectType {
