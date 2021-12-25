@@ -34,7 +34,7 @@ class AllButtons {
     fill(constants.defaultBackgroundColor);
     stroke(constants.defaultBackgroundColor);
     rectMode(CORNERS);
-    rect(0, 685, 600, 720);
+    rect(0, 685, 375, 720);
     qB.update(mouseX, mouseY);
     cpB.update(mouseX, mouseY);
     cbB.update(mouseX, mouseY);

@@ -62,14 +62,14 @@ class Joinee {
   void resolveInitialRequest() {
     this.resolveInitialRequest("", "");
   }
-  void resolveInitialRequest(String newName, String s1) {
+  void resolveInitialRequest(String lobbyName, String hostName) {
     if ((this.client != null) && (this.client.active())) {
       if (waitingForResponse && !receivedInitialResponse) {
         this.ping = millis() - this.lastPingRequest;
         this.lastPingRequest = millis();
         this.waitingForResponse = false;
         this.receivedInitialResponse = true;
-        this.setNewName(newName, s1);
+        this.name = lobbyName + ": " + hostName;
       }
     }
   }

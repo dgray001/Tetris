@@ -101,7 +101,7 @@ class CurrGame {
             this.server = null;
             return;
           }
-          this.lobbyName += ": " + millis();
+          this.lobbyName += "=" + millis();
           println("Server active on port " + port + " with ip: " + Server.ip() + ".");
           this.portHosting = port;
           this.state = GameState.MULTIPLAYER_LOBBY_HOSTING;
@@ -292,7 +292,7 @@ class CurrGame {
       println("ERROR: selected lobby " + index + " but only " + this.lobbyClients.size() + " lobbies exist.");
       return;
     }
-    this.lobbyClients.get(this.buttons.cSB.getHIGH()).write("Join Lobby");
+    this.lobbyClients.get(this.buttons.cSB.getHIGH()).write("Join Lobby=" + this.user.name);
   }
   
   void toggleRematch() {
@@ -507,9 +507,10 @@ class CurrGame {
             i--;
           }
           else if (displayMessage) {
-            int firstGap = round((width1 - textWidth(j.name + " ")) / textWidth(" "));
-            int secondGap = round((width2 - textWidth(j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + ": ")) / textWidth(" "));
-            lbStrings = append(lbStrings, j.name + " " + multiplyString(" ", firstGap) + j.client.ip() + " " + multiplyString(" ", secondGap) + j.ping + " ms");
+            String displayName = trim(split(j.name, "=")[0]);
+            int firstGap = round((width1 - textWidth(displayName + " ")) / textWidth(" "));
+            int secondGap = round((width2 - textWidth(displayName + " " + multiplyString(" ", firstGap) + j.client.ip() + ": ")) / textWidth(" "));
+            lbStrings = append(lbStrings, displayName + " " + multiplyString(" ", firstGap) + j.client.ip() + " " + multiplyString(" ", secondGap) + j.ping + " ms");
           }
         }
         this.buttons.cSB.setSTR(lbStrings);
@@ -522,7 +523,7 @@ class CurrGame {
           break;
         }
         if (this.otherPlayer.receivedInitialResponse && !this.otherPlayer.waitingForResponse) {
-          this.otherPlayer.write("Join Lobby");
+          this.otherPlayer.write("Join Lobby=" + this.user.name);
           this.otherPlayer.waitingForResponse = true;
           break;
         }
@@ -548,11 +549,11 @@ class CurrGame {
         fill(0);
         text("Players in lobby", 10, 725);
         lbStrings = new String[0];
-        lbStrings = append(lbStrings, "You (0 ms)");
+        lbStrings = append(lbStrings, this.user.name + " (You)");
         boolean removeClient = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, "Other player (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, this.otherPlayer.name + " (" + this.otherPlayer.ping + " ms)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 this.otherPlayer.missedPingRequest();
@@ -583,12 +584,13 @@ class CurrGame {
         textSize(13);
         textAlign(LEFT, TOP);
         fill(0);
-        text("Connection to lobby", 10, 725);
+        text("Connected to lobby: " + trim(split(this.otherPlayer.name, "=")[0]), 10, 725);
         lbStrings = new String[0];
         boolean leaveLobby = false;
         if (this.otherPlayer != null) {
           if (this.otherPlayer.client.active()) {
-            lbStrings = append(lbStrings, trim(split(this.otherPlayer.name, ":")[0]) + "  (" + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, trim(split(this.otherPlayer.name, ":")[1]) + "  (host, " + this.otherPlayer.ping + " ms)");
+            lbStrings = append(lbStrings, this.user.name + "  (you)");
             if (this.otherPlayer.waitingForResponse) {
               if (millis() - this.otherPlayer.lastPingRequest > constants.defaultPingTimeout) {
                 if (!this.otherPlayer.receivedInitialResponse) {
@@ -769,7 +771,7 @@ class CurrGame {
                         continue;
                       }
                       Joinee j = lobbyClients.get(i);
-                      if ((j.receivedInitialResponse) && (j.name.equals(trim(splitMessage[3])))) {
+                      if ((j.receivedInitialResponse) && (trim(split(j.name, ":")[0]).equals(trim(splitMessage[3])))) {
                         duplicateConnection = true;
                         break;
                       }
@@ -780,7 +782,7 @@ class CurrGame {
                       this.lobbyClients.remove(index);
                     }
                     else {
-                      this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                      this.lobbyClients.get(index).resolveInitialRequest(trim(splitMessage[3]), trim(splitMessage[4]));
                     }
                   }
                   break;
@@ -815,7 +817,8 @@ class CurrGame {
         case CONNECTING_TO_LOBBY:
           switch(trim(splitMessage[0])) {
             case "LOBBY":
-              switch(trim(splitMessage[1])) {
+              String[] parameters = split(trim(splitMessage[1]), "=");
+              switch(trim(parameters[0])) {
                 case "Ping Resolve":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
                     this.otherPlayer.resolvePingRequest();
@@ -827,7 +830,7 @@ class CurrGame {
                     break;
                   }
                   if (this.otherPlayer.messageForMe(splitMessage)) {
-                    this.otherPlayer.resolveInitialRequest(trim(splitMessage[3]), splitMessage[4]);
+                    this.otherPlayer.resolveInitialRequest(trim(splitMessage[3]), trim(splitMessage[4]));
                   }
                   break;
                 case "Initial Request":
@@ -862,7 +865,8 @@ class CurrGame {
         case MULTIPLAYER_LOBBY_HOSTING:
           switch(trim(splitMessage[0])) {
             case "LOBBY":
-              switch(trim(splitMessage[1])) {
+              String[] parameters = split(trim(splitMessage[1]), "=");
+              switch(trim(parameters[0])) {
                 case "Quit Lobby":
                   println("Your client quit the lobby");
                   if (this.otherPlayer != null) {
@@ -891,7 +895,7 @@ class CurrGame {
                     println("ERROR: No IP address for initial request");
                     break;
                   }
-                  this.server.write("| LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":Game             :");
+                  this.server.write("| LOBBY: Initial Resolve: " + trim(splitMessage[2]) + ": " + this.lobbyName + ":" + this.user.name + ":Game             :");
                   break;
                 case "Initial Resolve":
                   if (splitMessage.length < 3) {
@@ -917,6 +921,9 @@ class CurrGame {
                     this.server.write("| LOBBY: Join Lobby: " + trim(splitMessage[2]));
                     this.otherPlayer = this.lobbyClients.get(index);
                     this.lobbyClients.remove(index);
+                    if (parameters.length > 1) {
+                      this.otherPlayer.name = trim(parameters[1]);
+                    }
                   }
                   else {
                     this.server.write("| LOBBY: Lobby Full: " + trim(splitMessage[2]));
@@ -961,15 +968,6 @@ class CurrGame {
                   this.otherPlayer = null;
                   this.messageQ.clear();
                   this.goToMainMenu();
-                  break;
-                case "Initial Request":
-                  if (this.otherPlayer.messageForMe(splitMessage)) {
-                    if (splitMessage.length < 3) {
-                      println("ERROR: No IP address for initial request");
-                      break;
-                    }
-                    this.otherPlayer.write("Initial Resolve");
-                  }
                   break;
                 case "Ping Request":
                   if (this.otherPlayer.messageForMe(splitMessage)) {
