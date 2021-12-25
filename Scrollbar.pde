@@ -90,9 +90,9 @@ class chatBox {
     this.listB.mouseRelease();
   }
   
-  public void pressedKey(String username) {
+  public String pressedKey(String username) {
     if (!this.typing) {
-      return;
+      return "";
     }
     if (key == CODED) {
       switch(keyCode) {
@@ -114,9 +114,10 @@ class chatBox {
             this.typing = false;
             break;
           }
+          String returnString = new String(username + ": " + this.typingText);
           this.addChat(username, this.typingText);
           this.typingText = "";
-          break;
+          return returnString;
         case ESC:
           this.typing = false;
           break;
@@ -130,6 +131,7 @@ class chatBox {
           break;
       }
     }
+    return "";
   }
   
   public void scroll(int e) {

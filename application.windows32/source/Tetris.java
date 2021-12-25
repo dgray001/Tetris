@@ -958,9 +958,6 @@ class AllButtons {
         break;
     }
   }
-  public void pressedKey(String username) {
-    this.lcB.pressedKey(username);
-  }
   public void scroll(int count) {
     this.cSB.scroll(count);
     this.lcB.scroll(count);
@@ -1230,7 +1227,7 @@ class customizeKeysButton extends recButton {
 }
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.6b";
+  public final String version = "Tetris v0.3.6d";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
@@ -2358,7 +2355,7 @@ class CurrGame {
                   break;
                 case "Join Lobby":
                   if (splitMessage.length < 3) {
-                    println("ERROR: No IP address for ping request");
+                    println("ERROR: No joinee id specified");
                     break;
                   }
                   if (this.otherPlayer == null) {
@@ -2373,6 +2370,13 @@ class CurrGame {
                   else {
                     this.server.write("| LOBBY: Lobby Full: " + trim(splitMessage[2]));
                   }
+                  break;
+                case "Chat":
+                  if (splitMessage.length < 4) {
+                    println("ERROR: no chat string to add");
+                    break;
+                  }
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -2430,6 +2434,13 @@ class CurrGame {
                     this.otherPlayer.resolvePingRequest();
                   }
                   break;
+                case "Chat":
+                  if (splitMessage.length < 4) {
+                    println("ERROR: no chat string to add");
+                    break;
+                  }
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
+                  break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
                   break;
@@ -2471,6 +2482,13 @@ class CurrGame {
                   break;
                 case "Joinee Rematch Revoked":
                   this.wantRematch[1] = false;
+                  break;
+                case "Chat":
+                  if (splitMessage.length < 4) {
+                    println("ERROR: no chat string to add");
+                    break;
+                  }
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -2539,6 +2557,13 @@ class CurrGame {
                 case "Host Rematch Revoked":
                   this.wantRematch[1] = false;
                   break;
+                case "Chat":
+                  if (splitMessage.length < 4) {
+                    println("ERROR: no chat string to add");
+                    break;
+                  }
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
+                  break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
                   break;
@@ -2570,18 +2595,38 @@ class CurrGame {
   }
   
   public void keyPress() {
-    this.buttons.pressedKey(this.user.name);
+    String chatString = "";
     switch(this.state) {
       case SINGLEPLAYER:
         this.myGame.pressedKey();
         break;
+      case MULTIPLAYER_LOBBY_HOSTING:
+        chatString = this.buttons.lcB.pressedKey(this.user.name);
+        if (!chatString.equals("")) {
+          this.server.write("| LOBBY: Chat:  " + chatString);
+        }
+        break;
+      case MULTIPLAYER_LOBBY_JOINED:
+        chatString = this.buttons.lcB.pressedKey(this.user.name);
+        if (!chatString.equals("")) {
+          this.otherPlayer.write("| LOBBY: Chat:" + chatString);
+        }
+        break;
       case MULTIPLAYER_HOSTING:
+        chatString = this.buttons.lcB.pressedKey(this.user.name);
+        if (!chatString.equals("")) {
+          this.server.write("| LOBBY: Chat:" + chatString);
+        }
         String myGameChanges = this.myGame.pressedKey("| HOST_GAME: ");
         if (!myGameChanges.equals("")) {
           this.server.write(myGameChanges);
         }
         break;
       case MULTIPLAYER_JOINED:
+        chatString = this.buttons.lcB.pressedKey(this.user.name);
+        if (!chatString.equals("")) {
+          this.otherPlayer.write("| LOBBY: Chat:" + chatString);
+        }
         String gameChanges = this.myGame.pressedKey("| JOINEE_GAME: ", false);
         if (!gameChanges.equals("")) {
           this.otherPlayer.client.write(gameChanges);
@@ -4024,7 +4069,7 @@ class chatBox {
   private int lastBlink = millis();
   
   chatBox(float xi, float yi, float xf, float yf) {
-    this.listB = new listBar(xi, yi, xf, yf - this.inputTextSize - 3);
+    this.listB = new listBar(xi, yi, xf, yf - this.inputTextSize - 2);
     this.listB.setFillColor(color(0));
     this.listB.setTextColor(color(255));
     this.listB.setHighlightedColor(color(255));
@@ -4046,9 +4091,9 @@ class chatBox {
     if (this.typing) {
       fill(50);
     }
-    rect(this.listB.getXI(), this.listB.getYF(), this.listB.getXF(), this.listB.getYF() + this.inputTextSize + 3);
+    rect(this.listB.getXI(), this.listB.getYF(), this.listB.getXF(), this.listB.getYF() + this.inputTextSize + 2);
     // update mouseOnTextBox
-    if ((x > this.listB.getXI()) && (x < this.listB.getXF()) && (y > this.listB.getYF()) && (y < this.listB.getYF() + this.inputTextSize + 3)) {
+    if ((x > this.listB.getXI()) && (x < this.listB.getXF()) && (y > this.listB.getYF()) && (y < this.listB.getYF() + this.inputTextSize + 2)) {
       this.mouseOnTextBox = true;
     }
     else {
@@ -4063,11 +4108,11 @@ class chatBox {
     while(textWidth(typedString) > allowedWidth) {
       typedString = typedString.substring(1, typedString.length());
     }
-    text(typedString, this.listB.getXI() + 2, this.listB.getYF() + 0.5f * (this.inputTextSize + 3));
+    text(typedString, this.listB.getXI() + 2, this.listB.getYF() + 0.5f * (this.inputTextSize + 1));
     // draw cursor if typing
     if (this.typing) {
       if (!this.blinking) {
-        line(this.listB.getXI() + 2 + textWidth(typedString) + 2, this.listB.getYF() + 2, this.listB.getXI() + 2 + textWidth(typedString) + 2, this.listB.getYF() + this.inputTextSize + 1);
+        line(this.listB.getXI() + 2 + textWidth(typedString) + 2, this.listB.getYF() + 2, this.listB.getXI() + 2 + textWidth(typedString) + 2, this.listB.getYF() + this.inputTextSize);
       }
       if (millis() - this.lastBlink > this. cursorBlinkRate) {
         this.lastBlink = millis();
@@ -4077,6 +4122,18 @@ class chatBox {
   }
   
   public void addChat(String username, String text) {
+    String inputString = username + ": " + text;
+    textSize(this.listB.getTextSize());
+    while(textWidth(inputString) > (this.listB.getXF() - this.listB.getXI())) {
+      String stringCopy = new String(inputString);
+      inputString = "   ";
+      while (textWidth(stringCopy) > (this.listB.getXF() - this.listB.getXI())) {
+        inputString += stringCopy.substring(stringCopy.length() - 1);
+        stringCopy = stringCopy.substring(0, stringCopy.length() - 1);
+      }
+      this.listB.addSTR(stringCopy);
+    }
+    this.listB.addSTR(inputString);
   }
   
   public void mousePress() {
@@ -4093,9 +4150,9 @@ class chatBox {
     this.listB.mouseRelease();
   }
   
-  public void pressedKey(String username) {
+  public String pressedKey(String username) {
     if (!this.typing) {
-      return;
+      return "";
     }
     if (key == CODED) {
       switch(keyCode) {
@@ -4117,9 +4174,10 @@ class chatBox {
             this.typing = false;
             break;
           }
+          String returnString = new String(username + ": " + this.typingText);
           this.addChat(username, this.typingText);
           this.typingText = "";
-          break;
+          return returnString;
         case ESC:
           this.typing = false;
           break;
@@ -4133,6 +4191,7 @@ class chatBox {
           break;
       }
     }
+    return "";
   }
   
   public void scroll(int e) {
@@ -4324,6 +4383,9 @@ abstract class scrollBar {
   } public void clearSTRS() {
     this.strings = new String[0];
   }
+  public int getTextSize() {
+    return this.textSize;
+  }
   public void setCURR(int curr) {
     this.currStart = curr;
   } public int getCURR() {
@@ -4389,15 +4451,14 @@ abstract class scrollBar {
       this.currStart = 0;
     }
     this.maxStart = numHidden;
-    fill(0);
     textAlign(LEFT, TOP);
     float yi = this.yInitial;
     for (int i = this.currStart; i < this.currStart + numSeen; i++) {
       if (i == this.highlighted) {
         fill(highlightedColor);
         text(this.strings[i], this.xInitial+2, yi+2);
-        fill(textColor);
       } else {
+        fill(textColor);
         text(this.strings[i], this.xInitial+2, yi+2);
       }
       yi += this.textSize + 5;

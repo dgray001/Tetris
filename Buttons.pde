@@ -233,9 +233,6 @@ class AllButtons {
         break;
     }
   }
-  void pressedKey(String username) {
-    this.lcB.pressedKey(username);
-  }
   void scroll(int count) {
     this.cSB.scroll(count);
     this.lcB.scroll(count);

@@ -906,7 +906,7 @@ class CurrGame {
                   break;
                 case "Join Lobby":
                   if (splitMessage.length < 3) {
-                    println("ERROR: No IP address for ping request");
+                    println("ERROR: No joinee id specified");
                     break;
                   }
                   if (this.otherPlayer == null) {
@@ -921,6 +921,13 @@ class CurrGame {
                   else {
                     this.server.write("| LOBBY: Lobby Full: " + trim(splitMessage[2]));
                   }
+                  break;
+                case "Chat":
+                  if (splitMessage.length < 4) {
+                    println("ERROR: no chat string to add");
+                    break;
+                  }
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -978,6 +985,13 @@ class CurrGame {
                     this.otherPlayer.resolvePingRequest();
                   }
                   break;
+                case "Chat":
+                  if (splitMessage.length < 4) {
+                    println("ERROR: no chat string to add");
+                    break;
+                  }
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
+                  break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
                   break;
@@ -1019,6 +1033,13 @@ class CurrGame {
                   break;
                 case "Joinee Rematch Revoked":
                   this.wantRematch[1] = false;
+                  break;
+                case "Chat":
+                  if (splitMessage.length < 4) {
+                    println("ERROR: no chat string to add");
+                    break;
+                  }
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -1087,6 +1108,13 @@ class CurrGame {
                 case "Host Rematch Revoked":
                   this.wantRematch[1] = false;
                   break;
+                case "Chat":
+                  if (splitMessage.length < 4) {
+                    println("ERROR: no chat string to add");
+                    break;
+                  }
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
+                  break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
                   break;
@@ -1118,18 +1146,38 @@ class CurrGame {
   }
   
   void keyPress() {
-    this.buttons.pressedKey(this.user.name);
+    String chatString = "";
     switch(this.state) {
       case SINGLEPLAYER:
         this.myGame.pressedKey();
         break;
+      case MULTIPLAYER_LOBBY_HOSTING:
+        chatString = this.buttons.lcB.pressedKey(this.user.name);
+        if (!chatString.equals("")) {
+          this.server.write("| LOBBY: Chat:  " + chatString);
+        }
+        break;
+      case MULTIPLAYER_LOBBY_JOINED:
+        chatString = this.buttons.lcB.pressedKey(this.user.name);
+        if (!chatString.equals("")) {
+          this.otherPlayer.write("| LOBBY: Chat:" + chatString);
+        }
+        break;
       case MULTIPLAYER_HOSTING:
+        chatString = this.buttons.lcB.pressedKey(this.user.name);
+        if (!chatString.equals("")) {
+          this.server.write("| LOBBY: Chat:" + chatString);
+        }
         String myGameChanges = this.myGame.pressedKey("| HOST_GAME: ");
         if (!myGameChanges.equals("")) {
           this.server.write(myGameChanges);
         }
         break;
       case MULTIPLAYER_JOINED:
+        chatString = this.buttons.lcB.pressedKey(this.user.name);
+        if (!chatString.equals("")) {
+          this.otherPlayer.write("| LOBBY: Chat:" + chatString);
+        }
         String gameChanges = this.myGame.pressedKey("| JOINEE_GAME: ", false);
         if (!gameChanges.equals("")) {
           this.otherPlayer.client.write(gameChanges);
