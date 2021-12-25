@@ -729,13 +729,18 @@ class CurrGame {
                   }
                   if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
                     boolean duplicateConnection = false;
-                    for (Joinee j : this.lobbyClients) {
+                    for (int i = 0; i < this.lobbyClients.size(); i++) {
+                      if (i == index) {
+                        continue;
+                      }
+                      Joinee j = lobbyClients.get(i);
                       if ((j.receivedInitialResponse) && (j.name.equals(trim(splitMessage[3])))) {
                         duplicateConnection = true;
                         break;
                       }
                     }
                     if (duplicateConnection) {
+                      println("Duplicate connection so removing " + this.lobbyClients.get(index).name);
                       this.lobbyClients.get(index).client.stop();
                       this.lobbyClients.remove(index);
                     }

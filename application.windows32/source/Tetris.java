@@ -1211,7 +1211,7 @@ class customizeKeysButton extends recButton {
 }
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.5b";
+  public final String version = "Tetris v0.3.5c";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
@@ -2161,13 +2161,18 @@ class CurrGame {
                   }
                   if (this.lobbyClients.get(index).messageForMe(splitMessage)) {
                     boolean duplicateConnection = false;
-                    for (Joinee j : this.lobbyClients) {
+                    for (int i = 0; i < this.lobbyClients.size(); i++) {
+                      if (i == index) {
+                        continue;
+                      }
+                      Joinee j = lobbyClients.get(i);
                       if ((j.receivedInitialResponse) && (j.name.equals(trim(splitMessage[3])))) {
                         duplicateConnection = true;
                         break;
                       }
                     }
                     if (duplicateConnection) {
+                      println("Duplicate connection so removing " + this.lobbyClients.get(index).name);
                       this.lobbyClients.get(index).client.stop();
                       this.lobbyClients.remove(index);
                     }
