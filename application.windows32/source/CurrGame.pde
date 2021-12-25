@@ -150,7 +150,6 @@ class CurrGame {
     final Tetris inst = this.thisInstance;
     final String ipTesting = possibleIP;
     final int portTesting = port;
-    final String username = this.user.name;
     Thread thread = new Thread(new Runnable() {
       public void run() {
         Client testClient = new Client(inst, ipTesting, portTesting);
@@ -247,7 +246,6 @@ class CurrGame {
     final ArrayList<Joinee> possibleLobbies = new ArrayList<Joinee>();
     final Tetris inst = this.thisInstance;
     final int[] ports = new int[constants.portRangeLast - constants.portRangeFirst];
-    final String username = this.user.name;
     for (int i = 0; i < ports.length; i++) {
       ports[i] = constants.portRangeFirst + i;
     }
@@ -279,7 +277,7 @@ class CurrGame {
     }
     for(Thread thread : threads) {
       try {
-        thread.join();
+        //thread.join();
       } catch(Exception e) {
         thread.interrupt();
         //e.printStackTrace();

@@ -1227,7 +1227,7 @@ class customizeKeysButton extends recButton {
 }
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.8b";
+  public final String version = "Tetris v0.3.8c";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
@@ -1599,7 +1599,6 @@ class CurrGame {
     final Tetris inst = this.thisInstance;
     final String ipTesting = possibleIP;
     final int portTesting = port;
-    final String username = this.user.name;
     Thread thread = new Thread(new Runnable() {
       public void run() {
         Client testClient = new Client(inst, ipTesting, portTesting);
@@ -1696,7 +1695,6 @@ class CurrGame {
     final ArrayList<Joinee> possibleLobbies = new ArrayList<Joinee>();
     final Tetris inst = this.thisInstance;
     final int[] ports = new int[constants.portRangeLast - constants.portRangeFirst];
-    final String username = this.user.name;
     for (int i = 0; i < ports.length; i++) {
       ports[i] = constants.portRangeFirst + i;
     }
@@ -1728,7 +1726,7 @@ class CurrGame {
     }
     for(Thread thread : threads) {
       try {
-        thread.join();
+        //thread.join();
       } catch(Exception e) {
         thread.interrupt();
         //e.printStackTrace();

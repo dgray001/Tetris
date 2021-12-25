@@ -277,7 +277,7 @@ class CurrGame {
     }
     for(Thread thread : threads) {
       try {
-        thread.join();
+        //thread.join();
       } catch(Exception e) {
         thread.interrupt();
         //e.printStackTrace();
