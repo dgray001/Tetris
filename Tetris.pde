@@ -27,7 +27,7 @@ void setup() {
   text("Customize", 1240, 707);
   textSize(12);
   textAlign(RIGHT, TOP);
-  text(constants.version, 1235, 5);
+  text(constants.version, 1325, 5);
 }
 
 void draw() {

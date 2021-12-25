@@ -95,7 +95,12 @@ class Game {
   
   void drawBoard() {
     this.board.drawBoard();
-    this.drawPanel();
+    if (this.gameOver) {
+      this.showStats();
+    }
+    else {
+      this.drawPanel();
+    }
     if (this.displayGameOverMessage) {
       this.drawGameOverMessage();
     }

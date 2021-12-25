@@ -753,6 +753,7 @@ class CurrGame {
                     }
                     this.lobbyClients.clear();
                     this.messageQ.clear();
+                    this.buttons.clearButton(0);
                     this.buttons.clearButton(6);
                     this.buttons.cSB.setHIGH(-1);
                     this.state = GameState.MULTIPLAYER_LOBBY_JOINED;

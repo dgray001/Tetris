@@ -53,7 +53,7 @@ public void setup() {
   text("Customize", 1240, 707);
   textSize(12);
   textAlign(RIGHT, TOP);
-  text(constants.version, 1235, 5);
+  text(constants.version, 1325, 5);
 }
 
 public void draw() {
@@ -1211,7 +1211,7 @@ class customizeKeysButton extends recButton {
 }
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.5a";
+  public final String version = "Tetris v0.3.5b";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
@@ -2185,6 +2185,7 @@ class CurrGame {
                     }
                     this.lobbyClients.clear();
                     this.messageQ.clear();
+                    this.buttons.clearButton(0);
                     this.buttons.clearButton(6);
                     this.buttons.cSB.setHIGH(-1);
                     this.state = GameState.MULTIPLAYER_LOBBY_JOINED;
@@ -2637,7 +2638,12 @@ class Game {
   
   public void drawBoard() {
     this.board.drawBoard();
-    this.drawPanel();
+    if (this.gameOver) {
+      this.showStats();
+    }
+    else {
+      this.drawPanel();
+    }
     if (this.displayGameOverMessage) {
       this.drawGameOverMessage();
     }
