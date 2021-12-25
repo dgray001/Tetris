@@ -1,6 +1,6 @@
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.6d";
+  public final String version = "Tetris v0.3.7a";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;

@@ -1227,7 +1227,7 @@ class customizeKeysButton extends recButton {
 }
 class Constants {
   // Tetris
-  public final String version = "Tetris v0.3.6d";
+  public final String version = "Tetris v0.3.7a";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
@@ -4093,7 +4093,7 @@ class chatBox {
     }
     rect(this.listB.getXI(), this.listB.getYF(), this.listB.getXF(), this.listB.getYF() + this.inputTextSize + 2);
     // update mouseOnTextBox
-    if ((x > this.listB.getXI()) && (x < this.listB.getXF()) && (y > this.listB.getYF()) && (y < this.listB.getYF() + this.inputTextSize + 2)) {
+    if ((x > this.listB.getXI()) && (x < this.listB.getXF()) && (y > this.listB.getYI()) && (y < this.listB.getYF() + this.inputTextSize + 2)) {
       this.mouseOnTextBox = true;
     }
     else {
@@ -4372,6 +4372,9 @@ abstract class scrollBar {
     this.strings = strs;
   } public void addSTR(String str) {
     this.strings = append(this.strings, str);
+    if (this.currStart == this.maxStart) {
+      this.currStart++;
+    }
   } public void shortenSTR() {
     this.strings = shorten(this.strings);
   } public String[] getSTRS() {
