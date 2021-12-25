@@ -927,7 +927,7 @@ class CurrGame {
                     println("ERROR: no chat string to add");
                     break;
                   }
-                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), trim(splitMessage[3]));
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -990,7 +990,7 @@ class CurrGame {
                     println("ERROR: no chat string to add");
                     break;
                   }
-                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), trim(splitMessage[3]));
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -1039,7 +1039,7 @@ class CurrGame {
                     println("ERROR: no chat string to add");
                     break;
                   }
-                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), trim(splitMessage[3]));
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));
@@ -1113,7 +1113,7 @@ class CurrGame {
                     println("ERROR: no chat string to add");
                     break;
                   }
-                  this.buttons.lcB.addChat(trim(splitMessage[2]), ": " + trim(splitMessage[3]));
+                  this.buttons.lcB.addChat(trim(splitMessage[2]), trim(splitMessage[3]));
                   break;
                 default:
                   println("ERROR: LOBBY message not recognized -> " + trim(splitMessage[1]));

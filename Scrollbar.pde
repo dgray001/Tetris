@@ -80,6 +80,8 @@ class chatBox {
     this.listB.mousePress();
     if (this.mouseOnTextBox) {
       this.typing = true;
+      this.blinking = false;
+      this.lastBlink = millis();
     }
     else {
       this.typing = false;
@@ -388,7 +390,7 @@ abstract class scrollBar {
     int numSeen = (int)Math.floor((this.yFinal - this.yInitial) / (this.textSize + 5)); // number of lines seen at a given time
     int numTotal = this.strings.length;
     int numHidden = numTotal - numSeen; // lines not seen at a given time
-    if (numHidden < 0) {
+    if (numHidden <= 0) {
       numHidden = 0;
       numSeen = numTotal;
       this.currStart = 0;
