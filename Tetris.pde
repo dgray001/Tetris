@@ -1,7 +1,3 @@
-// Tetris
-// v0.3.4f
-// 20211223
-
 import java.util.*;
 import javafx.util.*;
 import static javax.swing.JFrame.*;
@@ -29,6 +25,9 @@ void setup() {
   textSize(14);
   textAlign(LEFT, BOTTOM);
   text("Customize", 1240, 707);
+  textSize(12);
+  textAlign(RIGHT, TOP);
+  text(constants.version, 1235, 5);
 }
 
 void draw() {

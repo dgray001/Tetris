@@ -24,10 +24,6 @@ import java.io.IOException;
 
 public class Tetris extends PApplet {
 
-// Tetris
-// v0.3.4f
-// 20211223
-
 
 
 
@@ -55,6 +51,9 @@ public void setup() {
   textSize(14);
   textAlign(LEFT, BOTTOM);
   text("Customize", 1240, 707);
+  textSize(12);
+  textAlign(RIGHT, TOP);
+  text(constants.version, 1235, 5);
 }
 
 public void draw() {
@@ -1212,6 +1211,7 @@ class customizeKeysButton extends recButton {
 }
 class Constants {
   // Tetris
+  public final String version = "Tetris v0.3.5a";
   public final int defaultTickLength = 400;
   public final int maxFPS = 60;
   public final int frameUpdateTime = 100;
